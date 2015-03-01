@@ -1,0 +1,30 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link href="./logreg.css" rel="stylesheet" type="text/css">
+	<!--<link href="{{STATIC_URL}}css/register.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/jquery-1.11.1.min.js' >
+    </script>
+    <script type="text/javascript" language='javascript'src='{{STATIC_URL}}js/csrf.js' ></script>
+    <script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/register.js'></script>-->
+    <script type="text/javascript" language='javascript' src='./jquery-1.11.1.min.js'></script>
+    <script type="text/javascript" language='javascript' src='./logreg.js'></script>
+</head>
+<body>
+	<!-- {% csrf_token %} -->
+	<div class="content">
+		<div class="logincontainer">
+			<div class="login">
+				<div>
+					用户名 <input type="text" name="uname">
+				</div>	
+				<div>
+					密&nbsp;&nbsp;&nbsp;码 <input type="password" name="pwd"/><br/>
+				</div>
+				<button name="gotoreg">注册</button>
+				<button name="submitlogin">登陆</button>
+			</div>
+		</div>
+	</div>
+
+</body></html>

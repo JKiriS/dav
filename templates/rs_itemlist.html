@@ -1,0 +1,70 @@
+{% load newlibrary %}
+{% reorder itemlist by orders as itemlist %}
+{% for i in itemlist %}
+<div class="item" id="{{ i.id }}">
+	{% ifin i.id request.user.favorites %}
+	<a class="favorite" title="取消收藏" href="javascript:void(0)"><img src="/static/img/shoucan.jpg" /></a>
+	{% else %}
+	<a class="favorite" title="添加收藏" href="javascript:void(0)"><img src="/static/img/shoucan1.jpg" style="display: none;"/></a>
+	{% endifin %}
+	<div class="itemtop">
+		<a href="{{ i.link }}" target="_blank" class="itemtitle">
+			{{ i.title }}
+		</a>
+	</div>
+	{% if i.imgurl %}
+	<img src="{{ i.imgurl }}" />
+	{% endif %}
+	<div class="itemcenter">
+		<span class="itemdes">
+			{{ i.des }}
+		</span>
+	</div>
+	<div class="itemtaglist">
+		<span>
+			标签：
+		</span>
+		{% for t in i.tags %}
+		<div class="itemtag">
+			<a target="_blank" href="{% url 'lookclassified' %}?tag={{ t }}"><span class="itemtag">
+						#{{ t }}
+			</span></a>
+		</div>
+		{% endfor %}
+		<div class="tagadd">
+			<a href="javascript:void(0)"><span>+添加标签</span></a>
+		</div>
+		<div class="newtag" style="display:none;">
+			<input type="text"/>
+			<button name="cancel">取消</button>
+			<button name="add">添加</button>
+		</div>	
+	</div>
+	<div class="itembottom">
+		<div class="itemsource">
+			<a target="_blank" href="{% url 'lookclassified' %}?source={{ i.source }}">
+			    <span class="itemsource">
+			    	{{ i.source }}
+			    </span>
+		    </a>
+		</div>
+		<div class="itemtimestamp">
+			<span class="itemtime">
+				{{ i.pubdate|date:"Y-m-d H:i:s" }}
+			</span>
+		</div>
+	</div>
+	{% if i.imgurl %}
+	<div style="clear:both;"></div> <!-- let img stay in div.item -->
+	{% endif %}
+</div>
+{% endfor %}
+
+{% if hasmore %}
+<a class="viewmore" href="javascript:void(0)">
+	<span>加载更多</span>
+</a>
+<a class="loadingmore" style="display:none">
+	<img src='/static/img/loadingsmall.gif' width='25' height='25' />
+</a>
+{% endif %}

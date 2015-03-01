@@ -1,0 +1,62 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=GBK">
+	<script type="text/javascript" src="{{STATIC_URL}}js/d3.min.js"></script>
+</head>
+<body>
+	<div>
+	</div>
+	<script type="text/javascript">
+	var width  = 1000;
+	var height = 1000;
+	
+	var svg = d3.select("body").append("svg")
+		.attr("align", "center")
+	    .attr("width", width)
+	    .attr("height", height)
+	    .append("g")
+	    .attr("transform", "translate(0,0)");
+	
+	var projection = d3.geo.mercator()
+						.center([107, 31])
+						.scale(850)
+    					.translate([width/2, height/2]);
+	var path = d3.geo.path()
+					.projection(projection);
+	var color = d3.scale.category20();
+	
+	d3.json("china.json", function(error, root) {
+		if (error) 
+			return console.error(error);
+		console.log(root.features);
+		
+		svg.selectAll("path")
+			.data( root.features )
+			.enter()
+			.append("path")
+			.attr("stroke","#000")
+			.attr("stroke-width",1)
+			.attr("fill", function(d,i){
+				return "silver";//color(i);
+			})
+			.attr("d", path )
+			.on("mouseover", function(d,i){
+                d3.select(this)
+                    .attr("fill","yellow");
+            })
+            .on("mouseout", function(d,i){
+                d3.select(this)
+                    .attr("fill","silver");
+            });	
+        
+        var myLocation = projection([121.3997, 31.0456]);
+        svg.append('circle')
+            .attr('transform', 'translate(' + myLocation[0] + ', ' + myLocation[1] + ')')
+            .transition()
+            .duration(3000)
+            .attr('r', 5)
+            .attr('fill', "red");
+	});
+	</script>
+</body>
+</html>

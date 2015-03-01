@@ -1,0 +1,43 @@
+<!-- saved from url=(0032)file:///E:/dav/tdev/rsindex.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<link href="./logreg.css" rel="stylesheet" type="text/css">
+	<!--<script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/jquery-1.11.1.min.js' >
+    </script>
+    <script type="text/javascript" language='javascript'src='{{STATIC_URL}}js/csrf.js' ></script>
+    <script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/index.js'></script>-->
+    <script type="text/javascript" language='javascript' src='./jquery-1.11.1.min.js'></script>
+    <script type="text/javascript" language='javascript' src='./logreg.js'></script>
+<style type="text/css"></style></head>
+<body>
+	<!-- {% csrf_token %} -->
+	<div class="content">
+		<div class="register">
+			<div>
+				用户名: <br/><span>*</span>
+				<input type="text" name="uname">
+				<span class="status" id="unames">
+				</span>
+			</div>	
+			<div>
+				密码: <br/><span>*</span>
+				<input type="password" name="pwd"/>
+				<span class="status" id="unames">
+				</span>
+			</div>
+			<div>
+				邮箱: <br/><span>*</span>
+				<input type="text" name="email">
+				<span class="status" id="unames">
+				</span>
+			</div>
+			<div>
+				自我描述: <br/>
+				<textarea rows="5" cols="40"></textarea>
+			</div>
+			<button name="gotologin">登陆</button>
+			<button name="submitreg">注册</button>
+		</div>
+	</div>
+
+</body></html>

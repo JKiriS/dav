@@ -1,0 +1,91 @@
+body {
+    background-color: #3FD86A;
+}
+
+.content {
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+}
+
+.register {
+    width: 400px;
+    display: inline-block;
+    background-color: white;
+    margin-top: 15px;
+    padding: 10px 0px;
+    font-size: 25px;
+    margin-left: 300px;
+}
+
+.register input{
+    width: 300px;
+    margin-top: 5px;
+    height: 30px;
+    margin-left: 5px;
+}
+
+.register textarea{
+    border: thin solid silver;
+    width: 300px;
+    margin-top: 5px;
+    margin-left: 15px;
+}
+
+.register div{
+    margin-left: 15px;
+    margin-top: 10px;
+}
+
+.register span{
+    font-size: 5px;
+    color: red;
+    float: left;
+    margin-left: 5px;
+}
+
+#gotologin, #submitreg{
+    width: 80px;
+    color: black;
+    font-size: 20px;
+    margin-left: 80px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+#gotoreg, #submitlogin{
+    width: 70px;
+    color: black;
+    font-size: 20px;
+    margin-left: 60px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.logincontainer {
+    /* margin-top: 200px; */
+    width: 1000px;
+    height: 550px;
+}
+
+.login {
+    display: inline-block;
+    float: right;
+    margin-top: 200px;
+    width: 350px;
+    margin-right: 50px;
+    background-color: rgb(9, 197, 190);
+    padding: 10px 0px;
+    font-family:  microsoft yahei;
+    font-size: 20px;
+}
+
+.login div{
+    margin-left: 40px;
+    margin-top: 10px;
+}
+
+.errorinput {
+    border: 2px solid red;
+}

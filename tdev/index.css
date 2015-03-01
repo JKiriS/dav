@@ -1,0 +1,366 @@
+body {
+    background-color: #E7E2E2;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    padding-bottom: 5px;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+    font-family: Microsoft YaHei;
+}
+
+.navi {
+    background-color: rgba(239, 85, 85, 0.85);
+    height: 40px;
+    width: 100%;
+    padding: 0px;
+    /* margin: 0px; */
+    border-bottom: 5px solid rgb(255, 246, 84);
+    position: fixed; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.home {
+    width: 90px;
+    float: left;
+    text-align: center;  
+    font-size: 30px;
+    background-color: rgb(78, 232, 203);
+    margin-right: 35px;
+    height: 50px;
+}
+
+.column {
+    width: 110px;
+    text-align: center;  
+    display: inline-block;
+    height: 40px;
+    border-bottom: none;
+    float: left;
+}
+
+.column span {
+    font-size: 18px;
+    margin-top: 6px;
+    display: inline-block;
+}
+
+.currentcol {
+    border-bottom: 5px solid rgb(22, 142, 64);
+}
+
+.column:hover{
+    background-color: rgba(211, 84, 84, 0.85);
+}
+
+.simsearch{
+    display: inline-block;
+    float: left;
+    margin-left: 30px;
+    width: 200px;
+    height: 40px;
+    background-color: ;
+}
+
+.simsearch input {
+    width: 150px;
+    height: 25px;
+    border: none;
+    float: left;
+    margin-top: 7px;
+}
+
+.simsearch img {
+    float: left;
+    height: 25px;
+    margin-left: 5px;
+    margin-top: 7px;
+}
+
+.user{
+    display: inline-block;
+    float: left;
+    position: fixed;
+    text-align: center;
+    margin-left: 30px;
+    width: 120px;
+    height: 40px;
+}
+
+.user .uicon{
+    display: inline-block;
+    height: 40px;
+    float: left;
+}
+
+.user .uname{
+    display: inline-block;
+    height: 40px;
+    float: left;
+    text-align: center;
+}
+
+.user .uicon {
+    height: 30px;
+    float: left;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+.user .uname span{
+    margin-top: 10px;
+    display: inline-block;
+    margin-left: 3px;
+}
+
+.user .hide{
+    display: inline-block;
+    height: 35px;
+    border-top: 1px solid silver;
+    width: 120px;
+    background-color: white;
+}
+
+.user .hide span {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.advsearch {
+    width: 720px;
+    height: 300px;
+    background-color: rgba(211, 84, 84, 0.85);
+    margin-top: 40px;
+    margin-left: 110px;
+    position: fixed;
+}
+
+.advsearch .advstop {
+    margin-left: 1%;
+    margin-top: 5px;
+    float: left;
+}
+
+.advsearch .advstop a {
+    display: inline-block;
+    float: left;
+    width: 100px;
+    text-align: center;
+}
+
+.advsearch .advstop a.active {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.advsearch .advscontent {
+    margin-left: 1%;
+    background-color: rgba(255, 255, 255, 0.3);
+    height: 89%;
+    width: 98%;
+    float: left;
+    overflow: auto;
+}
+
+.advsearch .advscontent a {
+    float: left;
+    display: inline-block;
+    float: left;
+    width: 100px;
+    margin-top: 8px;
+    margin-left: 12px;
+    text-align: center;
+    background-color: rgba(67, 208, 133, 0.85); 
+}
+
+.content {
+    width: 720px;
+    margin-top: 40px;
+    float: left;
+    margin-bottom: 20px;
+}
+
+.item {
+    width: 700px;
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: rgb(255, 255, 255);  
+    border-color: silver;
+    padding-left: 10px;
+    margin-top: 10px;
+    float: left;
+}
+
+.item a:hover {
+    color: rgb(123, 96, 11);
+}
+
+.item img {
+    float: right;
+    width: 150px;
+    margin-right: 20px;
+    margin-left: 10px;
+    margin-bottom: 20px;
+}
+
+.item .favorite{
+    float: right;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    display: inline-block;
+}
+
+.item .favorite img {
+    float: right;
+    width: 40px;
+    margin: 0;
+}
+
+.itemtop {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    padding: 5px 0px;
+}
+
+.itemtitle {
+    font-size: 23px;
+    font-family: Microsoft YaHei;
+    color: #613838;
+}
+
+a.itemtitle:hover {
+    color: rgb(45, 136, 45);
+}
+
+.itemtag {
+    background-color: rgb(67, 208, 133);  
+    text-align: center;  
+    display: inline-block;
+    margin-left: 5px;
+    padding: 1px 3px;
+    margin-top: 3px;
+}
+
+.itemtaglist {
+    width: 700px;
+    margin-top: 5px;
+    margin-right: 10px;
+    padding: 2px 5px;
+}
+
+.itembottom {
+    width: 700px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.itemsource {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.itemtimestamp {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.itemcenter{
+    padding-right: 10px; 
+}
+
+.itemdes {
+    width: 650px;
+    margin-left: 10px;
+    line-height: 150%;
+}
+
+.tagadd {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.tagadd span {
+    color: green;
+    margin-top: 5px;
+    font-size: 10px;
+    vertical-align: middle;
+}
+
+.newtag {
+    margin-top: 10px;
+    margin-left: 10px;
+    padding: 5px;
+}
+
+.viewmore {
+    display: inline-block;
+    width: 690px;
+    margin-left: 10px;
+    padding: 0px 10px;
+    text-align: center;
+    border-style: 1px solid rgb(32, 208, 208);
+    background-color: white;
+    margin-top: 10px;
+    height: 40px;
+    font-size: 22px;
+}
+
+.viewmore span {
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.viewmore img {
+    margin-top: 5px;
+}
+
+.right {
+    width: 200px;
+    margin-top: 40px;
+    display: inline-block;
+    margin-right: 20px;
+    margin-left: 30px;
+    float: right;
+    position: fixed;
+}
+
+.svgdiv {
+    margin-top: 15px;
+    margin-left: 10px;
+    padding: 10px;
+}
+
+svg {
+    margin-left: 5px;
+}
+
+svg.source rect {
+    fill: green;
+}
+
+svg.source rect:hover {
+    fill: orange;
+}
+
+a.backtotop {
+    position: fixed;
+    margin-left: 750px;
+    bottom: 30px;
+}
+
+.ccontainer {
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+}
+
+.ncontainer {
+    margin-left: auto;
+    margin-right: auto;
+    width: 1000px;
+}

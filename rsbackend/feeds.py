@@ -395,7 +395,7 @@ def run():
 	db.item.update({'pubdate':{'$gt':now()}}, {'$set':{'pubdate':now()}}, multi=True)
 	db.site.update({'latest':{'$gt':now()}}, {'$set':{'latest':now()}}, multi=True)
 	# db.job.insert({'module':'updateindex', 'starttime':now() + datetime.timedelta(minutes=10)})
-	db.job.insert({'module':'calcupre', 'starttime':now() + datetime.timedelta(minutes=5)})
+	# db.job.insert({'module':'calcupre', 'starttime':now() + datetime.timedelta(minutes=5)})
 	db.job.insert({'module':'feeds', 'starttime':now() + datetime.timedelta(hours=12)})
 	conn.close()
 

@@ -69,9 +69,6 @@ sites = [
 		{'url':'http://feed.yeeyan.org/business', 'source':'译言网', 'category':'商业',  'parser':'desImgInContent'},
 		{'url':'http://www.ifanr.com/feed', 'source':'爱范儿', 'category':'科技', 'parser':'ifanr'}, # contains img
 		{'url':'http://www.199it.com/feed', 'source':'199it', 'category':'数据'},
-		{'url':'https://pt.sjtu.edu.cn/torrentrss.php?rows=10&cat401=1&cat402=1&cat403=1'+\
-			'&cat406=1&cat407=1&cat408=1&cat409=1&cat410=1&cat420=1&cat421=1&cat422=1&cat423=1'+\
-			'&cat425=1&cat427=1&cat429=1&cat431=1&cat434=1&cat435=1&cat451=1', 'source':'葡萄', 'category':'综合'},
 		{'url':'http://www.poboo.com/feed', 'source':'poboo', 'category':'艺术'},
 		{'url':'http://www.itongji.cn/rss.php', 'source':'中国统计网', 'category':'数据'},
 		{'url':'http://blog.ted.com/feed/', 'source':'TED', 'category':'综合', 'parser':'imgInContent'},
@@ -125,6 +122,9 @@ sites = [
 		{'url':'http://iwucha.com/feed/', 'source':'爱午茶创意坊', 'category':'文化', 'parser':'desImgInContent'},
 		{'url':'http://www.dfdaily.com/rss/1170.xml', 'source':'上海书评', 'category':'读书', 'parser':'imgInDes'},
 		{'url':'http://www.pento.cn/timeline/top_v2/pins/list.html?offset=0&count=50', 'source':'品读', 'category':'综合', 'parser':'pento'},
+		{'url':'http://jandan.net/feed', 'source':'煎蛋网', 'category':'综合'},
+		{'url':'http://www.duxieren.com/duxieren.xml', 'source':'上海书评', 'category':'读书', 'parser':'imgInDes'},
+
 	]
 
 now = lambda : datetime.datetime.now()
@@ -146,26 +146,36 @@ def simplerss(i, site):
 		rss['link'] = i['link']
 	except Exception, e:
 		print e
+		return None
 	return rss
+
+def saveRsslist(rsslist, site):
+	if len(rsslist) > 0:
+		db.item.insert(rsslist, continue_on_error=True)
+		site['latest'] = rsslist[0]['pubdate']
+		db.site.save(site)
+
+def checkRss(rss):
+	if 'des' not in rss or len(rss['des']) < 6:
+		return False
+	elif len(rss['des']) >= 500:
+		rss['des'] = rss['des'][:500]+'...'
+	rss['rand'] = [random.random(), 0]
+	return True
+
 
 def common(site):
 	rssraw = feedparser.parse(site['url'])
 	rsslist = []
 	for i in rssraw['entries']:
 		rss = simplerss(i, site)
-		if rss != None:
-			if 'summary_detail' in i:
-				des = i['summary_detail']['value']
-				soup = BeautifulSoup(des)
-				rss['des'] = soup.get_text()
-				if len(rss['des']) >= 500:
-					rss['des'] = rss['des'][:500]+'...'
-				rss['rand'] = [random.random(), 0]
+		if rss != None and 'summary_detail' in i:
+			des = i['summary_detail']['value']
+			soup = BeautifulSoup(des)
+			rss['des'] = soup.get_text()
+			if checkRss(rss):
 				rsslist.append(rss)
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+	saveRsslist(rsslist, site)
 
 def ifanr(site=None):
 	from xml.etree import ElementTree as ET
@@ -190,79 +200,56 @@ def ifanr(site=None):
 		des = i.find('description').text
 		soup = BeautifulSoup(des)
 		rss['des'] = soup.get_text()
-		if len(rss['des']) >= 500:
-			rss['des'] = rss['des'][:500]+'...'
-		rss['rand'] = [random.random(), 0]
-		rsslist.append(rss)
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+		if checkRss(rss):
+			rsslist.append(rss)
+	saveRsslist(rsslist, site)
 
 def imgInDes(site=None):
 	rssraw = feedparser.parse(site['url'])
 	rsslist = []
 	for i in rssraw['entries']:
 		rss = simplerss(i, site)
-		if rss != None:	
-			if 'summary_detail' in i:
-				des = i['summary_detail']['value']
-				soup = BeautifulSoup(des)
-				rss['des'] = soup.get_text()
-				if len(rss['des']) >= 500:
-					rss['des'] = rss['des'][:500]+'...'		
-				if soup.find('img'):
-					rss['imgurl'] = soup.find('img').get('src')
-				rss['rand'] = [random.random(), 0]
+		if rss != None and 'summary_detail' in i:	
+			des = i['summary_detail']['value']
+			soup = BeautifulSoup(des)
+			rss['des'] = soup.get_text()		
+			if soup.find('img'):
+				rss['imgurl'] = soup.find('img').get('src')
+			if checkRss(rss):
 				rsslist.append(rss)
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+	saveRsslist(rsslist, site)
 
 def imgInContent(site):
 	rssraw = feedparser.parse(site['url'])
 	rsslist = []
 	for i in rssraw['entries']:
 		rss = simplerss(i, site)
-		if rss != None:
-			if 'summary_detail' in i:
-				des = i['summary_detail']['value']
-				soup = BeautifulSoup(des)
-				rss['des'] = soup.get_text()
-				if len(rss['des']) >= 500:
-					rss['des'] = rss['des'][:500]+'...'			
-				if 'content' in i:
-					soup = BeautifulSoup(i.content[0].value)
-					if soup.find('img'):
-						rss['imgurl'] = soup.find('img').get('src')
-				rss['rand'] = [random.random(), 0]
+		if rss != None and 'summary_detail' in i:
+			des = i['summary_detail']['value']
+			soup = BeautifulSoup(des)
+			rss['des'] = soup.get_text()
+			if 'content' in i:
+				soup = BeautifulSoup(i.content[0].value)
+				if soup.find('img'):
+					rss['imgurl'] = soup.find('img').get('src')
+			if checkRss(rss):
 				rsslist.append(rss)
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+	saveRsslist(rsslist, site)
 
 def desImgInContent(site):
 	rssraw = feedparser.parse(site['url'])
 	rsslist = []
 	for i in rssraw['entries']:
 		rss = simplerss(i, site)
-		if rss != None:			
-			if 'content' in i:
-				content = reduce(lambda a,b:a+b.value, i.content, '')
-				soup = BeautifulSoup(content)
-				rss['des'] = soup.get_text()
-				if len(rss['des']) >= 500:
-					rss['des'] = rss['des'][:500]+'...'
-				if soup.find('img'):
-					rss['imgurl'] = soup.find('img').get('src')
-				rss['rand'] = [random.random(), 0]
+		if rss != None and 'content' in i:			
+			content = reduce(lambda a,b:a+b.value, i.content, '')
+			soup = BeautifulSoup(content)
+			rss['des'] = soup.get_text()
+			if soup.find('img'):
+				rss['imgurl'] = soup.find('img').get('src')
+			if checkRss(rss):
 				rsslist.append(rss)
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+	saveRsslist(rsslist, site)
 
 def acfun(site):
 	baseurl = 'http://www.acfun.tv'
@@ -276,19 +263,14 @@ def acfun(site):
 		rss['title'] = i['title']
 		rss['des'] = i.get('description')
 		rss['imgurl'] = i.get('titleImg')
-		if rss['des'] and len(rss['des']) >= 500:
-			rss['des'] = rss['des'][:500]+'...'	
 		try:
 			rss['pubdate'] = now() if not i.get('releaseDate') else \
 				datetime.datetime.strptime(i.get('releaseDate'), '%Y-%m-%d %X')
+			if checkRss(rss):
+			rsslist.append(rss)
 		except Exception, e:
 			print e
-		rss['rand'] = [random.random(), 0]
-		rsslist.append(rss)
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+	saveRsslist(rsslist, site)
 
 def hustBBS(site):
 	html = urllib2.urlopen(site['url']).read()
@@ -303,12 +285,9 @@ def hustBBS(site):
 		rss['link'] = 'http://bbs.whnet.edu.cn/cgi-bin/bbstcon?board='+board+'&file='+ifile
 		rss['des'] = u'板块:'+board+u'   回复人数:'+reply_count
 		rss['pubdate'] = now()
-		rss['rand'] = [random.random(), 0]
-		rsslist.append(rss)
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+		if checkRss(rss):
+			rsslist.append(rss)
+	saveRsslist(rsslist, site)
 
 def googlenews(site):
 	rssraw = feedparser.parse(site['url'])
@@ -331,16 +310,11 @@ def googlenews(site):
 				des = i['summary_detail']['value']
 				soup = BeautifulSoup(des)
 				rss['des'] = soup.get_text()
-				if len(rss['des']) >= 500:
-					rss['des'] = rss['des'][:500]+'...'
-				rss['rand'] = [random.random(), 0]
+			if checkRss(rss):
 				rsslist.append(rss)
 		except Exception, e:
 			print e
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+	saveRsslist(rsslist, site)
 
 def pento(site):
 	BASE_URL = 'http://www.pento.cn'
@@ -357,14 +331,11 @@ def pento(site):
 			pubdate = i.find('div', class_='book_card_time').get_text()
 			rss['imgurl'] = i.find('input').get('value')
 			rss['pubdate'] = datetime.datetime.strptime(pubdate, '%Y-%m-%d')
-			rss['rand'] = [random.random(), 0]
-			rsslist.append(rss)
+			if checkRss(rss):
+				rsslist.append(rss)
 		except :
 			pass
-	if len(rsslist) > 0:
-		db.item.insert(rsslist, continue_on_error=True)
-		site['latest'] = rsslist[0]['pubdate']
-		db.site.save(site)
+	saveRsslist(rsslist, site)
 
 def updatesites(sites=[]):
 	for i in sites:
@@ -402,7 +373,6 @@ def run():
 		'starttime':now() + datetime.timedelta(minutes=10), 'status':'waiting'})
 	conn.close()
 
-
 if __name__ == '__main__':
 	global db
 	conn = pymongo.Connection()
@@ -420,6 +390,3 @@ if __name__ == '__main__':
 	print 'program finished'
 	input()
 	conn.close()
-
-
-# db.item.update({category:'影评'},{$set:{category:'电影'}},{multi:true})

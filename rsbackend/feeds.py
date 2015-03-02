@@ -396,7 +396,10 @@ def run():
 	db.site.update({'latest':{'$gt':now()}}, {'$set':{'latest':now()}}, multi=True)
 	# db.job.insert({'module':'updateindex', 'starttime':now() + datetime.timedelta(minutes=10)})
 	# db.job.insert({'module':'calcupre', 'starttime':now() + datetime.timedelta(minutes=5)})
-	db.job.insert({'module':'feeds', 'starttime':now() + datetime.timedelta(hours=12)})
+	db.job.insert({'module':'feeds', \
+		'starttime':now() + datetime.timedelta(hours=12), 'status':'waiting'})
+	db.job.insert({'module':'updatesearchindex', \
+		'starttime':now() + datetime.timedelta(minutes=10), 'status':'waiting'})
 	conn.close()
 
 

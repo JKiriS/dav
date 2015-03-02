@@ -40,7 +40,7 @@ INSTALLED_APPS = (
     'historyv',
     'rs',
     'account',
-    'mytemplatelibrary',
+    'templatelib',
     'mongoengine.django.mongo_auth',
 )
 

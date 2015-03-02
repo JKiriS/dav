@@ -49,6 +49,7 @@ def login(request):
 				auth.login(request, user) 
 				request.session.set_expiry(60 * 60 * 24 * 7)
 				res['status'] = 'success'
+				res['redirecturl'] = request.GET.get('redirecturl')
 		response.write( simplejson.dumps(res, ensure_ascii=False) )
 		return response
 	return render(request, 'login.html')

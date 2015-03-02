@@ -2,10 +2,12 @@
 {% reorder itemlist by orders as itemlist %}
 {% for i in itemlist %}
 <div class="item" id="{{ i.id }}">
+	<img style="display: none;" src="/static/img/favo.jpg" /> 
+	<img style="display: none;" src="/static/img/unfavo.jpg" /> 
 	{% ifin i.id request.user.favorites %}
-	<a class="favorite" title="取消收藏" href="javascript:void(0)"><img src="/static/img/shoucan.jpg" /></a>
+	<a class="favorite" title="取消收藏" href="javascript:void(0)"><img src="/static/img/favo.jpg" /></a>
 	{% else %}
-	<a class="favorite" title="添加收藏" href="javascript:void(0)"><img src="/static/img/shoucan1.jpg" style="display: none;"/></a>
+	<a class="favorite" title="添加收藏" href="javascript:void(0)"><img src="/static/img/unfavo.jpg" style="display: none;"/></a>
 	{% endifin %}
 	<div class="itemtop">
 		<a href="{{ i.link }}" target="_blank" class="itemtitle">

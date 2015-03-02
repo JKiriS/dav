@@ -1,0 +1,56 @@
+<html>
+<head>
+	<title>{{ user.username }} 最近的收藏内容</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link href="{{STATIC_URL}}css/index.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/jquery-1.11.1.min.js' >
+    </script>
+    <script type="text/javascript" language='javascript'src='{{STATIC_URL}}js/csrf.js' ></script>
+    <script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/index.js'></script>
+</head>
+<body>
+	{% csrf_token %}
+	<div class="navi">
+		<div class="ncontainer">
+			<a href="/" class="home"><img src='{{STATIC_URL}}img/home.png'></a>
+			<a href="{% url 'lookaround' %}" class="column" id="lookaround"><span>随便看看</span></a>
+			<a href="{% url 'recommend' %}" class="column" id="recommend"><span>给我推荐</span></a>
+			<a href="{% url 'lookclassified' %}" class="column search" id="search"><span>分类浏览</span></a>
+			<a href="{% url 'selffavorites' %}" class="column currentcol" id="self"><span>我的收藏</span></a>
+			<form class="simsearch" action="{% url 'search' %}" method="GET">
+				<input type="text" name="wd">
+				<a href="javascript:void(0)"><img src="{{STATIC_URL}}img/search.png"/></a>
+			</form>
+			<div class="user">
+				{% if not request.user.is_authenticated %}
+				<a href="javascript:void(0)"  class="uicon"><img src="{{STATIC_URL}}img/icon.png" height="30"/></a>
+				<a href="javascript:void(0)" class="uname"><span>Anony.</span></a>
+				<a href="{% url 'login' %}" style="display:none;" class="hide"><span>登陆</span></a>
+				<a href="{% url 'register' %}" style="display:none;" class="hide"><span>注册</span></a>
+				{% else %}
+				<a href="javascript:void(0)" class="uicon" ><img src="{{STATIC_URL}}img/icon.png" height="30"/></a>
+				<a href="javascript:void(0)" class="uname"><span>{{ user.username|truncatewords:"6" }}</span></a>
+				<a href="{% url 'selfpre' %}" style="display:none;" class="hide"><span>可视化</span></a>
+				<a href="{% url 'logout' %}" style="display:none;" class="hide"><span>退出</span></a>
+				{% endif %}
+			</div>
+			<div class="search advsearch" style="display:none;">
+				<div class="advstop">
+					<a class="tool active" href="javascript:void(0)" title="source">源</a>
+					<a class="tool" href="javascript:void(0)" title="category">分类</a>
+				</div>
+				<div class="advscontent">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="ccontainer">
+		<div class="content">
+			<img src='/static/img/loadinglarge.gif' style='margin-top: 100px; margin-left: 100px;' />
+		</div>
+		<div class="right">
+		</div>
+		<a href="javascript:void(0)" class="backtotop"><img src="{{STATIC_URL}}img/backtotop.png" /></a>
+	</div>
+</body>
+</html>

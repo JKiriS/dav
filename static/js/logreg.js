@@ -13,8 +13,12 @@ $(document).ready(function(){
 			$("input[name='pwd']").addClass("errorinput");
 		else {
 			$.post("", {"uname":uname,"pwd":pwd}, function(res){
-				if(res.status == "success")
-					window.location.href = "/rs/";
+				if(res.status == "success"){
+					if(res.redirecturl != null)
+						window.location.href = res.redirecturl
+					else
+						window.location.href = "/rs/";
+				}
 				else
 					$("input[name='pwd']").addClass("errorinput");
 			});

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from django.shortcuts import render
-from django.utils import simplejson
+import json
 from django.http import HttpResponse, HttpResponseRedirect
 from account.models import User, UserRegisterForm, UserLoginForm
 from django.contrib import auth
@@ -30,7 +30,7 @@ def register(request):
 				user.is_active=True  
 				user.save()
 				res['status'] = 'success'
-		response.write( simplejson.dumps(res, ensure_ascii=False) )
+		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 	return render(request, 'register.html')
 
@@ -49,7 +49,8 @@ def login(request):
 				auth.login(request, user) 
 				request.session.set_expiry(60 * 60 * 24 * 7)
 				res['status'] = 'success'
-		response.write( simplejson.dumps(res, ensure_ascii=False) )
+				res['redirecturl'] = request.GET.get('redirecturl')
+		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 	return render(request, 'login.html')
 

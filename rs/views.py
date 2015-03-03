@@ -63,11 +63,10 @@ def lookaround(request):
 		res['status'] = 'success'
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
-	column = 'lookaround'
-	return render(request, 'rs_main.html', locals())
+	
+	return render(request, 'rs_lookaround.html', locals())
 
 def recommend(request):
-	column = 'recommend'
 	if not request.user.is_authenticated():
 		return HttpResponseRedirect('/account/login?redirecturl=/rs/recommend')
 	if request.method == 'POST':
@@ -89,7 +88,8 @@ def recommend(request):
 		res['status'] = 'success'
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
-	return render(request, 'rs_main.html', locals())
+
+	return render(request, 'rs_recommend.html', locals())
 
 def lookclassifiedRecorder(request):
 	if request.user.is_authenticated():
@@ -133,8 +133,15 @@ def lookclassified(request):
 		res['status'] = 'success'
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
-	column = 'lookclassified'
-	return render(request, 'rs_main.html', locals())
+	if 'source' in request.GET:
+		classname = request.GET['source']
+		return render(request, 'rs_lookclassified.html', locals())
+	elif 'category' in request.GET:
+		classname = request.GET['category']
+		return render(request, 'rs_lookclassified.html', locals())
+	else:
+		return HttpResponseRedirect('/rs/lookaround')
+
 
 def search(request):
 	if request.method == 'POST':
@@ -142,7 +149,6 @@ def search(request):
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
 		res = {'status':'failed'}
-
 		res['params'] = request.POST.copy()
 		if 'searchid' not in request.POST:
 			url = 'http://127.0.0.1:8899' + request.get_full_path()[3:]
@@ -164,6 +170,7 @@ def search(request):
 		itemlist = item.objects(id__in=slist.result[skipnum:skipnum+15])
 		orders = slist.result[skipnum:skipnum+15]
 
+		wd = request.POST['wd']
 		hasmore = True if len(itemlist) >= 15 else False
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())
@@ -173,13 +180,16 @@ def search(request):
 
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
-	column = 'search'
-	return render(request, 'rs_main.html', locals())
+	if 'wd' in request.GET:
+		wd = request.GET['wd']
+		return render(request, 'rs_search.html', locals())
+	else :
+		return HttpResponseRedirect('/rs/lookaround')
 
 def updateSearchIndex(request):
 	response = HttpResponse()
 	response['Content-Type'] = 'application/json'
-	url = 'http://127.0.0.1:8899/updateindex?pw=910813gyb'
+	url = 'http://127.0.0.1:8899/updateindex?pw=' + settings.params['search_password']
 	try:
 		res = urllib2.urlopen(url).read()		
 	except :
@@ -190,7 +200,7 @@ def updateSearchIndex(request):
 
 def selffavorites(request):
 	if not request.user.is_authenticated():
-		return HttpResponseRedirect('/account/login?redirecturl=/rs/self')
+		return HttpResponseRedirect('/account/login?redirecturl=/rs/selffavorites')
 	if request.method == 'POST' and request.user.is_authenticated():
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
@@ -203,8 +213,8 @@ def selffavorites(request):
 		res['status'] = 'success'
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
-	column = 'selffavorites'
-	return render(request, 'rs_main.html', locals())
+
+	return render(request, 'rs_selffavo.html', locals())
 
 def selfpre(request):
 	if not request.user.is_authenticated():

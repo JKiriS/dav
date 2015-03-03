@@ -152,12 +152,12 @@ $(document).ready(function(){
 		var target = $(this).parents(".item").attr("id");
 		if($(this).attr("title") == "添加收藏"){
 			$(this).attr("title", "取消收藏");
-			$(this).children("img").attr("src", "/static/img/shoucan.jpg");
+			$(this).children("img").attr("src", "/static/img/favo.jpg");
 			$.post("/rs/addfavorite", {"target":target});
 		}
 		else{
 			$(this).attr("title", "添加收藏");
-			$(this).children("img").attr("src", "/static/img/shoucan1.jpg");
+			$(this).children("img").attr("src", "/static/img/unfavo.jpg");
 			$.post("/rs/removefavorite", {"target":target});
 		}
 	});

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 import json
-from django.utils import simplejson
+import json
 import settings
 import os.path
 # Create your views here.
@@ -15,4 +15,4 @@ def sendjson(request, fname):
 		f.close()
 	except Exception, e:
 		s = {'error':'file '+fpath+'.json not found'}
-	return HttpResponse(simplejson.dumps(s, ensure_ascii=False))
+	return HttpResponse(json.dumps(s, ensure_ascii=False))

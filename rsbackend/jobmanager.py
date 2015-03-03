@@ -12,8 +12,8 @@ if __name__ == '__main__':
 		conn = pymongo.Connection()
 		db = conn['feed']
 		db.authenticate('JKiriS','910813gyb')
-		for j in db.job.find({'starttime':{'$lt':datetime.datetime.now(), \
-			'status':'waiting'}}, timeout=False):
+		for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
+				'status':'waiting'}, timeout=False):
 			try:
 				db.job.update({'_id':j['_id']}, {'$set':{'status':'running'}})
 				exec('reload(' + j['module'] + ')')

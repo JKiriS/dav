@@ -170,7 +170,7 @@ def search(request):
 		itemlist = item.objects(id__in=slist.result[skipnum:skipnum+15])
 		orders = slist.result[skipnum:skipnum+15]
 
-		wd = request.POST['wd']
+		wd = request.GET['wd']
 		hasmore = True if len(itemlist) >= 15 else False
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())

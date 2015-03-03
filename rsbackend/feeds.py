@@ -10,10 +10,10 @@ import re
 import json
 import urlparse
 import random
-
 import socket
-socket.setdefaulttimeout(20)
 
+params = json.load(file('../self.cfg'))
+socket.setdefaulttimeout(params['feedparser_timeout'])
 sites = [
 		{'url':'http://cnbeta.feedsportal.com/csite/34306/f/624776/index.rss', 'source':'cnBeta', 'category':'互联网'},
 		{'url':'http://feed.mtime.com/movienews.rss', 'source':'时光网', 'category':'电影'},
@@ -123,7 +123,7 @@ sites = [
 		{'url':'http://www.dfdaily.com/rss/1170.xml', 'source':'上海书评', 'category':'读书', 'parser':'imgInDes'},
 		{'url':'http://www.pento.cn/timeline/top_v2/pins/list.html?offset=0&count=50', 'source':'品读', 'category':'综合', 'parser':'pento'},
 		{'url':'http://jandan.net/feed', 'source':'煎蛋网', 'category':'综合'},
-		{'url':'http://www.duxieren.com/duxieren.xml', 'source':'上海书评', 'category':'读书', 'parser':'imgInDes'},
+		{'url':'http://www.duxieren.com/duxieren.xml', 'source':'读写人', 'category':'读书', 'parser':'imgInDes'},
 
 	]
 
@@ -162,7 +162,6 @@ def checkRss(rss):
 		rss['des'] = rss['des'][:500]+'...'
 	rss['rand'] = [random.random(), 0]
 	return True
-
 
 def common(site):
 	rssraw = feedparser.parse(site['url'])
@@ -267,7 +266,7 @@ def acfun(site):
 			rss['pubdate'] = now() if not i.get('releaseDate') else \
 				datetime.datetime.strptime(i.get('releaseDate'), '%Y-%m-%d %X')
 			if checkRss(rss):
-			rsslist.append(rss)
+				rsslist.append(rss)
 		except Exception, e:
 			print e
 	saveRsslist(rsslist, site)
@@ -356,7 +355,7 @@ def run():
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')
+	db.authenticate(params['db_username'],params['db_password'])
 	updatesites(sites)
 	for i in db.site.find(timeout=False):
 		try:
@@ -374,19 +373,4 @@ def run():
 	conn.close()
 
 if __name__ == '__main__':
-	global db
-	conn = pymongo.Connection()
-	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')	
-	updatesites(sites)
-	for i in db.site.find(timeout=False):
-		try:
-			print i['url']
-			exec( i['parser']+'(i)' )
-		except Exception, e:
-			print i['url'] + str(e)
-	db.item.update({'pubdate':{'$gt':now()}}, {'$set':{'pubdate':now()}}, multi=True)
-	db.site.update({'latest':{'$gt':now()}}, {'$set':{'latest':now()}}, multi=True)
-	print 'program finished'
-	input()
-	conn.close()
+	pass

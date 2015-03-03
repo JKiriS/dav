@@ -69,3 +69,6 @@ hs_err_pid*
 
 #nohup.out
 nohup.out
+
+#self configuration
+self.cfg

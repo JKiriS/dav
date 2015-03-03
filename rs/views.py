@@ -117,7 +117,6 @@ def classifiedHandler(request, skipnum):
 		itemlist = item.objects().limit(0)
 	return itemlist
 def lookclassified(request):
-
 	if request.method == 'POST':
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
@@ -150,7 +149,6 @@ def search(request):
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
 		res = {'status':'failed'}
-
 		res['params'] = request.POST.copy()
 		if 'searchid' not in request.POST:
 			url = 'http://127.0.0.1:8899' + request.get_full_path()[3:]
@@ -191,7 +189,7 @@ def search(request):
 def updateSearchIndex(request):
 	response = HttpResponse()
 	response['Content-Type'] = 'application/json'
-	url = 'http://127.0.0.1:8899/updateindex?pw=910813gyb'
+	url = 'http://127.0.0.1:8899/updateindex?pw=' + settings.params['search_password']
 	try:
 		res = urllib2.urlopen(url).read()		
 	except :

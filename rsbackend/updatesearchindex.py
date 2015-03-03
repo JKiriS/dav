@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import urllib2
+import json
 
 params = json.load(file('../self.cfg'))
 def run():

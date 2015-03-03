@@ -15,7 +15,7 @@
 			<a href="/" class="home"><img src='{{STATIC_URL}}img/home.png'></a>
 			<a href="{% url 'lookaround' %}" class="column" id="lookaround"><span>随便看看</span></a>
 			<a href="{% url 'recommend' %}" class="column" id="recommend"><span>给我推荐</span></a>
-			<a href="{% url 'lookclassified' %}" class="column search currentcol" id="search"><span>分类浏览</span></a>
+			<a href="{% url 'lookclassified' %}" class="column search" id="search"><span>分类浏览</span></a>
 			<a href="{% url 'selffavorites' %}" class="column" id="self"><span>我的收藏</span></a>
 			<form class="simsearch" action="{% url 'search' %}" method="GET">
 				<input type="text" name="wd">

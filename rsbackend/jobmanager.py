@@ -5,7 +5,7 @@ import time, datetime
 import feeds
 import recommend
 import calcupre
-import updateindex
+import updatesearchindex
 
 if __name__ == '__main__':
 	while True:

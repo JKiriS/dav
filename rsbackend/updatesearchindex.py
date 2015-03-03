@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 import urllib2
 
+params = json.load(file('../self.cfg'))
 def run():
-	url = 'http://127.0.0.1:8899/updateindex?pw=910813gyb'
+	url = 'http://127.0.0.1:8899/updateindex?pw=' + params['search_password']
 	try:
 		urllib2.urlopen(url).read()
 	except :

@@ -121,6 +121,10 @@ sites = [
 	]
 
 def updatesites():
+	global db
+	conn = pymongo.Connection()
+	db = conn['feed']
+	db.authenticate(params['db_username'], params['db_password'])
 	for i in sites:
 		s = db.source.find_one({'name':i['source']})
 		if s == None:

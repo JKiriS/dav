@@ -228,9 +228,9 @@ def run():
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate(params['db_username'],params['db_password'])
+	db.authenticate(params['db_username'], params['db_password'])
 	sites.updatesites()
-	for i in db.site.find(timeout=False):
+	for i in db.site.find({'active':True}, timeout=False):
 		try:
 			exec( i['parser']+'(i)' )
 		except Exception, e:

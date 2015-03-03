@@ -131,6 +131,7 @@ def updatesites():
 			oldi.update(i)
 			db.site.save(oldi)
 		else :
+			i['active'] = True
 			if 'parser' not in i:
 				i['parser'] = 'common'
 			db.site.save(i)

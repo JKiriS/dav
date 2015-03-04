@@ -230,6 +230,7 @@ def behaviorrecorder(request):
 		if 'searchid' in request.POST:
 			sr = searchresult.objects(id=request.POST['searchid']).first()
 			sr.click.append( ObjectId(request.POST['target']) )
+			sr.save()
 	return HttpResponse()
 
 def additemtag(request):

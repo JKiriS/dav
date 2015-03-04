@@ -45,7 +45,7 @@ class behavior(Document):
 	ttype = StringField()
 	target = StringField()
 	timestamp = DateTimeField()
-	# method = StringField()
+	fromurl = StringField()
 
 	meta = {"db_alias": "default"}
 
@@ -62,9 +62,9 @@ class upre(Document):
 	meta = {"db_alias": "default"}
 
 class searchresult(Document):
-	url = URLField()
 	wd = StringField()
 	result = ListField( ObjectIdField() )
+	click = ListField( ObjectIdField() )
 	timestamp = DateTimeField()
 
 	meta = {'db_alias':'default'}

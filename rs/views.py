@@ -142,7 +142,6 @@ def lookclassified(request):
 	else:
 		return HttpResponseRedirect('/rs/lookaround')
 
-
 def search(request):
 	if request.method == 'POST':
 		lookclassifiedRecorder(request)
@@ -222,10 +221,15 @@ def selfpre(request):
 	return render(request, 'rs_selfpre.html', locals())
 
 def behaviorrecorder(request):
-	if request.method == 'POST' and request.user.is_authenticated():
-		b = behavior(uid=request.user.id, action='click', ttype='item',\
-			target=request.POST['target'], timestamp=now())
-		b.save()
+	if request.method == 'POST': 
+		if 	request.user.is_authenticated():
+			b = behavior(uid=request.user.id, action='click', ttype='item',\
+				target=request.POST['target'], timestamp=now(), 
+				fromurl = request.POST['fromurl'])
+			b.save()
+		if 'searchid' in request.POST:
+			sr = searchresult.objects(id=request.POST['searchid']).first()
+			sr.click.append( ObjectId(request.POST['target']) )
 	return HttpResponse()
 
 def additemtag(request):

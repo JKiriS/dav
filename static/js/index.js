@@ -5,7 +5,6 @@ $(document).ready(function(){
 	//window.scrollTo(0,document.body.scrollHeight);
 
 	// get initial content
-	var col = $(".currentcol").attr("id");
 	$.post("",_params,function(res){
 		if (res.status=="success"){
 			$("div.content").empty();
@@ -55,7 +54,11 @@ $(document).ready(function(){
 	//click item, tag or source
 	$(".content").on("click", "a.itemtitle", function(){
 		var target = $(this).parents(".item").attr("id");
-		$.post("/rs/behaviorrecorder", {"target":target});
+		var behaviordata = {"target":target, "fromurl":window.location.href};
+		if( 'searchid' in _params ){
+			behaviordata.searchid = _params.searchid
+		}
+		$.post("/rs/behaviorrecorder", behaviordata);
 	});
 
 	//get more items
@@ -104,7 +107,7 @@ $(document).ready(function(){
     	$(".user").css("background-color", "");
     });
 
-    //advsearch
+    //classes
     $(".advsearch .advscontent").empty();
 	var type = $(".advsearch .advstop a.active").attr("title");
 	var _searchdata = {};

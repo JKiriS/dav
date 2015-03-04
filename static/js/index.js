@@ -4,12 +4,22 @@ $(document).ready(function(){
 	// clear scroll
 	//window.scrollTo(0,document.body.scrollHeight);
 
+	function addColor(){
+		_color = ["red","green","blue","gold","brown","purple","pink",];
+		$(".item").css("border-bottom",function(){
+			if($(this).css("border-bottom-style") == "none"){
+				return "1px solid " + _color[Math.floor(Math.random()*_color.length)] ;
+			}
+		});
+	}
+
 	// get initial content
 	$.post("",_params,function(res){
 		if (res.status=="success"){
 			$("div.content").empty();
 			$("div.content").append(res.data);
 			_params = res.params;
+			addColor();
 		}
 	});
 
@@ -69,6 +79,7 @@ $(document).ready(function(){
 			$("a.loadingmore").remove();
 			$("a.viewmore").replaceWith(res.data);
 			_params = res.params;
+			addColor();
 		});
 	});
 

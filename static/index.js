@@ -38,7 +38,7 @@ $(document).ready(function(){
 	});  
 
 	// add tag
-	$(".itemlist").on("click", ".tagadd a", function(){
+	$(".itemlist").on("click", "a.tagadd", function(){
 		$(".activeitem").removeClass("activeitem");
 		$(this).parents(".item").addClass("activeitem");
 		$(".activeitem .tagadd,.activeitem .newtag").toggle('fast');
@@ -46,11 +46,10 @@ $(document).ready(function(){
 	$(".itemlist").on("click", "button[name='cancel']", function(){
 		$(".activeitem .tagadd,.activeitem .newtag").toggle('fast');
 	});
-	$(".itemlist").on("click", "button[name='add']", function(){
+	$(".itemlist").on("submit", ".newtag", function(){
 		var name = $.trim($(".activeitem .newtag").children("input").val());
 		var itemid = $(".activeitem").attr("id");
-		$(".activeitem .tagadd").toggle('fast');
-		$(".activeitem .newtag").toggle('fast');
+		$(".activeitem .tagadd, .activeitem .newtag").toggle('fast');
 		if( name!="" ){
 			$.post("/rs/additemtag", {"name":name,"itemid":itemid}, function(res){
 				if (res.status=="success")
@@ -67,8 +66,7 @@ $(document).ready(function(){
 
 	//get more items
 	$(".itemlist").on("click", "a.viewmore", function(){
-		$("a.viewmore").toggle();
-		$("a.load-sm").toggle();
+		$("a.viewmore, a.load-sm").toggle();
 		$.post("", _params, function (res){
 			$("a.load-sm").remove();
 			$("a.viewmore").replaceWith(res.data);
@@ -85,7 +83,7 @@ $(document).ready(function(){
 		for(var i=0, iLoop = aBuf.length; i<iLoop; i++) { 
 			var aTmp = aBuf[i].split("=");//分离key与Value 
 			if(aTmp[0] == "wd"){
-				$(".simsearch input[name='wd']").val(decodeURI(aTmp[1]));
+				$("#nav-search input").val(decodeURI(aTmp[1]));
 				break ;
 			}
 		} 

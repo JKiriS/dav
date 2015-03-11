@@ -30,6 +30,10 @@ ul.dropdown-menu li {
 	text-align: center;
 }
 
+.user img {
+    height: 30px;
+}
+
 .col-md-7 {
 	text-align: center;
 }
@@ -45,14 +49,9 @@ ul.dropdown-menu li {
 .item {
     background-color: white;  
     border-color: silver;
-    padding-left: 10px;
     margin-top: 10px;
-    float: left;
+    padding-left: 5px;
     text-align: left;
-}
-
-.item a:hover {
-    color: rgb(123, 96, 11);
 }
 
 .item img {
@@ -84,11 +83,9 @@ ul.dropdown-menu li {
     font-size: 23px;
 }
 
-.itemtag { 
-    text-align: center;  
-    display: inline-block;
-    padding: 1px 1px;
+.itemtag {  
     color: rgb(113, 90, 152);
+    margin-right: 10px;
 }
 
 .itemtaglist {
@@ -106,16 +103,12 @@ ul.dropdown-menu li {
 .itemdes {
     margin-left: 10px;
     line-height: 150%;
+    margin: 0 5px;
     word-wrap: break-word;
 }
 
 .tagadd {
-    display: inline-block;
     margin-left: 5px;
-}
-
-.tagadd span {
-    margin-top: 5px;
     font-size: 10px;
     color: rgb(27, 194, 22);
 }
@@ -134,10 +127,16 @@ ul.dropdown-menu li {
     height: 40px;
     font-size: 18px;
     padding-top: 7px;
+    margin-bottom: 10px;
 }
 
 .load-sm {
 	display: none;
+}
+
+.load-sm img {
+    width: 25px;
+    height: 25px;
 }
 
 .backtotop {

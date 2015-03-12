@@ -217,6 +217,8 @@ def selffavorites(request):
 		c = Context(locals())
 		res = {}
 		res['data'] = t.render(c)
+		res['params'] = request.POST.copy()
+		res['params']['start'] = repr(skipnum + len(itemlist))
 		res['status'] = 'success'
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response

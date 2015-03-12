@@ -59,10 +59,10 @@ $(document).ready(function(){
 	});
 
 	//click item, tag or source
-	$(".content").on("click", "a.itemtitle", function(){
+	$(".itemlist").on("click", "a.itemtitle", function(){
 		var target = $(this).parents(".item").attr("id");
 		var behaviordata = {"target":target, "fromurl":window.location.href};
-		if( 'searchid' in _params ){
+		if( "searchid" in _params ){
 			behaviordata.searchid = _params.searchid;
 		}
 		$.post("/rs/behaviorrecorder", behaviordata);

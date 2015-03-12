@@ -208,9 +208,12 @@ def selffavorites(request):
 	if request.method == 'POST' and request.user.is_authenticated():
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
-		itemlist = item.objects(id__in=request.user.favorites)
-		orders = request.user.favorites[::-1]
+		skipnum = int(request.POST['start'])
+		itemlist = item.objects(id__in=request.user.favorites[skipnum:skipnum+15])
+		orders = request.user.favorites[skipnum:skipnum+15][::-1]
+
 		t = get_template('rs_itemlist.html')
+		hasmore = True if len(itemlist) >= 15 else False
 		c = Context(locals())
 		res = {}
 		res['data'] = t.render(c)

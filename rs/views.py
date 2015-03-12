@@ -47,6 +47,7 @@ def index(request):
 		return HttpResponseRedirect('/rs/lookaround')
 
 def lookaround(request):
+	col = 'lookaround'
 	if request.method == 'POST':
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
@@ -64,9 +65,10 @@ def lookaround(request):
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 	
-	return render(request, 'rs_lookaround.html', locals())
+	return render(request, 'rs_main.html', locals())
 
 def recommend(request):
+	col = 'recommend'
 	if not request.user.is_authenticated():
 		return HttpResponseRedirect('/account/login?redirecturl=/rs/recommend')
 	if request.method == 'POST':
@@ -89,7 +91,7 @@ def recommend(request):
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 
-	return render(request, 'rs_recommend.html', locals())
+	return render(request, 'rs_main.html', locals())
 
 def lookclassifiedRecorder(request):
 	if request.user.is_authenticated():
@@ -117,6 +119,7 @@ def classifiedHandler(request, skipnum):
 		itemlist = item.objects().limit(0)
 	return itemlist
 def lookclassified(request):
+	col = 'lookclassified'
 	if request.method == 'POST':
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
@@ -135,14 +138,15 @@ def lookclassified(request):
 		return response
 	if 'source' in request.GET:
 		classname = request.GET['source']
-		return render(request, 'rs_lookclassified.html', locals())
+		return render(request, 'rs_main.html', locals())
 	elif 'category' in request.GET:
 		classname = request.GET['category']
-		return render(request, 'rs_lookclassified.html', locals())
+		return render(request, 'rs_main.html', locals())
 	else:
 		return HttpResponseRedirect('/rs/lookaround')
 
 def search(request):
+	col = 'search'
 	if request.method == 'POST':
 		lookclassifiedRecorder(request)
 		response = HttpResponse()
@@ -181,7 +185,7 @@ def search(request):
 		return response
 	if 'wd' in request.GET:
 		wd = request.GET['wd']
-		return render(request, 'rs_search.html', locals())
+		return render(request, 'rs_main.html', locals())
 	else :
 		return HttpResponseRedirect('/rs/lookaround')
 
@@ -198,6 +202,7 @@ def updateSearchIndex(request):
 	
 
 def selffavorites(request):
+	col = 'selffavorites'
 	if not request.user.is_authenticated():
 		return HttpResponseRedirect('/account/login?redirecturl=/rs/selffavorites')
 	if request.method == 'POST' and request.user.is_authenticated():
@@ -213,7 +218,7 @@ def selffavorites(request):
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 
-	return render(request, 'rs_selffavo.html', locals())
+	return render(request, 'rs_main.html', locals())
 
 def selfpre(request):
 	if not request.user.is_authenticated():
@@ -249,8 +254,8 @@ def additemtag(request):
 		if request.POST['name'] not in i.tags:
 			i.tags.append(request.POST['name'])
 			i.save()
-			tem = Template('''<div class="itemtag"><a href="javascript:void(0)"
-				type="tag" title="{{ t }}"><span class="itemtag">#{{ t }}</span></a></div>''')
+			tem = Template('''<a class="itemtag" target="_blank" 
+				href="{% url 'lookclassified' %}?tag={{ t }}">#{{ t }}</span></a>''')
 			res['data'] = tem.render( Context({'t': request.POST['name']}) )
 			res['status'] = 'success'
 	response.write( json.dumps(res, ensure_ascii=False) )

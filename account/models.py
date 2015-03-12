@@ -19,6 +19,6 @@ class UserRegisterForm(forms.Form):
 	des = forms.CharField(label=(u'des'),max_length=30,widget=forms.TextInput(attrs={'size': 20,}),required=False)
 
 class UserLoginForm(forms.Form):
-	uname = forms.CharField(label=(u'uname'),max_length=30,widget=forms.TextInput(attrs={'size': 20,}))      
+	email = forms.EmailField(label=(u'email'),max_length=30,widget=forms.TextInput(attrs={'size': 30,}))
  	pwd = forms.CharField(label=(u'pwd'),max_length=30,widget=forms.PasswordInput(attrs={'size': 20,}))  
 

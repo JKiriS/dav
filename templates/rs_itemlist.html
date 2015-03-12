@@ -15,46 +15,38 @@
 		</a>
 	</div>
 	{% if i.imgurl %}
-	<img src="{{ i.imgurl }}" />
+	<img class="col-md-4" src="{{ i.imgurl }}" />
 	{% endif %}
-	<div class="itemcenter">
-		<span class="itemdes">
-			{{ i.des }}
-		</span>
-	</div>
+	<span class="itemdes">
+		{{ i.des }}
+	</span>
 	<div class="itemtaglist">
 		<span>
 			标签：
 		</span>
 		{% for t in i.tags %}
-		<div class="itemtag">
-			<a target="_blank" href="{% url 'lookclassified' %}?tag={{ t }}"><span class="itemtag">
-						#{{ t }}
-			</span></a>
-		</div>
+		<a class="itemtag" target="_blank" href="{% url 'lookclassified' %}?tag={{ t }}">
+			#{{ t }}
+		</a>
 		{% endfor %}
-		<div class="tagadd">
-			<a href="javascript:void(0)"><span>+添加标签</span></a>
-		</div>
-		<div class="newtag" style="display:none;">
-			<input type="text"/>
-			<button name="cancel">取消</button>
-			<button name="add">添加</button>
-		</div>	
+		<a href="javascript:void(0)" class="tagadd">
+			<span>+添加标签</span>
+		</a>
+		<form class="newtag">
+			<input type="text" placeholder="输入标签">
+			<button class="btn btn-sm">取消</button>
+			<button type="submit" class="btn btn-primary btn-sm">添加</button>
+		</form>	
 	</div>
 	<div class="itembottom">
-		<div class="itemsource">
-			<a target="_blank" href="{% url 'lookclassified' %}?source={{ i.source }}">
-			    <span class="itemsource">
-			    	{{ i.source }}
-			    </span>
-		    </a>
-		</div>
-		<div class="itemtimestamp">
-			<span class="itemtime">
-				{{ i.pubdate|date:"Y-m-d H:i:s" }}
+		<a target="_blank" href="{% url 'lookclassified' %}?source={{ i.source }}">
+			<span class="itemsource">
+			    {{ i.source }}
 			</span>
-		</div>
+		</a>
+		<span class="itemtime">
+			{{ i.pubdate|date:"Y-m-d H:i:s" }}
+		</span>
 	</div>
 	{% if i.imgurl %}
 	<div style="clear:both;"></div> <!-- let img stay in div.item -->
@@ -63,10 +55,10 @@
 {% endfor %}
 
 {% if hasmore %}
-<a class="viewmore" href="javascript:void(0)">
+<a class="col-md-12 viewmore" href="javascript:void(0)">
 	<span>加载更多</span>
 </a>
-<a class="loadingmore" style="display:none">
-	<img src='/static/img/loadingsmall.gif' width='25' height='25' />
+<a class="col-md-12 load-sm">
+	<img src='/static/img/loadingsmall.gif'/>
 </a>
 {% endif %}

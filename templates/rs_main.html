@@ -1,0 +1,36 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- jQuery -->
+    <script type="text/javascript" language="javascript" src="{{STATIC_URL}}js/jquery-1.11.1.min.js"></script>
+    <!-- Bootstrap -->
+    <link href="{{STATIC_URL}}css/bootstrap.min.css" rel="stylesheet">
+    <script src="{{STATIC_URL}}js/bootstrap.min.js"></script>
+    <!-- csrf -->
+	<script type="text/javascript" language='javascript'src='{{STATIC_URL}}js/csrf.js' ></script>
+    <!-- self -->
+    <link href="{{STATIC_URL}}css/index.css" rel="stylesheet">
+    <script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/index.js' ></script>
+	<title>
+		{% ifequal col 'lookaround'%}随机浏览{% endifequal %}
+		{% ifequal col 'recommend'%}个性化推荐{% endifequal %}
+		{% ifequal col 'lookclassified'%}{{ classname }}_近期内容{% endifequal %}
+		{% ifequal col 'selffavorites'%}{{ user.username }} 最近的收藏{% endifequal %}
+		{% ifequal col 'search'%}{{ wd }}_搜索{% endifequal %}
+	</title>
+</head>
+<body>
+	{% include 'rs_nav.html' %}
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-7 col-md-offset-2 itemlist">
+				<img src="{{STATIC_URL}}img/loadinglarge.gif" class="load-large">
+			</div>	
+			<a href="javascript:void(0)" class="backtotop col-md-offset-9">
+				<span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+			</a>	
+		</div>
+	</div>
+</body>
+</html>

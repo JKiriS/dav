@@ -49,6 +49,7 @@ ul.dropdown-menu li {
 .item {
     background-color: white;  
     border-color: silver;
+    margin-top: 10px;
     padding-left: 5px;
     text-align: left;
 }
@@ -69,6 +70,7 @@ ul.dropdown-menu li {
     float: right;
     width: 40px;
     margin: 0;
+    display: none;
 }
 
 .itemtop {
@@ -83,7 +85,7 @@ ul.dropdown-menu li {
 
 .itemtag {  
     color: rgb(113, 90, 152);
-    margin-right: 5px;
+    margin-right: 10px;
 }
 
 .itemtaglist {
@@ -125,7 +127,7 @@ ul.dropdown-menu li {
     height: 40px;
     font-size: 18px;
     padding-top: 7px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .load-sm {
@@ -142,25 +144,6 @@ ul.dropdown-menu li {
 	display: none;
 	bottom: 50px;
 	font-size: 40px;
-}
-
-.svgdiv {
-    margin-top: 60px;
-    margin-left: 10px;
-    padding: 10px;
-    text-align: center;
-}
-
-svg {
-    margin-left: 5px;
-}
-
-svg.source rect {
-    fill: green;
-}
-
-svg.source rect:hover {
-    fill: orange;
 }
 
 

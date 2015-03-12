@@ -25,7 +25,7 @@ $(document).ready(function(){
 				$("#uname").addClass("has-success");
 				$("#uname .form-control-feedback").removeClass("glyphicon-remove");
 				$("#uname .form-control-feedback").addClass("glyphicon-ok");
-				$("#uname .help-block").html("");
+				$("#uname .help-block").html("&nbsp");
 				return true;
 			}
 		}
@@ -43,7 +43,7 @@ $(document).ready(function(){
 				$("#pwd").addClass("has-success");
 				$("#pwd .form-control-feedback").removeClass("glyphicon-remove");
 				$("#pwd .form-control-feedback").addClass("glyphicon-ok");
-				$("#pwd .help-block").html("");
+				$("#pwd .help-block").html("&nbsp");
 				return true;
 			}
 		}
@@ -62,7 +62,7 @@ $(document).ready(function(){
 				$("#email").addClass("has-success");
 				$("#email .form-control-feedback").removeClass("glyphicon-remove");
 				$("#email .form-control-feedback").addClass("glyphicon-ok");
-				$("#email .help-block").html("");
+				$("#email .help-block").html("&nbsp");
 				return true
 			}
 		}
@@ -78,7 +78,7 @@ $(document).ready(function(){
 			else {
 				$("#des").removeClass("has-warning");
 				$("#des").addClass("has-success");
-				$("#des .help-block").html("");
+				$("#des .help-block").html("&nbsp");
 				return true
 			}
 		}	
@@ -139,6 +139,7 @@ $(document).ready(function(){
 			success = false;
 		if(!checkInput("email", email))
 			success = false;
+		checkInput('des', des);
 		if(success) {
 			$.post("", {"uname":uname,"pwd":pwd,"email":email,"des":des}, function(res){
 				if(res.status == "success")

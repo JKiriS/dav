@@ -241,8 +241,8 @@ def run():
 	# db.job.insert({'module':'calcupre', 'starttime':now() + datetime.timedelta(minutes=5)})
 	db.job.insert({'module':'feeds', \
 		'starttime':now() + datetime.timedelta(hours=12), 'status':'waiting'})
-	db.job.insert({'module':'updatesearchindex', \
-		'starttime':now() + datetime.timedelta(minutes=10), 'status':'waiting'})
+	# db.job.insert({'module':'updatesearchindex', \
+	# 	'starttime':now() + datetime.timedelta(minutes=10), 'status':'waiting'})
 	conn.close()
 
 if __name__ == '__main__':

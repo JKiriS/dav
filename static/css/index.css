@@ -44,6 +44,7 @@ ul.dropdown-menu li {
 
 .itemlist {
 	margin-top: 50px;
+    margin-bottom: 20px;
 }
 
 .item {
@@ -55,6 +56,7 @@ ul.dropdown-menu li {
 
 .item img {
     float: right;
+    margin-bottom: 15px;
 }
 
 .item .favorite{
@@ -125,7 +127,6 @@ ul.dropdown-menu li {
     height: 40px;
     font-size: 18px;
     padding-top: 7px;
-    margin-bottom: 20px;
 }
 
 .load-sm {

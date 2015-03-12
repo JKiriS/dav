@@ -209,8 +209,12 @@ def selffavorites(request):
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
 		skipnum = int(request.POST['start'])
-		itemlist = item.objects(id__in=request.user.favorites[skipnum:skipnum+15])
-		orders = request.user.favorites[skipnum:skipnum+15][::-1]
+		if skipnum == 0:
+			itemlist = item.objects(id__in=request.user.favorites[-15-skipnum:])
+			orders = request.user.favorites[-15-skipnum:][::-1]
+		else :
+			itemlist = item.objects(id__in=request.user.favorites[-15-skipnum:-skipnum])
+			orders = request.user.favorites[-15-skipnum:-skipnum][::-1]
 
 		t = get_template('rs_itemlist.html')
 		hasmore = True if len(itemlist) >= 15 else False

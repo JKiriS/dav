@@ -14,8 +14,12 @@
 				<li {% ifequal col 'selffavorites'%}class="active"{% endifequal %}><a href="{% url 'selffavorites' %}" id="self"><span>我的收藏</span></a></li>
 	      	</ul>
 	      	<form class="navbar-form navbar-left" id="nav-search" role="search">
-		          <input type="text" class="form-control" placeholder="输入关键词">
-		        <button type="submit" class="btn btn-primary">搜索</button>
+		        <div class="input-group">
+	      			<input type="text" class="form-control" placeholder="输入关键词">
+					<span class="input-group-btn">
+        				<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+      				</span>
+				</div>
 		    </form>
 		    <ul class="nav navbar-nav navbar-left ">
 		        <li class="dropdown">

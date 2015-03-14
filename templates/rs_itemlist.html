@@ -15,7 +15,7 @@
 		</a>
 	</div>
 	{% if i.imgurl %}
-	<img class="col-md-4" src="{{ i.imgurl }}" />
+	<img class="col-md-4 col-sm-4 col-xs-12" src="{{ i.imgurl }}" />
 	{% endif %}
 	<span class="itemdes">
 		{{ i.des }}
@@ -55,10 +55,10 @@
 {% endfor %}
 
 {% if hasmore %}
-<a class="col-md-12 viewmore" href="javascript:void(0)">
+<a class="col-md-12 col-sm-12 col-xs-12 viewmore" href="javascript:void(0)">
 	<span>加载更多</span>
 </a>
-<a class="col-md-12 load-sm">
+<a class="col-md-12 col-sm-12 col-xs-12 load-sm">
 	<img src='/static/img/loadingsmall.gif'/>
 </a>
 {% endif %}

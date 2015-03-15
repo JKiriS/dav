@@ -81,7 +81,7 @@ def recommend1():
 		res = map(lambda a: a['id'], res)
 		db.rlist.save({'_id':ObjectId(u['_id']),'rlist':res})
 
-def recommend(uid='545b24b77c46d517e8813afd'):
+def recommend(uid):
 	upre = db.upre.find_one({'_id':ObjectId(uid)})
 	oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
 	oldrlist = [] if oldrlist == None else oldrlist.get('rlist')
@@ -118,7 +118,7 @@ def recommend(uid='545b24b77c46d517e8813afd'):
 			r[1] *= .9
 		if r[0] in upre['visits']: 
 			r[1] *= 0
-	rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:100])
+	rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
 	db.rlist.save({'_id':ObjectId(uid),'rlist':rlist})
 
 def run():
@@ -129,11 +129,11 @@ def run():
 	recommend()
 	conn.close()
 
-
 if __name__ == '__main__':
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
 	db.authenticate('JKiriS','910813gyb')
-	recommend()
+	for u in db.user.find(timeout=False):
+		recommend(u['_id'])
 	conn.close()

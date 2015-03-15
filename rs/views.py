@@ -149,7 +149,7 @@ def search(request):
 	col = 'search'
 	if request.method == 'POST':
 		if request.user.is_authenticated():
-			b = behavior(uid=request.user.id, action='search', 'target':request.GET['wd'], timestamp=now())
+			b = behavior(uid=request.user.id, action='search', target=request.GET['wd'], timestamp=now())
 			b.save()
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'

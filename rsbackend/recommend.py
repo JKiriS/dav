@@ -6,13 +6,19 @@ import datetime
 import math
 import random
 import jieba
+import pickle
+import json
+import os
+import numpy as np
 from gensim import corpora, models, similarities
 from collections import defaultdict
 
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') for line in open('stopwords.txt') ])
 stopwords[' '] = 1
+cs = json.load(file('cs.json'))
+lsiindexdir = 'lsiindex'
 		
-def recommend():
+def recommend1():
 	items = []
 	for i in db.item.find({},{'_id':1,'source':1,'category':1,'pubdate':1})\
 			.sort('pubdate',pymongo.DESCENDING).limit(3000):
@@ -26,7 +32,6 @@ def recommend():
 		upre = db.upre.find_one({'_id':ObjectId(u['_id'])})
 		oldrlist = db.rlist.find_one({'_id':ObjectId(u['_id'])})
 		oldrlist = [] if oldrlist == None else oldrlist.get('rlist')
-		
 		
 		vitemids = map(lambda a:a[0], upre['visited'][:150])
 		if len(vitemids) == 0:
@@ -75,6 +80,46 @@ def recommend():
 		res.sort(key=lambda a:a.pop('score'), reverse=True)
 		res = map(lambda a: a['id'], res)
 		db.rlist.save({'_id':ObjectId(u['_id']),'rlist':res})
+
+def recommend(uid='545b24b77c46d517e8813afd'):
+	upre = db.upre.find_one({'_id':ObjectId(uid)})
+	oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
+	oldrlist = [] if oldrlist == None else oldrlist.get('rlist')
+	score = np.array([])
+	ids = []
+	for c in cs:
+		score_c = None
+		cpath = os.path.join(lsiindexdir, c)
+		itemIds = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
+		if len(itemIds) == 0:
+			continue
+		ids += itemIds
+		lsi = models.LsiModel.load(os.path.join(cpath,'gs.lsi'))
+		dic = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
+		index = similarities.MatrixSimilarity.load(os.path.join(cpath,'gs.index'))
+		for i in db.item.find({'_id':{'$in':upre['visits']},'category':c}):
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
+			segs *= 2
+			segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
+			test_bow = dic.doc2bow(segs)
+			test_lsi = lsi[test_bow]
+			score_c = index[test_lsi] if score_c == None else score_c + index[test_lsi]
+		if score_c != None:
+			score = np.hstack(( score, score_c * math.sqrt(upre['category'].get(c, 1)) ))
+		else :
+			score = np.hstack(( score, np.zeros(len(itemIds)) ))
+	maxs = max(score)
+	if maxs > 0:
+		score = score / maxs
+	score += np.random.random(len(score))
+	res = [[ids[i], score[i]] for i in range(len(ids))]
+	for r in res:
+		if r[0] in oldrlist: 
+			r[1] *= .9
+		if r[0] in upre['visits']: 
+			r[1] *= 0
+	rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:100])
+	db.rlist.save({'_id':ObjectId(uid),'rlist':rlist})
 
 def run():
 	global db

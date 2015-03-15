@@ -11,7 +11,7 @@ stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
 stopwords[' '] = 1
 
 def userPre(uid):
-	pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{}}
+	pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
 	pre['timestamp'] = datetime.datetime.now()
 	# get the latesttime 
 
@@ -68,6 +68,7 @@ def userPre(uid):
 			for s in segs:
 				pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
 	pre['wd'] = dict(sorted(pre['wd'].items(), key = lambda y:y[1], reverse=True)[:100])
+	pre['visits'] = visits.keys()
 	db.upre.save(pre)
 	return pre
 		
@@ -86,7 +87,6 @@ if __name__ == '__main__':
 	db = conn['feed']
 	db.authenticate('JKiriS','910813gyb')
 	for u in db.user.find(timeout=False):
-		print u['_id']
 		userPre(u['_id'])
 	conn.close()
 

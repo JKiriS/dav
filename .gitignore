@@ -75,3 +75,6 @@ self.cfg
 
 # lucene index file
 index/
+
+# lsi index file
+lsiindex/

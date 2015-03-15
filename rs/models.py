@@ -42,7 +42,7 @@ class site(Document):
 class behavior(Document):
 	uid = ObjectIdField()
 	action = StringField()
-	ttype = StringField()
+	# ttype = StringField()
 	target = StringField()
 	timestamp = DateTimeField()
 	fromurl = StringField()

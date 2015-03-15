@@ -92,4 +92,3 @@ if __name__ == '__main__':
 	db.authenticate('JKiriS','910813gyb')
 	recommend()
 	conn.close()
-

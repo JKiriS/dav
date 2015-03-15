@@ -123,7 +123,7 @@ def lookclassified(request):
 	if request.method == 'POST':
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
-		lookclassifiedRecorder(request)
+		# lookclassifiedRecorder(request)
 		skipnum = int(request.POST['start'])
 		itemlist = classifiedHandler(request, skipnum)
 		hasmore = True if len(itemlist) >= 15 else False
@@ -148,7 +148,9 @@ def lookclassified(request):
 def search(request):
 	col = 'search'
 	if request.method == 'POST':
-		lookclassifiedRecorder(request)
+		if request.user.is_authenticated():
+			b = behavior(uid=request.user.id, action='search', 'target':request.GET['wd'], timestamp=now())
+			b.save()
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
 		res = {'status':'failed'}

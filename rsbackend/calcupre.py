@@ -28,21 +28,16 @@ def userPre(uid):
 		# calculate timefactor 1 / (1 + exp( deltaT - 10))
 		deltaT = latesttime - i['timestamp']
 		timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
-		if i['ttype'] == 'source':
-			pre['source'][i['target']] = pre['source'].get(i['target'], 0) + 1 * timefactor
-		elif i['ttype'] == 'category':
-			pre['category'][i['target']] = pre['category'].get(i['target'], 0) + 1 * timefactor
-		elif i['ttype'] == 'wd':
-			segs = filter(lambda s:s not in stopwords, jieba.cut(i['target'], cut_all=False))
-			for s in segs:
-				pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
+		segs = filter(lambda s:s not in stopwords, jieba.cut(i['target'], cut_all=False))
+		for s in segs:
+			pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
 	
 	favos = {}
-	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'addfavorite', 'ttype':'item'})\
+	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'addfavorite'})\
 			.sort('timestamp', pymongo.DESCENDING).limit(200):
 		favos[ObjectId(i['target'])] = i['timestamp']
 	visits = {}
-	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'click', 'ttype':'item'})\
+	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'clickitem'})\
 			.sort('timestamp', pymongo.DESCENDING).limit(300):
 		visits[ObjectId(i['target'])] = i['timestamp']
 

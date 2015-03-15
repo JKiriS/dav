@@ -25,7 +25,7 @@ def update():
 	for c in cs:
 		texts_origin = []
 		itemnum_c = db.item.find({'category':c,'pubdate':{'$gt':t}}).count()
-		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
+		readnum = int(1000 * math.sqrt(itemnum_c / float(itemnum_all)))
 		cpath = os.path.join(lsiindexdir,c)
 		itemIds = []
 		for i in db.item.find({'category':c}).sort('pubdate',pymongo.DESCENDING).limit(readnum):

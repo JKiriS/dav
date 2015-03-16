@@ -105,6 +105,6 @@ if __name__ == '__main__':
 	conn = pymongo.Connection()
 	db = conn['feed']
 	db.authenticate('JKiriS','910813gyb')
-	train()
+	classify()
 	conn.close()
 

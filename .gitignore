@@ -78,3 +78,6 @@ index/
 
 # lsi index file
 lsiindex/
+
+# classify file
+cls/

@@ -43,9 +43,18 @@ import json
 import pymongo
 import datetime
 import os
-conn = pymongo.Connection() #'54.187.240.68'
-db = conn['feed']
-db.authenticate('JKiriS','910813gyb')
+# cs = json.load(file('categories.json'))
+# m = {}
+# categories = []
+# categories.append(cs['name'])
+# for c in cs['children']:
+# 	categories.append(c['name'])
+# 	if 'children' in c:
+# 		for cc in c['children']:
+# 			m[cc['name']] = c['name']
+# conn = pymongo.Connection() #'54.187.240.68'
+# db = conn['feed']
+# db.authenticate('JKiriS','910813gyb')
 # for i in m:
 # 	db.site.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
 # 	db.item.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
@@ -61,5 +70,10 @@ cs = json.load(file('cs.json'))
 # 	print c, db.item.find({'category':c,'pubdate':{'$gt':t}}).count()
 # for c in cs:
 	# os.makedirs('lsiindex/'+c)
-for c in cs:
-	print db.item.find({'_id':{'$in':db.upre.find()[2]['visits']},'category':c}).count()
+# for c in cs:
+# 	print db.item.find({'_id':{'$in':db.upre.find()[2]['visits']},'category':c}).count()
+lsiindexdir = 'lsiindex'
+dic = None
+
+import pickle
+print pickle.load(open('cls/label.pkl', 'rb'))

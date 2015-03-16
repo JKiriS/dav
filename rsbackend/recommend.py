@@ -110,8 +110,8 @@ def recommend(uid):
 			score = np.hstack(( score, np.zeros(len(itemIds)) ))
 	maxs = max(score)
 	if maxs > 0:
-		score = score / maxs
-	score += np.random.random(len(score))
+		score = .7 * score / maxs
+	score += .3 * np.random.random(len(score))
 	res = [[ids[i], score[i]] for i in range(len(ids))]
 	for r in res:
 		if r[0] in oldrlist: 

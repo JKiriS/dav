@@ -19,15 +19,11 @@ class item(Document):
 	des = StringField()
 	imgurl = URLField()
 	rand = PointField()
+	click_num = IntField(default=0)
+	favo_num = IntField(default=0)
 
 	meta = {
 		"db_alias": "default",
-		# 'indexes': [
-		# 	{'fields': ['title'],
-		# 	'default_language': 'english',
-		# 	'weight': {'title': 10}
-		# 	},
-		# ]
     }
 
 class site(Document):
@@ -42,7 +38,6 @@ class site(Document):
 class behavior(Document):
 	uid = ObjectIdField()
 	action = StringField()
-	# ttype = StringField()
 	target = StringField()
 	timestamp = DateTimeField()
 	fromurl = StringField()

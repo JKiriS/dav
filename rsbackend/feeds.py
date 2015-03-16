@@ -18,7 +18,7 @@ socket.setdefaulttimeout(params['feedparser_timeout'])
 now = lambda : datetime.datetime.now()
 
 def simplerss(i, site):
-	rss = {}
+	rss = {'click_num':0, 'favo_num':0}
 	try:
 		rss['pubdate'] = now() if i.get('published_parsed') == None else \
 			datetime.datetime.fromtimestamp( time.mktime(i['published_parsed']) )
@@ -70,7 +70,7 @@ def ifanr(site=None):
 	rawrss = urllib2.urlopen(site['url'])
 	channel = ET.parse(rawrss).find('./channel')
 	for i in channel.findall('item'):
-		rss = {}
+		rss = {'click_num':0, 'favo_num':0}
 		rss['pubdate'] = datetime.datetime.strptime(i.find('pubDate').text[:-6], '%a, %d %b %Y %X')
 		if site.get('latest') and rss['pubdate'] <= site['latest']:
 			break
@@ -143,7 +143,7 @@ def acfun(site):
 	data = urllib2.urlopen(site['url']).read()
 	rsslist = []
 	for i in json.loads(data):
-		rss = {'source':site['source'], 'tags':[], 'category':site['category']}
+		rss = {'source':site['source'], 'tags':[], 'category':site['category'], 'click_num':0, 'favo_num':0}
 		rss['link'] = baseurl + i['url']
 		if db.item.find_one({'link':rss['link']}):
 			continue
@@ -164,7 +164,7 @@ def hustBBS(site):
 	soup = BeautifulSoup(html.decode('gbk'))
 	rsslist = []
 	for i in soup.find_all('post'):
-		rss = {'source':site['source'], 'tags':[], 'category':site['category']}
+		rss = {'source':site['source'], 'tags':[], 'category':site['category'], 'click_num':0, 'favo_num':0}
 		rss['title'] = i.find('title').get_text()
 		board = i.find('board').get_text()
 		ifile = i.find('file').get_text()
@@ -180,7 +180,7 @@ def googlenews(site):
 	rssraw = feedparser.parse(site['url'])
 	rsslist = []
 	for i in rssraw['entries']:
-		rss = {}
+		rss = {'click_num':0, 'favo_num':0}
 		try:
 			rss['pubdate'] = now() if i.get('published_parsed') == None else \
 				datetime.datetime.fromtimestamp( time.mktime(i['published_parsed']) )
@@ -209,7 +209,7 @@ def pento(site):
 	soup = BeautifulSoup(html)
 	rsslist = []
 	for i in soup.find_all(class_='book_list_box'):
-		rss = {'source':site['source'], 'tags':[], 'category':site['category']}
+		rss = {'source':site['source'], 'tags':[], 'category':site['category'], 'click_num':0, 'favo_num':0}
 		titlea = i.find('div', class_='book_card_title').find('a')
 		try :
 			rss['title'] = titlea.get_text()

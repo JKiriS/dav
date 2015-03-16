@@ -18,27 +18,7 @@ import urllib2
 
 # Create your views here.
 now = lambda : datetime.datetime.now()
-
-# load and handle categories
-def csload():
-	csfile =  file(os.path.join(settings.BASE_DIR, "rsbackend/categories.json"))
-	return json.load(csfile)
-def cssearch(target=u'综合', tree=csload()):
-	if tree['name'] == target:
-		return csgather(tree, [])
-	else :
-		if 'children' in tree:
-			for i in tree['children']:
-				res = cssearch(target, i)
-				if len(res) > 0:
-					return res
-	return []
-def csgather(tree=csload(), res=[]):
-	res.append(tree['name'])
-	if 'children' in tree:
-		for i in tree['children']:
-			csgather(i, res)
-	return res
+cs = json.load(file(os.path.join(settings.BASE_DIR, "rsbackend/cs.json")))
 
 def index(request):
 	if request.user.is_authenticated():
@@ -53,7 +33,8 @@ def lookaround(request):
 		response['Content-Type'] = 'application/json'
 		skipnum = int(request.POST['start'])
 		# itemlist = item.objects().order_by("-pubdate").skip(skipnum).limit(15).clone()
-		itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5),rand__near=[random.random(), 0]).limit(15)
+		itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5), \
+			rand__near=[random.random(), 0]).limit(15)
 		hasmore = True if len(itemlist) >= 15 else False
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())
@@ -149,7 +130,8 @@ def search(request):
 	col = 'search'
 	if request.method == 'POST':
 		if request.user.is_authenticated():
-			b = behavior(uid=request.user.id, action='search', target=request.GET['wd'], timestamp=now())
+			b = behavior(uid=request.user.id, action='search', \
+				target=request.GET['wd'], timestamp=now())
 			b.save()
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
@@ -238,10 +220,16 @@ def selfpre(request):
 
 def behaviorrecorder(request):
 	if request.method == 'POST': 
+		try:
+			i = item.objects(id=ObjectId(request.POST['target'])).first()
+			i.click_num += 1
+			i.save()
+		except:
+			pass
 		if 	request.user.is_authenticated():
-			b = behavior(uid=request.user.id, action='click', ttype='item',\
+			b = behavior(uid=request.user.id, action='clickitem',\
 				target=request.POST['target'], timestamp=now(), 
-				fromurl = request.POST['fromurl'])
+				fromurl=request.POST['fromurl'])
 			b.save()
 		if 'searchid' in request.POST:
 			sr = searchresult.objects(id=request.POST['searchid']).first()
@@ -256,10 +244,7 @@ def additemtag(request):
 	if request.method == 'POST':
 		i = item.objects(id=request.POST['itemid']).first()
 		if request.user.is_authenticated():
-			b = behavior(uid=request.user.id,action='add',ttype='tag',\
-				target=request.POST['name'],timestamp=now())
-			b.save()
-			b = behavior(uid=request.user.id,action='addtag',ttype='item',\
+			b = behavior(uid=request.user.id,action='addtag',\
 				target=request.POST['itemid'],timestamp=now())
 			b.save()
 		if request.POST['name'] not in i.tags:
@@ -305,18 +290,25 @@ def getcategory(request):
 	response = HttpResponse()
 	response['Content-Type'] = 'application/json'
 	res = {'status':'success'}
-	res['data'] = csgather(csload(), [])
+	res['data'] = cs
 	response.write( json.dumps(res, ensure_ascii=False) )
 	return response
 
 def addfavorite(request):
-	if request.user.is_authenticated():
-		target = request.POST.get('target')
-		request.user.favorites.append( ObjectId(target) )
-		request.user.save()
-		b = behavior(uid=request.user.id, action='addfavorite', ttype='item',\
-			target=request.POST['target'], timestamp=now())
-		b.save()
+	if request.method == 'POST':
+		try:
+			i = item.objects(id=request.POST['target']).first()
+			i.favo_num += 1
+			i.save()
+		except:
+			pass
+		if request.user.is_authenticated():
+			target = request.POST.get('target')
+			request.user.favorites.append( ObjectId(target) )
+			request.user.save()
+			b = behavior(uid=request.user.id, action='addfavorite',\
+				target=request.POST['target'], timestamp=now())
+			b.save()
 	return HttpResponse()
 
 def removefavorite(request):
@@ -324,7 +316,7 @@ def removefavorite(request):
 		target = request.POST.get('target')
 		request.user.favorites.remove( ObjectId(target) )
 		request.user.save()
-		b = behavior(uid=request.user.id, action='removefavorite', ttype='item',\
+		b = behavior(uid=request.user.id, action='rmfavorite',\
 			target=request.POST['target'], timestamp=now())
 		b.save()
 	return HttpResponse()

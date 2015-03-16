@@ -143,7 +143,8 @@ def acfun(site):
 	data = urllib2.urlopen(site['url']).read()
 	rsslist = []
 	for i in json.loads(data):
-		rss = {'source':site['source'], 'tags':[], 'category':site['category'], 'click_num':0, 'favo_num':0}
+		rss = {'source':site['source'], 'tags':[], 'category':site['category'], \
+			'click_num':0, 'favo_num':0}
 		rss['link'] = baseurl + i['url']
 		if db.item.find_one({'link':rss['link']}):
 			continue
@@ -164,7 +165,8 @@ def hustBBS(site):
 	soup = BeautifulSoup(html.decode('gbk'))
 	rsslist = []
 	for i in soup.find_all('post'):
-		rss = {'source':site['source'], 'tags':[], 'category':site['category'], 'click_num':0, 'favo_num':0}
+		rss = {'source':site['source'], 'tags':[], 'category':site['category'], \
+			'click_num':0, 'favo_num':0}
 		rss['title'] = i.find('title').get_text()
 		board = i.find('board').get_text()
 		ifile = i.find('file').get_text()
@@ -209,7 +211,8 @@ def pento(site):
 	soup = BeautifulSoup(html)
 	rsslist = []
 	for i in soup.find_all(class_='book_list_box'):
-		rss = {'source':site['source'], 'tags':[], 'category':site['category'], 'click_num':0, 'favo_num':0}
+		rss = {'source':site['source'], 'tags':[], 'category':site['category'], \
+			'click_num':0, 'favo_num':0}
 		titlea = i.find('div', class_='book_card_title').find('a')
 		try :
 			rss['title'] = titlea.get_text()

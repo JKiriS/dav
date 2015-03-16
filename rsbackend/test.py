@@ -43,21 +43,21 @@ import json
 import pymongo
 import datetime
 import os
-cs = json.load(file('categories.json'))
-m = {}
-categories = []
-categories.append(cs['name'])
-for c in cs['children']:
-	categories.append(c['name'])
-	if 'children' in c:
-		for cc in c['children']:
-			m[cc['name']] = c['name']
-conn = pymongo.Connection() #'54.187.240.68'
-db = conn['feed']
-db.authenticate('JKiriS','910813gyb')
-for i in m:
-	db.site.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
-	db.item.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
+# cs = json.load(file('categories.json'))
+# m = {}
+# categories = []
+# categories.append(cs['name'])
+# for c in cs['children']:
+# 	categories.append(c['name'])
+# 	if 'children' in c:
+# 		for cc in c['children']:
+# 			m[cc['name']] = c['name']
+# conn = pymongo.Connection() #'54.187.240.68'
+# db = conn['feed']
+# db.authenticate('JKiriS','910813gyb')
+# for i in m:
+# 	db.site.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
+# 	db.item.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
 	# db.behavior.update({'ttype':'category','target':i}, {'$set':{'category':None,'target':m[i]}}, multi=True)
 # db.behavior.update({'action':'click','ttype':'item'},{'$set':{'action':'clickitem'}},multi=True)
 # db.behavior.update({'action':'search','ttype':'source'},{'$set':{'action':'visitsource'}},multi=True)
@@ -74,3 +74,6 @@ cs = json.load(file('cs.json'))
 # 	print db.item.find({'_id':{'$in':db.upre.find()[2]['visits']},'category':c}).count()
 lsiindexdir = 'lsiindex'
 dic = None
+
+import pickle
+print pickle.load(open('cls/label.pkl', 'rb'))

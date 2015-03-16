@@ -101,12 +101,25 @@ def run():
 	db.job.insert({'module':'recommend', 'starttime':now() + datetime.timedelta(minutes=10)})
 	conn.close()
 
+def test():
+	# train_data = pickle.load(open(os.path.join(clsdir, 'data.pkl'), 'rb'))
+	# train_target = pickle.load(open(os.path.join(clsdir, 'label.pkl'), 'rb'))
+	# from sklearn.svm import SVC    
+	# svclf = SVC(kernel = 'linear')  
+	# svclf.fit(train_data, train_target) 
+	# from sklearn.naive_bayes import MultinomialNB  
+	# clf = MultinomialNB(alpha = 0.01)   
+	# clf.fit(train_data, train_target)
+	# pickle.dump(clf, open(os.path.join(clsdir, 'cls.pkl'), 'wb')) 
+	test_data = pickle.load(open(os.path.join(clsdir, 'test.pkl'), 'rb'))
+	svclf = pickle.load(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
+	print svclf.predict(test_data) 
 
 if __name__ == '__main__':
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
 	db.authenticate('JKiriS','910813gyb')
-	classify()
+	test()
 	conn.close()
 

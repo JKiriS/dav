@@ -59,9 +59,29 @@ def train():
 	from sklearn.svm import SVC    
 	svclf = SVC(kernel = 'linear')  
 	svclf.fit(train_data, train_target) 
-	pickle.dumps(svclf, open(os.path.join(clsdir, 'cls.pkl'), 'wb'))
-	# svclf = pickle.loads(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
-	# pred = svclf.predict(test_data)  
+	pickle.dumps(svclf, open(os.path.join(clsdir, 'cls.pkl'), 'wb')) 
+
+def classify():
+	texts_origin = []
+	ids = []
+	for i in db.item.find({'category':u'综合'}):
+		segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
+		segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
+		texts_origin.append(segs)
+		ids.append(ObjectId(i['_id']))
+	all_tokens = sum(texts_origin, [])
+	token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
+	texts = [[word for word in text if word not in token_once] for text in texts_origin]
+	corpus = [dictionary.doc2bow(text) for text in texts]
+	tfidf = models.TfidfModel(corpus)
+	corpus_tfidf = tfidf[corpus]
+	test_data = np.zeros([len(corpus_tfidf), len(dictionary)])
+	for ix, doc in enumerate(corpus_tfidf):
+		for jx, d in doc:
+			test_data[ix, jx] = d
+	svclf = pickle.loads(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
+	pred = svclf.predict(test_data) 
+
 
 def run():
 	global db

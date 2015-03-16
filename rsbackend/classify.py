@@ -31,7 +31,7 @@ def initDic():
 	dic.save(os.path.join(clsdir, 'cls.dic'))
 
 def train():
-	dictionary = corpora.Dictionary.load('gs.dic')
+	dictionary = corpora.Dictionary.load(os.path.join(clsdir, 'cls.dic'))
 	t = datetime.datetime.now() - datetime.timedelta(days=60)
 	itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
 		
@@ -46,6 +46,8 @@ def train():
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
 			texts_origin.append(segs)
 		train_target = np.hstack(( train_target, np.zeros(len(texts_origin) - tnum_before) + ix ))
+	if len(texts_origin) == 0:
+		return
 	all_tokens = sum(texts_origin, [])
 	token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 	texts = [[word for word in text if word not in token_once] for text in texts_origin]
@@ -96,7 +98,7 @@ def run():
 
 if __name__ == '__main__':
 	global db
-	conn = pymongo.Connection('54.187.240.68')
+	conn = pymongo.Connection()
 	db = conn['feed']
 	db.authenticate('JKiriS','910813gyb')
 	train()

@@ -69,6 +69,8 @@ def classify():
 		segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
 		texts_origin.append(segs)
 		ids.append(ObjectId(i['_id']))
+	if len(texts_origin) == 0:
+		return
 	all_tokens = sum(texts_origin, [])
 	token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 	texts = [[word for word in text if word not in token_once] for text in texts_origin]

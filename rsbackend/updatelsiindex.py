@@ -34,7 +34,7 @@ def update():
 			segs *= 2
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
 			texts_origin.append(segs)
-		pickle.dump(itemIds, open(os.path.join(cpath,'ids.pkl'), 'w'))
+		pickle.dump(itemIds, open(os.path.join(cpath,'ids.pkl'), 'wb'))
 		if len(texts_origin) == 0:
 			continue
 		all_tokens = sum(texts_origin, [])

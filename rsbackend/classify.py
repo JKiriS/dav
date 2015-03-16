@@ -39,7 +39,7 @@ def train():
 	train_target = np.array([])
 	for ix, c in enumerate(cs):
 		itemnum_c = db.item.find({'category':c,'pubdate':{'$gt':t}}).count()
-		readnum = int(200 * math.sqrt(itemnum_c / float(itemnum_all)))
+		readnum = int(50 * math.sqrt(itemnum_c / float(itemnum_all)))
 		tnum_before = len(texts_origin)
 		for i in db.item.find({'category':c}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
@@ -59,12 +59,12 @@ def train():
 	for ix, doc in enumerate(corpus_tfidf):
 		for jx, d in doc:
 			train_data[ix, jx] = d
-	pickle.dumps(train_data, open(os.path.join(clsdir, 'data.pkl'), 'w'))
-	pickle.dumps(train_target, open(os.path.join(clsdir, 'label.pkl'), 'w'))
+	pickle.dump(train_data, open(os.path.join(clsdir, 'data.pkl'), 'wb'))
+	pickle.dump(train_target, open(os.path.join(clsdir, 'label.pkl'), 'wb'))
 	from sklearn.svm import SVC    
 	svclf = SVC(kernel = 'linear')  
 	svclf.fit(train_data, train_target) 
-	pickle.dumps(svclf, open(os.path.join(clsdir, 'cls.pkl'), 'w')) 
+	pickle.dump(svclf, open(os.path.join(clsdir, 'cls.pkl'), 'wb')) 
 
 def classify():
 	texts_origin = []
@@ -86,8 +86,8 @@ def classify():
 	for ix, doc in enumerate(corpus_tfidf):
 		for jx, d in doc:
 			test_data[ix, jx] = d
-	pickle.dumps(test_data, open(os.path.join(clsdir, 'test.pkl'), 'w'))
-	svclf = pickle.loads(open(os.path.join(clsdir, 'cls.pkl'), 'r'))
+	pickle.dump(test_data, open(os.path.join(clsdir, 'test.pkl'), 'wb'))
+	svclf = pickle.load(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
 	pred = svclf.predict(test_data) 
 	return pred
 

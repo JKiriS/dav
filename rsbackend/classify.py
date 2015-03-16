@@ -39,7 +39,7 @@ def train():
 	train_target = np.array([])
 	for ix, c in enumerate(cs):
 		itemnum_c = db.item.find({'category':c,'pubdate':{'$gt':t}}).count()
-		readnum = int(50 * math.sqrt(itemnum_c / float(itemnum_all)))
+		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
 		tnum_before = len(texts_origin)
 		for i in db.item.find({'category':c}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
@@ -61,10 +61,10 @@ def train():
 			train_data[ix, jx] = d
 	pickle.dump(train_data, open(os.path.join(clsdir, 'data.pkl'), 'wb'))
 	pickle.dump(train_target, open(os.path.join(clsdir, 'label.pkl'), 'wb'))
-	from sklearn.svm import SVC    
-	svclf = SVC(kernel = 'linear')  
-	svclf.fit(train_data, train_target) 
-	pickle.dump(svclf, open(os.path.join(clsdir, 'cls.pkl'), 'wb')) 
+	from sklearn.naive_bayes import MultinomialNB  
+	clf = MultinomialNB(alpha = 0.01)   
+	clf.fit(train_data, train_target)
+	pickle.dump(clf, open(os.path.join(clsdir, 'cls.pkl'), 'wb')) 
 
 def classify():
 	texts_origin = []
@@ -89,8 +89,9 @@ def classify():
 			test_data[ix, jx] = d
 	pickle.dump(ids, open(os.path.join(clsdir, 'ids.pkl'), 'wb'))
 	pickle.dump(test_data, open(os.path.join(clsdir, 'test.pkl'), 'wb'))
-	svclf = pickle.load(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
-	pred = svclf.predict(test_data) 
+	clf = pickle.load(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
+	pred = clf.predict(test_data) 
+	pickle.dump(pred, open(os.path.join(clsdir, 'res.pkl'), 'wb'))
 	return pred
 
 def run():

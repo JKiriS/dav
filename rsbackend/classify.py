@@ -15,6 +15,7 @@ from gensim import corpora, models
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') for line in open('stopwords.txt') ])
 stopwords[' '] = 1
 cs = json.load(file('cs.json'))
+lsiindexdir = 'lsiindex'
 clsdir = 'cls'
 
 now = lambda : datetime.datetime.now()

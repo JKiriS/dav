@@ -59,12 +59,12 @@ def train():
 	for ix, doc in enumerate(corpus_tfidf):
 		for jx, d in doc:
 			train_data[ix, jx] = d
-	pickle.dumps(train_data, open(os.path.join(clsdir, 'data.pkl'), 'wb'))
-	pickle.dumps(train_target, open(os.path.join(clsdir, 'label.pkl'), 'wb'))
+	pickle.dumps(train_data, open(os.path.join(clsdir, 'data.pkl'), 'w'))
+	pickle.dumps(train_target, open(os.path.join(clsdir, 'label.pkl'), 'w'))
 	from sklearn.svm import SVC    
 	svclf = SVC(kernel = 'linear')  
 	svclf.fit(train_data, train_target) 
-	pickle.dumps(svclf, open(os.path.join(clsdir, 'cls.pkl'), 'wb')) 
+	pickle.dumps(svclf, open(os.path.join(clsdir, 'cls.pkl'), 'w')) 
 
 def classify():
 	texts_origin = []
@@ -86,8 +86,8 @@ def classify():
 	for ix, doc in enumerate(corpus_tfidf):
 		for jx, d in doc:
 			test_data[ix, jx] = d
-	pickle.dumps(test_data, open(os.path.join(clsdir, 'test.pkl'), 'wb'))
-	svclf = pickle.loads(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
+	pickle.dumps(test_data, open(os.path.join(clsdir, 'test.pkl'), 'w'))
+	svclf = pickle.loads(open(os.path.join(clsdir, 'cls.pkl'), 'r'))
 	pred = svclf.predict(test_data) 
 	return pred
 

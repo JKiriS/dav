@@ -87,6 +87,7 @@ def classify():
 	for ix, doc in enumerate(corpus_tfidf):
 		for jx, d in doc:
 			test_data[ix, jx] = d
+	pickle.dump(ids, open(os.path.join(clsdir, 'ids.pkl'), 'wb'))
 	pickle.dump(test_data, open(os.path.join(clsdir, 'test.pkl'), 'wb'))
 	svclf = pickle.load(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
 	pred = svclf.predict(test_data) 

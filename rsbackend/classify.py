@@ -81,7 +81,7 @@ def classify():
 			test_data[ix, jx] = d
 	svclf = pickle.loads(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
 	pred = svclf.predict(test_data) 
-	rerurn pred
+	return pred
 
 def run():
 	global db

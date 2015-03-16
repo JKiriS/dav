@@ -21,6 +21,7 @@ clsdir = 'cls'
 now = lambda : datetime.datetime.now()
 		
 def initDic():
+	dic = None
 	for c in cs:
 		cpath = os.path.join(lsiindexdir,c)
 		if dic == None:

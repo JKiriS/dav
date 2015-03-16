@@ -76,6 +76,7 @@ def classify():
 		ids.append(ObjectId(i['_id']))
 	if len(texts_origin) == 0:
 		return
+	dictionary = corpora.Dictionary.load(os.path.join(clsdir, 'cls.dic'))
 	all_tokens = sum(texts_origin, [])
 	token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 	texts = [[word for word in text if word not in token_once] for text in texts_origin]

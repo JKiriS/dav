@@ -30,15 +30,14 @@ def initDic():
 
 def train():
 	dictionary = corpora.Dictionary.load('gs.dic')
-	t = datetime.datetime.now() - datetime.timedelta(days=360)
+	t = datetime.datetime.now() - datetime.timedelta(days=60)
 	itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
 		
 	texts_origin = []
 	train_target = np.array([])
 	for ix, c in enumerate(cs):
 		itemnum_c = db.item.find({'category':c,'pubdate':{'$gt':t}}).count()
-		readnum = int(20 * math.sqrt(itemnum_c / float(itemnum_all)))
-		print readnum
+		readnum = int(200 * math.sqrt(itemnum_c / float(itemnum_all)))
 		tnum_before = len(texts_origin)
 		for i in db.item.find({'category':c}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
@@ -55,7 +54,6 @@ def train():
 	for ix, doc in enumerate(corpus_tfidf):
 		for jx, d in doc:
 			train_data[ix, jx] = d
-	print train_data.shape, train_target.shape
 	from sklearn.svm import SVC    
 	svclf = SVC(kernel = 'linear')  
 	svclf.fit(train_data, train_target) 
@@ -83,7 +81,7 @@ def classify():
 			test_data[ix, jx] = d
 	svclf = pickle.loads(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
 	pred = svclf.predict(test_data) 
-
+	rerurn pred
 
 def run():
 	global db

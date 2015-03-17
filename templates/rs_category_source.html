@@ -8,18 +8,26 @@
       </div>
       <form>
       <div class="modal-body">
+        <span>排序方式：</span><br/>
+        <select class="form-control order-by">
+          <option value="time"{% ifequal orderby 'time' %} selected="selected"{% endifequal %}>按时间降序</option>
+          <option value="hot"{% ifequal orderby 'hot' %} selected="selected"{% endifequal %}>按热门</option>
+          <option value="favo"{% ifequal orderby 'favo' %} selected="selected"{% endifequal %}>按评价</option>
+          <option value="random"{% ifequal orderby 'random' %} selected="selected"{% endifequal %}>随机排序</option>
+        </select>        
+        <br/>
         <span>类别:</span>
-		<ul class="list-inline categoris">
-			{% for c in categories %}
-			<li><button type="button" class="btn category{% ifin c.name param_c %} btn-success{% endifin %}">{{ c.name }}</button></li>
-			{% endfor %}
-		</ul>		
-		<span>源:</span>
-		<ul class="list-inline sources">
-			{% for s in sources %}
-			<li><button type="button" class="btn source{% ifin s.name param_s %} btn-success{% endifin %}">{{ s.name }}</button></li>
-			{% endfor %}	
-		</ul>
+    		<ul class="list-inline categoris">
+    			{% for c in categories %}
+    			<li><button type="button" class="btn category{% ifin c.name param_c %} btn-success{% endifin %}">{{ c.name }}</button></li>
+    			{% endfor %}
+    		</ul>		
+    		<span>源:</span>
+    		<ul class="list-inline sources">
+    			{% for s in sources %}
+    			<li><button type="button" class="btn source{% ifin s.name param_s %} btn-success{% endifin %}">{{ s.name }}</button></li>
+    			{% endfor %}	
+    		</ul>
       </div>
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary" {% if submitdisabled %}disabled="disabled"{% endif %}>提交</button>

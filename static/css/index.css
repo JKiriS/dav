@@ -173,6 +173,10 @@ svg.source rect:hover {
     padding: 10px;
 }
 
+.category-source .order-by {
+    margin-top: 5px;
+}
+
 .category-source button {
     margin-right: 5px;
     margin-top: 5px;

@@ -155,7 +155,7 @@ $(document).ready(function(){
 			_sources.push($(this).html());
 		});
 		window.location.href = "/rs/lookclassify?" + 
-			$.param({'source':_sources, 'category':_categories});
+			$.param({'source':_sources, 'category':_categories, "orderby":$(".order-by").val()});
 		return false;
 	});
 

@@ -75,16 +75,34 @@ def lookclassify(request):
 	if request.method == 'POST':
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
-		skipnum = int(request.POST['start'])		
-		itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
-			.order_by("-pubdate").skip(skipnum).limit(15)
-		hasmore = True if len(itemlist) >= 15 else False
+		res = {}
+		res['params'] = request.POST.copy()
+		skipnum = int(request.POST['start'])
+		orderby = request.GET.get('orderby', 'time')
+		if orderby == 'time':
+			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
+				.order_by("-pubdate").skip(skipnum).limit(15)
+			hasmore = True if len(itemlist) >= 15 else False
+			res['params']['start'] = repr(skipnum + len(itemlist))
+		elif orderby == 'hot':
+			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
+				.order_by("-click_num").skip(skipnum).limit(15)
+			hasmore = True if len(itemlist) >= 15 else False
+			res['params']['start'] = repr(skipnum + len(itemlist))
+		elif orderby == 'favo':
+			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
+				.order_by("-favo_num").skip(skipnum).limit(15)
+			hasmore = True if len(itemlist) >= 15 else False
+			res['params']['start'] = repr(skipnum + len(itemlist))
+		else:
+			itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=10), \
+				rand__near=[random.random(), 0]).limit(15)
+			hasmore = True if len(itemlist) >= 15 else False
+			res['params']['start'] = 0
+
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())
-		res = {}
 		res['data'] = t.render(c)
-		res['params'] = request.POST.copy()
-		res['params']['start'] = repr(skipnum + len(itemlist))
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 	if len(param_c) + len(param_s) > 0:
@@ -99,6 +117,8 @@ def lookclassify(request):
 				target=s, timestamp=now())
 			b.save()
 		classname = u'和'.join([u'、'.join(param_c), u'、'.join(param_s)])
+		if classname.endswith(u'和'):
+			classname = classname[:-1]
 		return render(request, 'rs_main.html', locals())
 	else :
 		return HttpResponseRedirect('/rs/lookaround')
@@ -111,10 +131,13 @@ def getcs(request):
 		_url = request.POST.get('fromurl').split('?')
 		from django.http import QueryDict
 		try:
-			param_c = QueryDict(_url[1].encode('utf-8')).getlist('category[]',[])
-			param_s = QueryDict(_url[1].encode('utf-8')).getlist('source[]',[])
+			qd = QueryDict(_url[1].encode('utf-8'))
+			param_c = qd.getlist('category[]',[])
+			param_s = qd.getlist('source[]',[])
+			orderby = qd.get('orderby','time')
 		except:
 			param_c, param_s = [], []
+			orderby = 'time'
 		submitdisabled = False if len(param_c) + len(param_s) > 0 else True
 		sources = source.objects()
 		categories = category.objects()

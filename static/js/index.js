@@ -106,7 +106,6 @@ $(document).ready(function(){
 		var target = $(this).parents(".item").attr("id");
 		if($(this).attr("title") == "添加收藏"){
 			$.post("/rs/addfavorite", {"target":target}, function(res){
-				alert("aa");
 				$(this).attr("title", "取消收藏");
 				$(this).children(".glyphicon").removeClass("glyphicon-star-empty");
 				$(this).children(".glyphicon").addClass("glyphicon-star");
@@ -115,7 +114,7 @@ $(document).ready(function(){
 		}
 		else{
 			$.post("/rs/removefavorite", {"target":target}, function(res){
-				alert("aa");
+				alert($(this).attr());
 				$(this).attr("title", "添加收藏");
 				$(this).children(".glyphicon").removeClass("glyphicon-star");
 				$(this).children(".glyphicon").addClass("glyphicon-star-empty");

@@ -38,12 +38,12 @@
 		</li>
 		<li class="favo-data">
 			{% ifin i.id request.user.favorites %}
-			<a class="favo" title="添加收藏" href="javascript:void(0)">
-				<span class="glyphicon glyphicon-star-empty"></span>
-			</a>
-			{% else %}
 			<a class="favo" title="取消收藏" href="javascript:void(0)">
 				<span class="glyphicon glyphicon-star"></span>
+			</a>
+			{% else %}
+			<a class="favo" title="添加收藏" href="javascript:void(0)">
+				<span class="glyphicon glyphicon-star-empty"></span>
 			</a>
 			{% endifin %}
 			<span class="badge-data" title="收藏次数">{{ i.favo_num }}</span>

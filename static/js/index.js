@@ -11,12 +11,20 @@ $(document).ready(function(){
 	}
 
 	// get initial content
-	$.post("",_params,function(res){
-		if (res.status=="success"){
-			$("div.itemlist").empty();
-			$("div.itemlist").append(res.data);
-			_params = res.params;
-			addColor();
+	if($("div.itemlist").length > 0){
+		$.post("",_params,function(res){
+			if (res.data){
+				$("div.itemlist").empty();
+				$("div.itemlist").append(res.data);
+				_params = res.params;
+				addColor();
+			}
+		});
+	}
+
+	$.post("/rs/getcs",{"fromurl":window.location.href},function(res){
+		if (res.data){
+			$(".model-container").append(res.data);
 		}
 	});
 
@@ -51,7 +59,7 @@ $(document).ready(function(){
 		$(".activeitem .tagadd, .activeitem .newtag").toggle('fast');
 		if( name!="" ){
 			$.post("/rs/additemtag", {"name":name,"itemid":itemid}, function(res){
-				if (res.status=="success")
+				if (res.data)
 					$(".activeitem .itemtag:last").after(res.data);
 			});
 		}
@@ -115,9 +123,40 @@ $(document).ready(function(){
 			$(this).attr("title", "添加收藏");
 			$(this).children(".glyphicon").removeClass("glyphicon-star");
 			$(this).children(".glyphicon").addClass("glyphicon-star-empty");
-			$(this).next().html(parseInt($(this).next().html()) - 1);
 			$.post("/rs/removefavorite", {"target":target});
 		}
+	});
+
+	//
+	$("a#lookclassify").on("click", function(){
+		$("#scModal").modal("toggle");
+	});
+	$(".content").on("click", ".category-source button.category,.category-source button.source", function(){
+		if($(this).hasClass("btn-success")){
+			$(this).removeClass("btn-success");
+		}
+		else{
+			$(this).addClass("btn-success");
+		}
+		if($(".category-source button.btn-success").length > 0){
+			$(".category-source button[type='submit']").removeAttr("disabled");
+		}
+		else{
+			$(".category-source button[type='submit']").attr("disabled","disabled");
+		}
+	});
+	$(".content").on("submit", ".category-source", function(){
+		var _sources = [];
+		var _categories = [];
+		$(".category-source .category.btn-success").each(function(){
+			_categories.push($(this).html());
+		});
+		$(".category-source .source.btn-success").each(function(){
+			_sources.push($(this).html());
+		});
+		window.location.href = "/rs/lookclassify?" + 
+			$.param({'source':_sources, 'category':_categories});
+		return false;
 	});
 
 });

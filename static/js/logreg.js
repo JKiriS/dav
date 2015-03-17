@@ -111,9 +111,9 @@ $(document).ready(function(){
 			success = false;
 		if(success) {
 			$.post("", {"email":email,"pwd":pwd}, function(res){
-				if(res.status == "success"){
+				if(!res.errors){
 					if(res.redirecturl != null)
-						window.location.href = res.redirecturl
+						window.location.href = res.redirecturl;
 					else
 						window.location.href = "/rs/";
 				}
@@ -142,7 +142,7 @@ $(document).ready(function(){
 		checkInput('des', des);
 		if(success) {
 			$.post("", {"uname":uname,"pwd":pwd,"email":email,"des":des}, function(res){
-				if(res.status == "success")
+				if(!res.errors)
 					window.location.href = "/account/login";
 				else{
 					for (var i in res.errors)

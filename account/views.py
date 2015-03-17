@@ -17,7 +17,7 @@ def register(request):
 	if request.method == 'POST': 
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
-		res = {'status':'failed'}
+		res = {}
 		form = UserRegisterForm(request.POST)
 		if form.is_valid():
 			username = form.cleaned_data['uname']
@@ -29,7 +29,6 @@ def register(request):
 				user.set_password(password)  
 				user.is_active = True  
 				user.save()
-				res['status'] = 'success'
 			else :
 				res['errors'] = [{'target':'email', 'reason':'该邮箱已被注册'},]
 		else:
@@ -45,7 +44,7 @@ def login(request):
 	if request.method == 'POST':
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
-		res = {'status':'failed'}
+		res = {}
 		form = UserLoginForm(request.POST)
 		if form.is_valid():
 			email = form.cleaned_data['email']
@@ -58,7 +57,6 @@ def login(request):
 					if user.is_active:
 						auth.login(request, user) 
 						request.session.set_expiry(60 * 60 * 24 * 7)
-						res['status'] = 'success'
 						res['redirecturl'] = request.GET.get('redirecturl')
 					else :
 						res['errors'] = [{'target':'email','reason':'该用户已被禁用，请联系管理员'},]

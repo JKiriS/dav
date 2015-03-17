@@ -41,9 +41,8 @@ ul.dropdown-menu li {
 .load-large {
 	margin-top: 80px;
 }
-
-.itemlist {
-	margin-top: 50px;
+.content {
+    margin-top: 50px;
     margin-bottom: 20px;
 }
 
@@ -148,7 +147,7 @@ ul.dropdown-menu li {
 }
 
 .svgdiv {
-    margin-top: 60px;
+    margin-top: 10px;
     margin-left: 10px;
     padding: 10px;
     text-align: center;
@@ -164,4 +163,22 @@ svg.source rect {
 
 svg.source rect:hover {
     fill: orange;
+}
+
+.category-source {
+    text-align:left;
+}
+
+.category-source form {
+    padding: 10px;
+}
+
+.category-source button {
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px; 
+}
+
+.category-source .panel-heading a.close {
+    float: right;
 }

@@ -9,12 +9,12 @@ import jieba
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
 	for line in open('stopwords.txt') ])
 stopwords[' '] = 1
+stopwords['.'] = 1
 
 def userPre(uid):
 	pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
 	pre['timestamp'] = datetime.datetime.now()
 	# get the latesttime 
-
 	latest = db.behavior.find({'uid':ObjectId(uid)})\
 		.sort('timestamp', pymongo.DESCENDING).limit(1)
 	if latest.count() > 0:
@@ -22,25 +22,31 @@ def userPre(uid):
 	else :
 		db.upre.save(pre)
 		return pre
-	# deal with search behavior
+	# search
 	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'search'})\
 		.sort('timestamp', pymongo.DESCENDING).limit(500):
-		# calculate timefactor 1 / (1 + exp( deltaT - 10))
 		deltaT = latesttime - i['timestamp']
 		timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
 		segs = filter(lambda s:s not in stopwords, jieba.cut(i['target'], cut_all=False))
 		for s in segs:
 			pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
-	
-	favos = {}
-	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'addfavorite'})\
-			.sort('timestamp', pymongo.DESCENDING).limit(200):
-		favos[ObjectId(i['target'])] = i['timestamp']
+	# visit source
+	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitsource'})\
+		.sort('timestamp', pymongo.DESCENDING).limit(500):
+		deltaT = latesttime - i['timestamp']
+		timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
+		pre['source'][i['target']] = pre['source'].get(i['target'], 0) + 1.2 * timefactor
+	# visit category
+	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitcategory'})\
+		.sort('timestamp', pymongo.DESCENDING).limit(500):
+		deltaT = latesttime - i['timestamp']
+		timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
+		pre['category'][i['target']] = pre['category'].get(i['target'], 0) + 1.2 * timefactor
+	#clickitem
 	visits = {}
 	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'clickitem'})\
 			.sort('timestamp', pymongo.DESCENDING).limit(300):
 		visits[ObjectId(i['target'])] = i['timestamp']
-
 	if len(visits) > 0:
 		latest = max(visits.values())
 		for i in db.item.find({'_id':{'$in':visits.keys()}}):
@@ -51,7 +57,11 @@ def userPre(uid):
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
 			for s in segs:
 				pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
-
+	#favo item
+	favos = {}
+	for i in db.behavior.find({'uid':ObjectId(uid), 'action':'addfavorite'})\
+			.sort('timestamp', pymongo.DESCENDING).limit(200):
+		favos[ObjectId(i['target'])] = i['timestamp']
 	if len(favos) > 0:
 		latest = max(favos.values())
 		for i in db.item.find({'_id':{'$in':favos.keys()}}):

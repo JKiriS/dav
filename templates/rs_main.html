@@ -15,7 +15,7 @@
 	<title>
 		{% ifequal col 'lookaround'%}随机浏览{% endifequal %}
 		{% ifequal col 'recommend'%}个性化推荐{% endifequal %}
-		{% ifequal col 'lookclassified'%}{{ classname }}_近期内容{% endifequal %}
+		{% ifequal col 'lookclassify'%}{{ classname }}_近期内容{% endifequal %}
 		{% ifequal col 'selffavorites'%}{{ user.username }} 最近的收藏{% endifequal %}
 		{% ifequal col 'search'%}{{ wd }}_搜索{% endifequal %}
 	</title>
@@ -23,9 +23,13 @@
 <body>
 	{% include 'rs_nav.html' %}
 	<div class="container-fluid">
-		<div class="row">
-			<div class="col-md-7 col-md-offset-2 col-sm-11 col-xs-12 itemlist">
-				<img src="{{STATIC_URL}}img/loadinglarge.gif" class="col-xs-10 col-xs-offset-1 load-large">
+		<div class="row content">
+			<div class="col-md-7 col-md-offset-2 col-sm-11 col-xs-12">
+				<div class="model-container">
+				</div>
+				<div class="itemlist">
+					<img src="{{STATIC_URL}}img/loadinglarge.gif" class="col-xs-10 col-xs-offset-1 load-large">
+				</div>
 			</div>	
 			<a href="javascript:void(0)" class="backtotop col-md-offset-9 col-sm-offset-11 col-xs-offset-10">
 				<span class="glyphicon glyphicon-circle-arrow-up" aria-hidden="true"></span>

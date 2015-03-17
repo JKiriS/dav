@@ -42,9 +42,9 @@ ul.dropdown-menu li {
 	margin-top: 80px;
 }
 
-.itemlist {
+/*.itemlist {
 	margin-top: 50px;
-}
+}*/
 
 .item {
     background-color: white;  
@@ -161,4 +161,26 @@ ul.dropdown-menu li {
 
 .visit-favo-data .favo{
     color: rgb(250, 204, 59);
+}
+
+.content {
+    margin-top: 50px;
+}
+
+.category-source {
+    text-align: left;
+}
+
+.category-source form {
+    padding: 10px;
+}
+
+.category-source button {
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px; 
+}
+
+.category-source .panel-heading a.close {
+    float: right;
 }

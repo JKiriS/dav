@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import template
 register = template.Library()
-from django.template.base import TemplateSyntaxError
+from django.template.base import TemplateSyntaxError, NodeList
 
 class IfInNode(template.Node):
     child_nodelists = ('nodelist_true', 'nodelist_false')

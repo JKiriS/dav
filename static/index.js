@@ -116,4 +116,38 @@ $(document).ready(function(){
 		}
 	});
 
+	//
+	$("a#lookclassify").on("click", function(){
+		$(".category-source").toggle("fast");
+	});
+	$(".category-source .panel-heading a.close").on("click", function(){
+		$(".category-source").hide();
+	})
+	$(".category-source button.category,.category-source button.source").on('click', function(){
+		if($(this).hasClass("btn-success")){
+			$(this).removeClass("btn-success");
+		}
+		else{
+			$(this).addClass("btn-success");
+		}
+		if($(".category-source button.btn-success").length > 0){
+			$(".category-source button[type='submit']").removeAttr("disabled");
+		}
+		else{
+			$(".category-source button[type='submit']").attr("disabled","disabled");
+		}
+	});
+	$(".category-source").submit(function(){
+		var _sources = [];
+		var _categories = [];
+		$(".category-source .category.btn-success").each(function(){
+			_categories.push($(this).html());
+		});
+		$(".category-source .source.btn-success").each(function(){
+			_sources.push($(this).html());
+		});
+		window.location.href = "/rs/lookclassify?" + 
+			$.param({'source':_sources, 'category':_categories});
+		return false;
+	});
 });

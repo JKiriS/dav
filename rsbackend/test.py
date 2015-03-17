@@ -52,7 +52,7 @@ import os
 # 	if 'children' in c:
 # 		for cc in c['children']:
 # 			m[cc['name']] = c['name']
-# conn = pymongo.Connection() #'54.187.240.68'
+# conn = pymongo.Connection('54.187.240.68') #
 # db = conn['feed']
 # db.authenticate('JKiriS','910813gyb')
 # for i in m:
@@ -75,5 +75,9 @@ cs = json.load(file('cs.json'))
 lsiindexdir = 'lsiindex'
 dic = None
 
-import pickle
-print pickle.load(open('cls/label.pkl', 'rb'))
+# from django.http import QueryDict
+# q = QueryDict('a=1')
+# print q.getlist('a', [])
+
+# for c in cs:
+# 	db.category.insert({'name':c, 'visit_num':0})

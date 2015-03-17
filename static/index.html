@@ -30,7 +30,7 @@
 		    <ul class="nav navbar-nav">
 		        <li class="active"><a href="{% url 'lookaround' %}" class="column currentcol" id="lookaround"><span>随便看看</span></a>
 				<li><a href="{% url 'recommend' %}" id="recommend"><span>给我推荐</span></a></li>
-				<li><a href="{% url 'lookclassified' %}" id="search"><span>分类浏览</span></a></li>
+				<li><a href="javascript:void(0)" id="lookclassify"><span>分类浏览</span></a></li>
 				<li><a href="{% url 'selffavorites' %}" id="self"><span>我的收藏</span></a></li>
 	      	</ul>
 	      	<form class="navbar-form navbar-left" id="nav-search" role="search">
@@ -64,10 +64,99 @@
 	</nav>
 
 	<div class="container-fluid">
-		<div class="row">
-			<div class="col-md-7 col-md-offset-2 itemlist">
+		<div class="row content">
+			<div class="col-md-7 col-md-offset-2">
 				<!-- <img src="./img/loadinglarge.gif" class="load-large"> -->
 
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+  Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content category-source">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">选择需要浏览的类别（源）</h4>
+      </div>
+      <form>
+      <div class="modal-body">
+        <span>类别:</span>
+				<ul class="list-inline categoris">
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+				</ul>		
+				<span>源:</span>
+				<ul class="list-inline sources">
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+				</ul>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" disabled="disabled">提交</button>
+      </div>
+  </form>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-primary category-source">
+				<div class="panel-heading">
+					<span>选择需要浏览的类别（源）</span>
+					<a class="close" href="javascript:void(0)"><span class="glyphicon glyphicon-remove"></span></a>
+				</div>
+				<form>
+				<span>类别:</span>
+				<ul class="list-inline categoris">
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+					<li><button type="button" class="btn category">科技</button></li>
+				</ul>		
+				<span>源:</span>
+				<ul class="list-inline sources">
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+					<li><button type="button" class="btn source">科技</button></li>
+				</ul>
+				<button type="submit" class="btn btn-primary" disabled="disabled">提交</button>
+			</form>
+		</div>
+
+<div class=" itemlist">
 <div class="item" id="{{ i.id }}">
 	<div class="itemtop">
 		<a href="{{ i.link }}" target="_blank" class="itemtitle">
@@ -123,7 +212,7 @@
 	</div>
 	<div style="clear:both;"></div> <!-- let img stay in div.item -->
 </div>
-
+</div>
 <a class="col-md-12 viewmore" href="javascript:void(0)">
 	<span>加载更多</span>
 </a>

@@ -17,15 +17,19 @@
 <body>
 	{% include 'rs_nav.html' %}
 	<div class="container-fluid">
-		<div class="row">
-			<div class="col-md-10 col-md-offset-1 svgdiv">
-				<svg class="word"></svg>
-				<svg class="source"></svg>
-				<svg class="category"></svg>
+		<div class="row content">
+			<div class="col-md-8 col-md-offset-1">
+				<div class="model-container">
+				</div>
+				<div class="svgdiv">
+					<svg class="word"></svg>
+					<svg class="source"></svg>
+					<svg class="category"></svg>
+				</div>
+				<script type="text/javascript" language='javascript' src="/static/js/d3.min.js"></script>
+				<script type="text/javascript" language='javascript' src="/static/js/d3.layout.cloud.js"></script>
+				<script type="text/javascript" language='javascript' src="/static/js/upre.js"></script>
 			</div>
-			<script type="text/javascript" language='javascript' src="/static/js/d3.min.js"></script>
-			<script type="text/javascript" language='javascript' src="/static/js/d3.layout.cloud.js"></script>
-			<script type="text/javascript" language='javascript' src="/static/js/upre.js"></script>
 		</div>
 	</div>
 </body>

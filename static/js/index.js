@@ -102,20 +102,23 @@ $(document).ready(function(){
 	});
 
 	//favorite
-	$(".itemlist").on("mouseenter mouseleave", ".favorite[title='添加收藏']",function(){
-    	$(this).children("img").toggle();
-    });
-	$(".itemlist").on("click", "a.favorite", function(){
+	$(".itemlist").on("click", "a.favo", function(){
 		var target = $(this).parents(".item").attr("id");
 		if($(this).attr("title") == "添加收藏"){
-			$(this).attr("title", "取消收藏");
-			$(this).children("img").attr("src", "/static/img/favo.jpg");
-			$.post("/rs/addfavorite", {"target":target});
+			$.post("/rs/addfavorite", {"target":target}, function(){
+				$(this).attr("title", "取消收藏");
+				$(this).children(".glyphicon").removeClass("glyphicon-star-empty");
+				$(this).children(".glyphicon").addClass("glyphicon-star");
+				$(this).next().html(parseInt($(this).next().html()) + 1);
+			});
 		}
 		else{
-			$(this).attr("title", "添加收藏");
-			$(this).children("img").attr("src", "/static/img/unfavo.jpg");
-			$.post("/rs/removefavorite", {"target":target});
+			$.post("/rs/removefavorite", {"target":target}, function(){
+				$(this).attr("title", "添加收藏");
+				$(this).children(".glyphicon").removeClass("glyphicon-star");
+				$(this).children(".glyphicon").addClass("glyphicon-star-empty");
+				$(this).next().html(parseInt($(this).next().html()) - 1);
+			});
 		}
 	});
 

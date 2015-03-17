@@ -58,7 +58,7 @@ ul.dropdown-menu li {
     float: right;
 }
 
-.item .favorite{
+/*.item .favorite{
     float: right;
     width: 40px;
     height: 40px;
@@ -71,7 +71,7 @@ ul.dropdown-menu li {
     width: 40px;
     margin: 0;
     display: none;
-}
+}*/
 
 .itemtop {
     margin-top: 15px;
@@ -147,3 +147,18 @@ ul.dropdown-menu li {
 }
 
 
+.visit-favo-data {
+    float: right;
+    font-size: 25px;
+    margin-right: 5px;
+    margin-left: 15px;
+}
+
+.visit-favo-data .badge-data {
+    float: right;
+    font-size: 10px;
+}
+
+.visit-favo-data .favo{
+    color: rgb(250, 204, 59);
+}

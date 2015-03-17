@@ -2,13 +2,6 @@
 {% reorder itemlist by orders as itemlist %}
 {% for i in itemlist %}
 <div class="item" id="{{ i.id }}">
-	<img style="display: none;" src="/static/img/favo.jpg" /> 
-	<img style="display: none;" src="/static/img/unfavo.jpg" /> 
-	{% ifin i.id request.user.favorites %}
-	<a class="favorite" title="取消收藏" href="javascript:void(0)"><img src="/static/img/favo.jpg" /></a>
-	{% else %}
-	<a class="favorite" title="添加收藏" href="javascript:void(0)"><img src="/static/img/unfavo.jpg" style="display: none;"/></a>
-	{% endifin %}
 	<div class="itemtop">
 		<a href="{{ i.link }}" target="_blank" class="itemtitle">
 			{{ i.title }}
@@ -38,12 +31,33 @@
 			<button type="submit" class="btn btn-primary btn-sm">添加</button>
 		</form>	
 	</div>
+	<ul class="list-inline visit-favo-data">
+		<li class="visit-data" title="浏览次数">
+			<span class="glyphicon glyphicon-eye-open"></span>
+			<span class="badge-data">{{ i.click_num }}</span>
+		</li>
+		<li class="favo-data">
+			{% ifin i.id request.user.favorites %}
+			<a class="favo" title="添加收藏" href="javascript:void(0)">
+				<span class="glyphicon glyphicon-star-empty"></span>
+			</a>
+			{% else %}
+			<a class="favo" title="取消收藏" href="javascript:void(0)">
+				<span class="glyphicon glyphicon-star"></span>
+			</a>
+			{% endifin %}
+			<span class="badge-data" title="收藏次数">{{ i.favo_num }}</span>
+		</li>
+	</ul>
 	<div class="itembottom">
+		<span>来源：</span>
 		<a target="_blank" href="{% url 'lookclassified' %}?source={{ i.source }}">
 			<span class="itemsource">
 			    {{ i.source }}
 			</span>
 		</a>
+		<span>&nbsp;&nbsp;</span>
+		<span class="glyphicon glyphicon-time"></span>
 		<span class="itemtime">
 			{{ i.pubdate|date:"Y-m-d H:i:s" }}
 		</span>

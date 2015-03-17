@@ -18,7 +18,7 @@
 			标签：
 		</span>
 		{% for t in i.tags %}
-		<a class="itemtag" target="_blank" href="{% url 'lookclassify' %}?tag={{ t }}">
+		<a class="itemtag" target="_blank" href="javascript:void(0)">
 			#{{ t }}
 		</a>
 		{% endfor %}
@@ -51,7 +51,7 @@
 	</ul>
 	<div class="itembottom">
 		<span>来源：</span>
-		<a target="_blank" href="{% url 'lookclassify' %}?source={{ i.source }}">
+		<a target="_blank" href="{% url 'lookclassify' %}?source[]={{ i.source }}">
 			<span class="itemsource">
 			    {{ i.source }}
 			</span>

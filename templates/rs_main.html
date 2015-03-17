@@ -13,11 +13,11 @@
     <link href="{{STATIC_URL}}css/index.css" rel="stylesheet">
     <script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/index.js' ></script>
 	<title>
-		{% ifequal col 'lookaround'%}随机浏览{% endifequal %}
-		{% ifequal col 'recommend'%}个性化推荐{% endifequal %}
-		{% ifequal col 'lookclassify'%}{{ classname }}_近期内容{% endifequal %}
-		{% ifequal col 'selffavorites'%}{{ user.username }} 最近的收藏{% endifequal %}
-		{% ifequal col 'search'%}{{ wd }}_搜索{% endifequal %}
+		{% ifequal col 'lookaround'%} 随机浏览{% endifequal %}
+		{% ifequal col 'recommend'%} 个性化推荐{% endifequal %}
+		{% ifequal col 'lookclassify'%}{{ classname }} 分类内容{% endifequal %}
+		{% ifequal col 'selffavorites'%}{{ user.username }} 最近收藏{% endifequal %}
+		{% ifequal col 'search'%}{{ wd }} 搜索结果{% endifequal %}
 	</title>
 </head>
 <body>

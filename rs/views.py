@@ -117,8 +117,7 @@ def lookclassify(request):
 				target=s, timestamp=now())
 			b.save()
 		classname = u'和'.join([u'、'.join(param_c), u'、'.join(param_s)])
-		if classname.endswith(u'和'):
-			classname = classname[:-1]
+		classname = classname.replace(u'和', '')
 		return render(request, 'rs_main.html', locals())
 	else :
 		return HttpResponseRedirect('/rs/lookaround')

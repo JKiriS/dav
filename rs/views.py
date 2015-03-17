@@ -295,16 +295,13 @@ def getcategory(request):
 	return response
 
 def addfavorite(request):
-	response = HttpResponse()
-	response['Content-Type'] = 'application/json'
-	res = {'status':'success'}	
 	if request.method == 'POST':
 		try:
 			i = item.objects(id=request.POST['target']).first()
 			i.favo_num += 1
 			i.save()
 		except:
-			res['status'] = 'failed'
+			pass
 		if request.user.is_authenticated():
 			target = request.POST.get('target')
 			request.user.favorites.append( ObjectId(target) )
@@ -312,13 +309,9 @@ def addfavorite(request):
 			b = behavior(uid=request.user.id, action='addfavorite',\
 				target=request.POST['target'], timestamp=now())
 			b.save()
-	response.write( json.dumps(res, ensure_ascii=False) )
-	return response
+	return HttpResponse()
 
 def removefavorite(request):
-	response = HttpResponse()
-	response['Content-Type'] = 'application/json'
-	res = {'status':'success'}	
 	if request.user.is_authenticated():
 		target = request.POST.get('target')
 		request.user.favorites.remove( ObjectId(target) )
@@ -326,5 +319,4 @@ def removefavorite(request):
 		b = behavior(uid=request.user.id, action='rmfavorite',\
 			target=request.POST['target'], timestamp=now())
 		b.save()
-	response.write( json.dumps(res, ensure_ascii=False) )
-	return response
+	return HttpResponse()

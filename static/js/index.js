@@ -105,21 +105,18 @@ $(document).ready(function(){
 	$(".itemlist").on("click", "a.favo", function(){
 		var target = $(this).parents(".item").attr("id");
 		if($(this).attr("title") == "添加收藏"){
-			$.post("/rs/addfavorite", {"target":target}, function(res){
-				$(this).attr("title", "取消收藏");
-				$(this).children(".glyphicon").removeClass("glyphicon-star-empty");
-				$(this).children(".glyphicon").addClass("glyphicon-star");
-				$(this).next().html(parseInt($(this).next().html()) + 1);
-			});
+			$(this).attr("title", "取消收藏");
+			$(this).children(".glyphicon").removeClass("glyphicon-star-empty");
+			$(this).children(".glyphicon").addClass("glyphicon-star");
+			$(this).next().html(parseInt($(this).next().html()) + 1);
+			$.post("/rs/addfavorite", {"target":target});
 		}
 		else{
-			$.post("/rs/removefavorite", {"target":target}, function(res){
-				alert($(this).attr());
-				$(this).attr("title", "添加收藏");
-				$(this).children(".glyphicon").removeClass("glyphicon-star");
-				$(this).children(".glyphicon").addClass("glyphicon-star-empty");
-				$(this).next().html(parseInt($(this).next().html()) - 1);
-			});
+			$(this).attr("title", "添加收藏");
+			$(this).children(".glyphicon").removeClass("glyphicon-star");
+			$(this).children(".glyphicon").addClass("glyphicon-star-empty");
+			$(this).next().html(parseInt($(this).next().html()) - 1);
+			$.post("/rs/removefavorite", {"target":target});
 		}
 	});
 

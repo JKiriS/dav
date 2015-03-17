@@ -46,7 +46,7 @@ d3.json("/rs/getupre?target=wd", function(error, res) {
         	})
         	.on("click", function(d){
         		var _searchparams = {'wd':d.text};
-				window.open("/rs/search?wd=" + $.param( _searchparams, true ));
+				window.open("/rs/search?" + $.param( _searchparams, true ));
 			});
   		}
 	}
@@ -78,7 +78,7 @@ d3.json("/rs/getupre?target=source", function(error, res) {
 				"width": xScale.rangeBand(),
 			})
 			.on("click", function(d){
-				window.open("/rs/lookclassify?" + $.param({'source':[d.name]});
+				window.open("/rs/lookclassify?" + $.param({'source':[d.name,]}));
 			});
 		var texts = groups.data(res.data)
 			.append("text")
@@ -157,7 +157,7 @@ d3.json("/rs/getupre?target=category", function(error, res) {
 					.text("all: "+sum+"/"+sum);
 			})
 			.on("click", function(d){
-				window.open("/rs/lookclassify?" + $.param({'category':[d.data.name]});
+				window.open("/rs/lookclassify?" + $.param({'category':[d.data.name,]}));
 			});
 		var startAngle = -90;
 		arcs.append("text")

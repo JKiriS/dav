@@ -95,7 +95,7 @@ def lookclassify(request):
 			hasmore = True if len(itemlist) >= 15 else False
 			res['params']['start'] = repr(skipnum + len(itemlist))
 		else:
-			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) & \
+			itemlist = item.objects( (Q(source__in=param_s) | Q(category__in=param_c)) & \
 				Q(pubdate__gte=now()-datetime.timedelta(days=10)) & \
 				Q(rand__near=[random.random(), 0]) ).limit(15)
 			hasmore = True if len(itemlist) >= 15 else False

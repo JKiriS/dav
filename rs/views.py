@@ -13,7 +13,7 @@ from bson import ObjectId
 from dav import settings
 import os.path
 import random
-import urllib, urllib2
+import urllib2
 
 # Create your views here.
 now = lambda : datetime.datetime.now()
@@ -95,8 +95,9 @@ def lookclassify(request):
 			hasmore = True if len(itemlist) >= 15 else False
 			res['params']['start'] = repr(skipnum + len(itemlist))
 		else:
-			itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=10), \
-				rand__near=[random.random(), 0]).limit(15)
+			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) & \
+				Q(pubdate__gte=now()-datetime.timedelta(days=10)) & \
+				Q(rand__near=[random.random(), 0]) ).limit(15)
 			hasmore = True if len(itemlist) >= 15 else False
 			res['params']['start'] = 0
 
@@ -117,7 +118,10 @@ def lookclassify(request):
 				target=s, timestamp=now())
 			b.save()
 		classname = u'和'.join([u'、'.join(param_c), u'、'.join(param_s)])
-		classname = classname.replace(u'和', '')
+		if classname.startswith(u'和'):
+			classname = classname[1:]
+		if classname.endswith(u'和'):
+			classname = classname[:-1]
 		return render(request, 'rs_main.html', locals())
 	else :
 		return HttpResponseRedirect('/rs/lookaround')

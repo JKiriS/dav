@@ -142,8 +142,15 @@ def getcs(request):
 			param_c, param_s = [], []
 			orderby = 'time'
 		submitdisabled = False if len(param_c) + len(param_s) > 0 else True
-		sources = source.objects()
-		categories = category.objects()
+		upre = upre.objects(id=request.user.id).first()
+		if upre:
+			sources = map(lambda a:a[0], \
+				sorted(pre.source.iteritems(), key=lambda a:a[1], reverse=True))
+			categories = map(lambda a:a[0], \
+				sorted(pre.category.iteritems(), key=lambda a:a[1], reverse=True))
+		else:
+			sources = source.objects().order_by("-visit_num")
+			categories = category.objects().order_by("-visit_num")
 		t = get_template('rs_category_source.html')
 		c = Context(locals())
 		res['data'] = t.render(c)

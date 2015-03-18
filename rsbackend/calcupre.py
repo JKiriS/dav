@@ -12,8 +12,13 @@ stopwords[' '] = 1
 stopwords['.'] = 1
 
 def userPre(uid):
+	# init userpre
 	pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
 	pre['timestamp'] = datetime.datetime.now()
+	for s in db.source.find():
+		pre['source'][s['name']] = 0
+	for c in db.category.find():
+		pre['category'][c['name']] = 0
 	# get the latesttime 
 	latest = db.behavior.find({'uid':ObjectId(uid)})\
 		.sort('timestamp', pymongo.DESCENDING).limit(1)

@@ -11,7 +11,6 @@ import json
 import urlparse
 import random
 import socket
-import sites
 
 params = json.load(file('../self.cfg'))
 socket.setdefaulttimeout(params['feedparser_timeout'])
@@ -232,7 +231,7 @@ def run():
 	conn = pymongo.Connection()
 	db = conn['feed']
 	db.authenticate(params['db_username'], params['db_password'])
-	sites.updatesites()
+	# sites.updatesites()
 	for i in db.site.find({'active':True}, timeout=False):
 		try:
 			exec( i['parser']+'(i)' )

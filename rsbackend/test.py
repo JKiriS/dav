@@ -72,8 +72,8 @@ cs = json.load(file('cs.json'))
 	# os.makedirs('lsiindex/'+c)
 # for c in cs:
 # 	print db.item.find({'_id':{'$in':db.upre.find()[2]['visits']},'category':c}).count()
-lsiindexdir = 'lsiindex'
-dic = None
+# lsiindexdir = 'lsiindex'
+# dic = None
 
 # from django.http import QueryDict
 # q = QueryDict('a=1')

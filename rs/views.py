@@ -142,8 +142,8 @@ def getcs(request):
 			param_c, param_s = [], []
 			orderby = 'time'
 		submitdisabled = False if len(param_c) + len(param_s) > 0 else True
-		upre = upre.objects(id=request.user.id).first()
-		if upre:
+		pre = upre.objects(id=request.user.id).first()
+		if pre:
 			sources = map(lambda a:a[0], \
 				sorted(pre.source.iteritems(), key=lambda a:a[1], reverse=True))
 			categories = map(lambda a:a[0], \

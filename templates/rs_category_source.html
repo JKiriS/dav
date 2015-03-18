@@ -19,13 +19,13 @@
         <span>类别:</span>
     		<ul class="list-inline categoris">
     			{% for c in categories %}
-    			<li><button type="button" class="btn category{% ifin c.name param_c %} btn-success{% endifin %}">{{ c.name }}</button></li>
+    			<li><button type="button" class="btn category{% ifin c param_c %} btn-success{% endifin %}">{{ c }}</button></li>
     			{% endfor %}
     		</ul>		
     		<span>源:</span>
     		<ul class="list-inline sources">
     			{% for s in sources %}
-    			<li><button type="button" class="btn source{% ifin s.name param_s %} btn-success{% endifin %}">{{ s.name }}</button></li>
+    			<li><button type="button" class="btn source{% ifin s param_s %} btn-success{% endifin %}">{{ s }}</button></li>
     			{% endfor %}	
     		</ul>
       </div>

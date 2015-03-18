@@ -149,8 +149,8 @@ def getcs(request):
 			categories = map(lambda a:a[0], \
 				sorted(pre.category.iteritems(), key=lambda a:a[1], reverse=True))
 		else:
-			sources = source.objects().order_by("-visit_num")
-			categories = category.objects().order_by("-visit_num")
+			sources = map(lambda a:a['name'], source.objects().order_by("-visit_num"))
+			categories = map(lambda a:a['name'], category.objects().order_by("-visit_num"))
 		t = get_template('rs_category_source.html')
 		c = Context(locals())
 		res['data'] = t.render(c)

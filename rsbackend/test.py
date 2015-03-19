@@ -81,3 +81,27 @@ cs = json.load(file('cs.json'))
 
 # for c in cs:
 # 	db.category.insert({'name':c, 'visit_num':0})
+
+import paramiko
+hostname = '54.187.240.68'
+port = 22
+username = 'ubuntu'
+pkey = 'F:/aws/jkiris.pem'
+key = paramiko.RSAKey.from_private_key_file(pkey)
+# s = paramiko.SSHClient()
+# s.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+# s.load_system_host_keys()
+# s.connect(hostname, port, username, pkey=key)
+# stdin, stdout, stderr = s.exec_command('ls')
+# print stdout.read()
+# s.close()
+# t = paramiko.Transport(('54.187.240.68', 22))
+# t.connect(username = 'ubuntu', pkey=key)
+# sftp = paramiko.SFTPClient.from_transport(t)
+# remotedir = '/home/ubuntu/dav/rsbackend/lsiindex'
+# lsiindexdir = 'lsiindex'
+# # for c in cs:
+# # 	lpath = lsiindexdir + '/' + c
+# # 	rpath = remotedir + '/' + c
+# sftp.put('lsiindex/t/gs.lsi', '/home/ubuntu/gs.lsi')
+# t.close()

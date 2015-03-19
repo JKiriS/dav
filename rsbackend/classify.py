@@ -12,6 +12,7 @@ import numpy as np
 import pickle
 from gensim import corpora, models
 
+params = json.load(file('../self.cfg'))
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') for line in open('stopwords.txt') ])
 stopwords[' '] = 1
 cs = json.load(file('cs.json'))
@@ -98,7 +99,7 @@ def run():
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')
+	db.authenticate(params['db_username'], params['db_password'])
 	db.job.insert({'module':'recommend', 'starttime':now() + datetime.timedelta(minutes=10)})
 	conn.close()
 
@@ -120,7 +121,7 @@ if __name__ == '__main__':
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')
+	db.authenticate(params['db_username'], params['db_password'])
 	test()
 	conn.close()
 

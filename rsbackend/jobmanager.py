@@ -5,13 +5,16 @@ import time, datetime
 import feeds
 import recommend
 import calcupre
+import json
 import updatesearchindex
+
+params = json.load(file('../self.cfg'))
 
 if __name__ == '__main__':
 	while True:
 		conn = pymongo.Connection()
 		db = conn['feed']
-		db.authenticate('JKiriS','910813gyb')
+		db.authenticate(params['db_username'], params['db_password'])
 		for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
 				'status':'waiting'}, timeout=False):
 			try:

@@ -13,6 +13,7 @@ import numpy as np
 from gensim import corpora, models, similarities
 from collections import defaultdict
 
+params = json.load(file('../self.cfg'))
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') for line in open('stopwords.txt') ])
 stopwords[' '] = 1
 cs = json.load(file('cs.json'))
@@ -125,7 +126,7 @@ def run():
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')
+	db.authenticate(params['db_username'], params['db_password'])
 	recommend()
 	conn.close()
 
@@ -133,7 +134,7 @@ if __name__ == '__main__':
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')
+	db.authenticate(params['db_username'], params['db_password'])
 	for u in db.user.find(timeout=False):
 		recommend(u['_id'])
 	conn.close()

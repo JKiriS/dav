@@ -5,7 +5,9 @@ from bson import ObjectId
 import datetime
 import math
 import jieba
+import json
 
+params = json.load(file('../self.cfg'))
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
 	for line in open('stopwords.txt') ])
 stopwords[' '] = 1
@@ -86,7 +88,7 @@ def run():
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')
+	db.authenticate(params['db_username'], params['db_password'])
 	for u in db.user.find(timeout=False):
 		userPre(u['_id'])
 	conn.close()
@@ -95,7 +97,7 @@ if __name__ == '__main__':
 	global db
 	conn = pymongo.Connection()
 	db = conn['feed']
-	db.authenticate('JKiriS','910813gyb')
+	db.authenticate(params['db_username'], params['db_password'])
 	for u in db.user.find(timeout=False):
 		userPre(u['_id'])
 	conn.close()

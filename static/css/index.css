@@ -183,6 +183,11 @@ svg.source rect:hover {
     margin-bottom: 5px; 
 }
 
-.category-source .panel-heading a.close {
-    float: right;
+.category-source .view-all-sources{
+    text-align: center;
+    width: inherit;
+}
+
+.category-source .source-hide {
+    display: none;
 }

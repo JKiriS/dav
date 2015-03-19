@@ -153,7 +153,7 @@ $(document).ready(function(){
 		return false;
 	});
 
-	if($.cookie('absms_crm2_email')!=undefined){  
+	if($.cookie('absms_crm2_email') != undefined){  
         $("#rememberme").attr("checked", true);  
     }else{  
         $("#rememberme").attr("checked", false);  

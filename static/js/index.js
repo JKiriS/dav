@@ -131,6 +131,10 @@ $(document).ready(function(){
 	$("a#lookclassify").on("click", function(){
 		$("#scModal").modal("toggle");
 	});
+	$(".content").on("click", ".view-all-sources a", function(){
+		$(".view-all-sources").hide();
+		$(".category-source .source-hide").toggle("fast");
+	});
 	$(".content").on("click", ".category-source button.category,.category-source button.source", function(){
 		if($(this).hasClass("btn-success")){
 			$(this).removeClass("btn-success");

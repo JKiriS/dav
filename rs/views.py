@@ -153,6 +153,9 @@ def getcs(request):
 		else:
 			sources = map(lambda a:a['name'], source.objects().order_by("-visit_num"))
 			categories = map(lambda a:a['name'], category.objects().order_by("-visit_num"))
+		sources_show = sources[:10]
+		sources_hide = sources[10:]
+		has_hide = True if len(sources_hide) > 0 else False
 		t = get_template('rs_category_source.html')
 		c = Context(locals())
 		res['data'] = t.render(c)

@@ -24,10 +24,20 @@
     		</ul>		
     		<span>源:</span>
     		<ul class="list-inline sources">
-    			{% for s in sources %}
+    			{% for s in sources_show %}
     			<li><button type="button" class="btn source{% ifin s param_s %} btn-success{% endifin %}">{{ s }}</button></li>
     			{% endfor %}	
+          {% if has_hide %}
+          {% for s in sources_hide %}
+          <li><button type="button" class="btn source{% ifin s param_s %} btn-success{% else %} source-hide{% endifin %}">{{ s }}</button></li>
+          {% endfor %}
+          {% endif %}  
     		</ul>
+        {% if has_hide %}
+        <div class="view-all-sources">
+          <a href="javascript:void(0)">加载更多源</a>
+        </div>
+        {% endif %} 
       </div>
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary" {% if submitdisabled %}disabled="disabled"{% endif %}>提交</button>

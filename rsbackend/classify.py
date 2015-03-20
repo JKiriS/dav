@@ -11,6 +11,7 @@ import json
 import numpy as np
 import pickle
 from gensim import corpora, models
+import random
 
 params = json.load(file('../self.cfg'))
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') for line in open('stopwords.txt') ])
@@ -119,7 +120,9 @@ def test():
 	for i, d in enumerate(svclf.predict_proba(test_data)) :
 		res = sorted(enumerate(d), key=lambda a:a[1], reverse=True)
 		if res[0][1] - res[1][1] < 0.2:
-			print {'_id':ids[i], 'prob':res[:4]}
+			top_prob = res[:3]
+			random.shuffle(top_prob)
+			print {'_id':ids[i], 'prob':top_prob}
 		else:
 			pass
 

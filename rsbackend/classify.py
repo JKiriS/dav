@@ -119,7 +119,7 @@ def test():
 
 if __name__ == '__main__':
 	global db
-	conn = pymongo.Connection()
+	conn = pymongo.Connection(params['db_ip'])
 	db = conn['feed']
 	db.authenticate(params['db_username'], params['db_password'])
 	test()

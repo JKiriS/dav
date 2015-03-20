@@ -49,7 +49,6 @@ def train():
 		train_target = np.hstack(( train_target, np.zeros(len(texts_origin) - tnum_before) + ix ))
 	if len(texts_origin) == 0:
 		return
-	dictionary = corpora.Dictionary.load(os.path.join(clsdir, 'cls.dic'))
 	all_tokens = sum(texts_origin, [])
 	token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 	texts = [[word for word in text if word not in token_once] for text in texts_origin]
@@ -113,9 +112,20 @@ def test():
 	# clf = MultinomialNB(alpha = 0.01)   
 	# clf.fit(train_data, train_target)
 	# pickle.dump(clf, open(os.path.join(clsdir, 'cls.pkl'), 'wb')) 
+	ids = pickle.load(open(os.path.join(clsdir, 'ids.pkl'), 'rb'))
 	test_data = pickle.load(open(os.path.join(clsdir, 'test.pkl'), 'rb'))
 	svclf = pickle.load(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
-	print svclf.predict(test_data) 
+	# print svclf.class_count_
+	for i, d in enumerate(svclf.predict_proba(test_data)) :
+		res = sorted(enumerate(d), key=lambda a:a[1], reverse=True)
+		if res[0][1] - res[1][1] < 0.2:
+			print {'_id':ids[i], 'prob':res[:4]}
+		else:
+			pass
+
+'''
+0:科技 1:娱乐 2:体育 3:文化 4:军事 5:财经 6:时政
+'''
 
 if __name__ == '__main__':
 	global db

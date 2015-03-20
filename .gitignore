@@ -81,3 +81,6 @@ lsiindex/
 
 # classify file
 cls/
+
+# runnable jar file
+*.jar

@@ -110,19 +110,19 @@ $(document).ready(function(){
 	});
 
 	//favorite
-	$(".itemlist").on("click", "a.favo", function(){
+	$(".content").on("mouseenter mouseleave", ".favorite[title='添加收藏']",function(){
+    	$(this).children("img").toggle();
+    });
+	$(".content").on("click", "a.favorite", function(){
 		var target = $(this).parents(".item").attr("id");
 		if($(this).attr("title") == "添加收藏"){
 			$(this).attr("title", "取消收藏");
-			$(this).children(".glyphicon").removeClass("glyphicon-star-empty");
-			$(this).children(".glyphicon").addClass("glyphicon-star");
-			$(this).next().html(parseInt($(this).next().html()) + 1);
+			$(this).children("img").attr("src", "/static/img/favo.jpg");
 			$.post("/rs/addfavorite", {"target":target});
 		}
 		else{
 			$(this).attr("title", "添加收藏");
-			$(this).children(".glyphicon").removeClass("glyphicon-star");
-			$(this).children(".glyphicon").addClass("glyphicon-star-empty");
+			$(this).children("img").attr("src", "/static/img/unfavo.jpg");
 			$.post("/rs/removefavorite", {"target":target});
 		}
 	});

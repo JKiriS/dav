@@ -10,7 +10,6 @@ import jieba
 import json
 import pickle
 from gensim import corpora, models, similarities
-from collections import defaultdict
 
 params = json.load(file('../self.cfg'))
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') for line in open('stopwords.txt') ])

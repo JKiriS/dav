@@ -89,6 +89,7 @@ def recommend(uid):
 	score = np.array([])
 	ids = []
 	for c in cs:
+		print c
 		score_c = None
 		cpath = os.path.join(lsiindexdir, c)
 		itemIds = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
@@ -136,5 +137,6 @@ if __name__ == '__main__':
 	db = conn['feed']
 	db.authenticate(params['db_username'], params['db_password'])
 	for u in db.user.find(timeout=False):
+		print u['username']
 		recommend(u['_id'])
 	conn.close()

@@ -56,7 +56,7 @@ def recommend(request):
 		itemlist = item.objects(id__in=urlist.rlist[skipnum:skipnum+15])
 		orders = urlist.rlist[skipnum:skipnum+15]
 
-		hasmore = True if len(itemlist) >= 15 else False
+		hasmore = True if len(orders) >= 15 else False
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())
 		res = {}
@@ -193,7 +193,7 @@ def search(request):
 		orders = slist.result[skipnum:skipnum+15]
 
 		wd = request.GET['wd']
-		hasmore = True if len(itemlist) >= 15 else False
+		hasmore = True if len(orders) >= 15 else False
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())
 		res['data'] = t.render(c)

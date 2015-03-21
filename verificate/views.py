@@ -8,9 +8,12 @@ import json
 from bson import ObjectId
 from django.template import Template, Context
 from django.http import HttpResponse, HttpResponseRedirect
+import re
 # Create your views here.
 
-def getquestion(request):
+def getquestion(request): 
+	if re.match(r'iphone|ios|android|mini|mobile|mobi|Nokia|Symbian|iPod|iPad|Windows\s+Phone|MQQBrowser|wp7|wp8|UCBrowser7|UCWEB|360\s+Aphone\s+Browser', request.META['HTTP_USER_AGENT']):
+		print 'mobile'
 	response = HttpResponse()
 	response['Content-Type'] = 'application/json'
 	v = verification.objects(rand__near=[random.random(), 0]).first()

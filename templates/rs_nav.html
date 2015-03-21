@@ -14,10 +14,10 @@
 		    </div>
 		    <div class="collapse navbar-collapse" id="navbar-collapse-1">
 			    <ul class="nav navbar-nav">
-			        <li {% ifequal col 'lookaround'%}class="active"{% endifequal %}><a href="{% url 'lookaround' %}" class="column" id="lookaround"><span>随便看看</span></a></li>
-					<li {% ifequal col 'recommend'%}class="active"{% endifequal %}><a href="{% url 'recommend' %}" id="recommend"><span>给我推荐</span></a></li>
-					<li {% ifequal col 'lookclassify'%}class="active"{% endifequal %}><a href="javascript:void(0)" id="lookclassify"><span>分类浏览</span></a></li>
-					<li {% ifequal col 'selffavorites'%}class="active"{% endifequal %}><a href="{% url 'selffavorites' %}" id="self"><span>我的收藏</span></a></li>
+			        <li {% ifequal col 'lookaround' %}class="active"{% endifequal %}><a href="{% url 'lookaround' %}" class="column" id="lookaround"><span>随便看看</span></a></li>
+					<li {% ifequal col 'recommend' %}class="active"{% endifequal %}><a href="{% url 'recommend' %}" id="recommend"><span>给我推荐</span></a></li>
+					<li {% ifequal col 'lookclassify' %}class="active"{% endifequal %}><a href="javascript:void(0)" id="lookclassify"><span>分类浏览</span></a></li>
+					<li {% ifequal col 'selffavorites' %}class="active"{% endifequal %}><a href="{% url 'selffavorites' %}" id="self"><span>我的收藏</span></a></li>
 		      	</ul>
 		      	<form class="navbar-form navbar-left" id="nav-search" role="search">
 			        <div class="input-group input-group-sm">

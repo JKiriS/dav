@@ -55,6 +55,11 @@
 	<div style="clear:both;"></div> <!-- let img stay in div.item -->
 	{% endif %}
 </div>
+{% empty %}
+	{% ifequal col 'recommend'%}系统尚未更新您的偏好信息或者尚未进行推荐{% endifequal %}
+	{% ifequal col 'lookclassify'%}没有任何相关分类内容{% endifequal %}
+	{% ifequal col 'selffavorites'%}您还没有收藏任何内容{% endifequal %}
+	{% ifequal col 'search'%}没有搜索到任何结果{% endifequal %}
 {% endfor %}
 
 {% if hasmore %}
@@ -64,4 +69,5 @@
 <a class="col-md-12 col-sm-12 col-xs-12 load-sm">
 	<img src='/static/img/loadingsmall.gif'/>
 </a>
+
 {% endif %}

@@ -8,7 +8,6 @@ from django.template import Template, Context
 from django.template.loader import get_template
 from mongoengine import Q
 import datetime, time
-import pymongo
 from bson import ObjectId
 from dav import settings
 import os.path

@@ -81,13 +81,6 @@ cs = json.load(file('cs.json'))
 
 # for c in cs:
 # 	db.category.insert({'name':c, 'visit_num':0})
-
-import paramiko
-hostname = '54.187.240.68'
-port = 22
-username = 'ubuntu'
-pkey = 'F:/aws/jkiris.pem'
-key = paramiko.RSAKey.from_private_key_file(pkey)
 # s = paramiko.SSHClient()
 # s.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 # s.load_system_host_keys()
@@ -105,3 +98,14 @@ key = paramiko.RSAKey.from_private_key_file(pkey)
 # # 	rpath = remotedir + '/' + c
 # sftp.put('lsiindex/t/gs.lsi', '/home/ubuntu/gs.lsi')
 # t.close()
+
+# conn = pymongo.Connection('54.187.240.68') #
+# db = conn['feed']
+# db.authenticate('JKiriS','910813gyb')
+
+# conn1 = pymongo.Connection()
+# db1 = conn1['feed']
+# db1.authenticate('JKiriS','910813gyb')
+
+# for v in db.verification.find():
+# 	db1.verification.insert(v)

@@ -12,8 +12,6 @@ import re
 # Create your views here.
 
 def getquestion(request): 
-	if re.match(r'iphone|ios|android|mini|mobile|mobi|Nokia|Symbian|iPod|iPad|Windows\s+Phone|MQQBrowser|wp7|wp8|UCBrowser7|UCWEB|360\s+Aphone\s+Browser', request.META['HTTP_USER_AGENT']):
-		print 'mobile'
 	response = HttpResponse()
 	response['Content-Type'] = 'application/json'
 	v = verification.objects(rand__near=[random.random(), 0]).first()
@@ -51,7 +49,10 @@ def collectselect(request):
 
 def collectmousetrail(request):
 	traildata = request.POST.getlist('data[]', [])
-	if 'click' in traildata:
+	ismobile = False
+	if re.match(r'iphone|ios|android|mini|mobile|mobi|Nokia|Symbian|iPod|iPad|Windows\s+Phone|MQQBrowser|wp7|wp8|UCBrowser7|UCWEB|360\s+Aphone\s+Browser', request.META['HTTP_USER_AGENT'])
+		ismobile = True
+	if ismobile and 'click' in traildata:
 		m = mousetrail(uid=request.user.id, traildata=traildata)
 		m.save()
 	return HttpResponse()

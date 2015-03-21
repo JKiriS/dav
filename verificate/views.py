@@ -52,7 +52,6 @@ def collectmousetrail(request):
 	ismobile = False
 	if re.match(r'iphone|ios|android|mini|mobile|mobi|Nokia|Symbian|iPod|iPad|Windows\s+Phone|MQQBrowser|wp7|wp8|UCBrowser7|UCWEB|360\s+Aphone\s+Browser', request.META['HTTP_USER_AGENT']):
 		ismobile = True
-	print ismobile
 	if (not ismobile) and 'click' in traildata:
 		m = mousetrail(uid=request.user.id, traildata=traildata)
 		m.save()

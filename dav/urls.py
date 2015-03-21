@@ -14,4 +14,5 @@ urlpatterns = patterns('',
     url(r'^rs/', include('rs.urls')),
     url(r'.*/(?P<fname>.*)\.json$', 'dav.views.sendjson'),
     url(r'^account/', include('account.urls')),
+    url(r'^verificate/', include('verificate.urls')),
 )

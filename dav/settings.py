@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'mapv',
     'historyv',
     'rs',
+    'verificate',
     'account',
     'templatelib',
     'mongoengine.django.mongo_auth',

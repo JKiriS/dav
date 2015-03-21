@@ -11,7 +11,6 @@ import json
 import numpy as np
 import pickle
 from gensim import corpora, models
-import random
 
 params = json.load(file('../self.cfg'))
 stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') for line in open('stopwords.txt') ])
@@ -118,11 +117,20 @@ def test():
 	svclf = pickle.load(open(os.path.join(clsdir, 'cls.pkl'), 'rb'))
 	# print svclf.class_count_
 	for i, d in enumerate(svclf.predict_proba(test_data)) :
-		res = sorted(enumerate(d), key=lambda a:a[1], reverse=True)
+		res = sorted(map(lambda a:(cs[a[0]], a[1]), enumerate(d)), \
+			key=lambda a:a[1], reverse=True)
 		if res[0][1] - res[1][1] < 0.2:
 			top_prob = res[:3]
 			random.shuffle(top_prob)
-			print {'_id':ids[i], 'prob':top_prob}
+			si = db.item.find_one({'_id':ids[i]})
+			if si != None:
+				question = u'''请问下面的内容最可能属于哪一类？<br/>
+					标题: {0}<br/>
+					正文: {1}
+				'''.format(si['title'], si['des'])
+				option = [o[0] for o in top_prob] + [u'其他']
+				db.verification.insert({ 'question':question, 'option':option, 'rand':[random.random(), 0], \
+					'data_origin':{'id':si['_id'], 'prob':top_prob} })
 		else:
 			pass
 

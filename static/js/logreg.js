@@ -8,6 +8,15 @@ $(document).ready(function(){
 		window.location.href = "/account/login";
 	});
 
+	$("#getveriq").on("click", function(){
+		$("#getveriq").html("刷新验证信息");
+		$.post('/verificate/getquestion', function(res){
+			if(res.data){
+				$(".q_s").html(res.data);
+			}
+		});
+	});
+
 	function checkInput(target, val, msg){
 		var emailreg =  /^[\w\-\.]+@[\w\-\.]+(\.\w+)+$/;
 		if(target == 'uname'){
@@ -30,7 +39,7 @@ $(document).ready(function(){
 			}
 		}
 		if(target == 'pwd'){
-			if(msg==null)
+			if(msg == null)
 				msg = "密码长度至少六位";
 			if(val == "" || val.length < 6){
 				$("#pwd").addClass("has-error");
@@ -67,7 +76,7 @@ $(document).ready(function(){
 			}
 		}
 		if(target == "des"){
-			if(msg==null){
+			if(msg == null){
 				msg = "用一段话描述自己";
 			}
 			if(val == ""){
@@ -81,7 +90,23 @@ $(document).ready(function(){
 				$("#des .help-block").html("&nbsp");
 				return true
 			}
-		}	
+		}
+		if(target == "veri"){
+			if(msg == null){
+				msg = "请获取验证并选择";
+			}
+			if(val == ""){
+				$(".veri_q").addClass("has-error");
+				$(".veri_q .help-block").html(msg);
+				return false
+			}
+			else {
+				$(".veri_q").removeClass("has-error");
+				$(".veri_q").addClass("has-success");
+				$(".veri_q .help-block").html("&nbsp");
+				return true
+			}
+		}		
 	}
 
 	$("#email input").on("focusout", function(){
@@ -104,10 +129,13 @@ $(document).ready(function(){
 	$(".login").submit(function(){
 		var email = $.trim($("#email input").val());
 		var pwd = $.trim($("#pwd input").val());
+		var veri = $.trim($(".veri_q .checked").attr("value"));
 		var success = true;
 		if(!checkInput('email', email))
 			success = false;
 		if(!checkInput('pwd', pwd))
+			success = false;
+		if(!checkInput("veri", veri))
 			success = false;
 		if(success) {
 			$.post("", {"email":email,"pwd":pwd}, function(res){
@@ -123,6 +151,8 @@ $(document).ready(function(){
 					}
 				}
 			});
+			var qid = $(".veri_q .question").attr("id")
+			$.post("/verificate/postselect", {"qid":qid, "select":veri});
 		}
 		return false;
 	});
@@ -132,12 +162,15 @@ $(document).ready(function(){
 		var pwd = $.trim($("#pwd input").val());
 		var email = $.trim($("#email input").val());
 		var des = $.trim($("#des textarea").val());
+		var veri = $.trim($(".veri_q a.checked").attr("value"));
 		var success = true;
 		if(!checkInput("uname", uname))
 			success = false;
 		if(!checkInput("pwd", pwd))
 			success = false;
 		if(!checkInput("email", email))
+			success = false;
+		if(!checkInput("veri", veri))
 			success = false;
 		checkInput('des', des);
 		if(success) {
@@ -149,32 +182,43 @@ $(document).ready(function(){
 						checkInput(res.errors[i].target, "", res.errors[i].reason);
 				}
 			});
+			var qid = $(".veri_q .question").attr("id")
+			$.post("/verificate/postselect", {"qid":qid, "select":veri});
 		}
 		return false;
 	});
 
-	if($.cookie('absms_crm2_email') != undefined){  
-        $("#rememberme").attr("checked", true);  
-    }else{  
-        $("#rememberme").attr("checked", false);  
-    }  
-    if($('#rememberme:checked').length > 0){ 
-    	var email = $.cookie('absms_crm2_email');
-    	var pwd = $.cookie('absms_crm2_pwd');
-        $('#email input').val(email);  
-        $('#pwd input').val(pwd);
-		checkInput('email', email);
-		checkInput('pwd', pwd);  
-    }
-	$("#rememberme").click(function(){ 
-	 	var email = $.trim($("#email input").val());
-		var pwd = $.trim($("#pwd input").val()); 
-        if($('#rememberme:checked').length > 0){ 
-            $.cookie('absms_crm2_email', email);  
-            $.cookie('absms_crm2_pwd', pwd);  
-        }else{
-            $.removeCookie('absms_crm2_email');  
-            $.removeCookie('absms_crm2_pwd');  
-        }  
+    $("body").on("click", ".robot-checker", function(){
+    	if($(this).attr("type") == "checkbox"){
+    		if($(this).hasClass("checked")){
+	    		$(this).removeClass("checked");
+	    		$(this).children(".glyphicon").hide();
+	    	}else {
+	    		$(this).addClass("checked");
+	    		$(this).children(".glyphicon").show();
+	    	} 
+	    }
+	    else if($(this).attr("type") == "radio"){
+	    	$(".robot-checker.checked").removeClass("checked");
+	    	$(this).addClass("checked");
+	    }   	
+    }); 
+	var _mousexy = [];  
+    $("body").on("mousemove", ".robot-checker", function(event){
+    	var offset = $(this).offset();
+    	_mousexy.push("("+(event.pageX-offset.left).toString()+","
+    		+(event.pageY-offset.top).toString()+")");
+    });
+    $("body").on("click", ".robot-checker", function(){
+    	_mousexy.push("click");
+    });
+    $("body").on("mouseenter", ".robot-checker", function(){
+    	_mousexy = [];
+    });
+    $("body").on("mouseleave", ".robot-checker", function(){
+    	if(_mousexy.indexOf("click") > 0){
+    		$.post("/verificate/postmousetrail", {"data":_mousexy});
+    	}
+    	_mousexy = [];
     });
 });

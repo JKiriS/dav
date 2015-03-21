@@ -6,4 +6,19 @@
 .help-block {
     margin-top: 5px;
     text-align: left;
+    display: inline-block;
+}
+
+.veri_q {
+	text-align: center;
+	font-size: 15px;
+}
+
+.veri_q .question {
+	text-align: left;
+}
+
+.veri_q .radio-inline {
+	font-size: 17px;
+	margin-right: 20px;
 }

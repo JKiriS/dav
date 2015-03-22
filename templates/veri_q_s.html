@@ -1,0 +1,11 @@
+<div class="question" id="{{ v.id }}">
+	<span>{{ v.question|safe }}</span>
+</div>
+<div class="option">
+{% for o in v.option %}
+	<div class="robot-checker">
+		<input type="radio" name="veri-option" value="{{ forloop.counter0 }}">
+	</div>
+	<span>{{ o }}</span>
+{% endfor %}
+</div>

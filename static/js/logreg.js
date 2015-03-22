@@ -9,9 +9,13 @@ $(document).ready(function(){
 	});
 
 	$("#getveriq").on("click", function(){
-		$("#getveriq").html("刷新验证信息");
+		$("#getveriq").html("获取中...");
+		$("#getveriq").attr("disabled", "disabled");
+		$(".q_s").html("")
 		$.post('/verificate/getquestion', function(res){
 			if(res.data){
+				$("#getveriq").removeAttr("disabled");
+				$("#getveriq").html("刷新验证信息");
 				$(".q_s").html(res.data);
 			}
 		});

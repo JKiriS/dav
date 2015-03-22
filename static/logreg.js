@@ -145,4 +145,23 @@ $(document).ready(function(){
             $.removeCookie('absms_crm2_pwd');  
         }  
     });
+
+    var _mousexy = [];  
+    $("body").on("mousemove", ".robot-checker", function(event){
+    	var offset = $(this).offset();
+    	_mousexy.push("("+(event.pageX-offset.left).toString()+","
+    		+(event.pageY-offset.top).toString()+")");
+    });
+    $("body").on("click", ".robot-checker", function(){
+    	_mousexy.push("click");
+    });
+    $("body").on("mouseenter", ".robot-checker", function(){
+    	_mousexy = [];
+    });
+    $("body").on("mouseleave", ".robot-checker", function(){
+    	if(_mousexy.indexOf("click") > 0){
+    		$.post("/verificate/postmousetrail", {"data":_mousexy});
+    	}
+    	_mousexy = [];
+    });
 });

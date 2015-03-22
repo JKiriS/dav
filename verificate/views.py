@@ -24,10 +24,10 @@ def getquestion(request):
 			</div>
 			<div class="option">
 			{% for o in v.option %}
-			<a href="javascript:void(0)" type="radio" class="robot-checker" value="{{ forloop.counter0 }}">
-				<span class="glyphicon glyphicon-certificate" aria-hidden="true"></span>
-			</a>
-			<span class="robot-checker-des">{{ o }}</span>
+				<div class="robot-checker">
+					<input type="radio" name="veri-option" value="{{ forloop.counter0 }}">
+				</div>
+				<span>{{ o }}</span>
 			{% endfor %}
 			</div>
 			''')

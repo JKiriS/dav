@@ -22,3 +22,16 @@
 	font-size: 17px;
 	margin-right: 20px;
 }
+
+.robot-checker {
+	display: inline-block;
+	width: 40px;
+	height: 40px;
+    margin-right: 5px;
+    color: #dedede;
+}
+
+.robot-checker input {
+	margin-top: 13px;
+	margin-left: 13px;
+}

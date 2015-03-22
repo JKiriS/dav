@@ -129,7 +129,7 @@ $(document).ready(function(){
 	$(".login").submit(function(){
 		var email = $.trim($("#email input").val());
 		var pwd = $.trim($("#pwd input").val());
-		var veri = $.trim($(".veri_q .checked").attr("value"));
+		var veri = $.trim($(".veri_q input:checked").attr("value"));
 		var success = true;
 		if(!checkInput('email', email))
 			success = false;
@@ -162,7 +162,7 @@ $(document).ready(function(){
 		var pwd = $.trim($("#pwd input").val());
 		var email = $.trim($("#email input").val());
 		var des = $.trim($("#des textarea").val());
-		var veri = $.trim($(".veri_q a.checked").attr("value"));
+		var veri = $.trim($(".veri_q input:checked").attr("value"));
 		var success = true;
 		if(!checkInput("uname", uname))
 			success = false;
@@ -188,22 +188,7 @@ $(document).ready(function(){
 		return false;
 	});
 
-    $("body").on("click", ".robot-checker", function(){
-    	if($(this).attr("type") == "checkbox"){
-    		if($(this).hasClass("checked")){
-	    		$(this).removeClass("checked");
-	    		$(this).children(".glyphicon").hide();
-	    	}else {
-	    		$(this).addClass("checked");
-	    		$(this).children(".glyphicon").show();
-	    	} 
-	    }
-	    else if($(this).attr("type") == "radio"){
-	    	$(".robot-checker.checked").removeClass("checked");
-	    	$(this).addClass("checked");
-	    }   	
-    }); 
-	var _mousexy = [];  
+    var _mousexy = [];  
     $("body").on("mousemove", ".robot-checker", function(event){
     	var offset = $(this).offset();
     	_mousexy.push("("+(event.pageX-offset.left).toString()+","

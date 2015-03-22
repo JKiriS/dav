@@ -9,6 +9,7 @@ from bson import ObjectId
 from django.template import Template, Context
 from django.http import HttpResponse, HttpResponseRedirect
 import re
+from django.template.loader import get_template
 # Create your views here.
 
 def getquestion(request): 
@@ -17,20 +18,7 @@ def getquestion(request):
 	v = verification.objects(rand__near=[random.random(), 0]).first()
 	res = {}
 	if v:
-		tem = Template(
-			u'''
-			<div class="question" id="{{ v.id }}">
-				<span>{{ v.question|safe }}</span>
-			</div>
-			<div class="option">
-			{% for o in v.option %}
-				<div class="robot-checker">
-					<input type="radio" name="veri-option" value="{{ forloop.counter0 }}">
-				</div>
-				<span>{{ o }}</span>
-			{% endfor %}
-			</div>
-			''')
+		tem = get_template("veri_q_s.html")
 		c = Context(locals())
 		res['data'] = tem.render(c)
 	response.write( json.dumps(res, ensure_ascii=False) )

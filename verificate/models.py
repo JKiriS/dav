@@ -18,7 +18,8 @@ class mousetrail(Document):
 	uid = ObjectIdField()
 	timestamp = DateTimeField(default=datetime.datetime.now())
 	traildata = ListField( StringField() )
-
+	useragent = StringField()
+	
 	meta = {
 		"db_alias": "default",
     }

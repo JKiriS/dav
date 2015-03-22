@@ -37,7 +37,6 @@ def collectselect(request):
 
 def collectmousetrail(request):
 	traildata = request.POST.getlist('data[]', [])
-	ismobile = False
 	if 'click' in traildata:
 		m = mousetrail(uid=request.user.id, traildata=traildata, useragent=request.META['HTTP_USER_AGENT'])
 		m.save()

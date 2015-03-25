@@ -156,12 +156,12 @@ class ClsHandler:
 if __name__ == '__main__':
 	handler = ClsHandler()
 	processor = Cls.Processor(handler)
-	transport = TSocket.TServerSocket(PARAMS['thrift']['cls_ip'], PARAMS['thrift']['cls_port'])
+	transport = TSocket.TServerSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
 	tfactory = TTransport.TBufferedTransportFactory()
 	pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 	 
 	server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
 	 
-	logger.info("Starting classify service at port "+ repr(PARAMS['thrift']['cls_port']) + " ...")
+	logger.info("Starting classify service at port "+ repr(PARAMS['classify']['port']) + " ...")
 	server.serve()
 	logger.info("done!")

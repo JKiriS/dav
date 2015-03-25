@@ -232,12 +232,12 @@ class RecHandler:
 if __name__ == '__main__':
 	handler = RecHandler()
 	processor = Rec.Processor(handler)
-	transport = TSocket.TServerSocket(PARAMS['thrift']['rec_ip'], PARAMS['thrift']['rec_port'])
+	transport = TSocket.TServerSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
 	tfactory = TTransport.TBufferedTransportFactory()
 	pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 	 
 	server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
 	 
-	logger.info("Starting recommend service at port "+ repr(PARAMS['thrift']['rec_port']) + "...")
+	logger.info("Starting recommend service at port "+ repr(PARAMS['recommend']['port']) + "...")
 	server.serve()
 	logger.info("done!")

@@ -80,7 +80,11 @@ index/
 lsiindex/
 
 # classify file
-cls/
+clsindex/
 
 # runnable jar file
 *.jar
+
+# logging info
+*.log
+*.log.*

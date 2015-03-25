@@ -12,8 +12,9 @@ import urlparse
 import random
 import socket
 
-params = json.load(file('../self.cfg'))
-socket.setdefaulttimeout(params['feedparser_timeout'])
+PARAMS = json.load(file('../self.cfg'))
+
+socket.setdefaulttimeout(PARAMS['feed']['timeout'])
 now = lambda : datetime.datetime.now()
 
 def simplerss(i, site):
@@ -229,8 +230,10 @@ def pento(site):
 def run():
 	global db
 	conn = pymongo.Connection()
+	conn = pymongo.Connection(PARAMS['mongodb']['ip'])
 	db = conn['feed']
-	db.authenticate(params['db_username'], params['db_password'])
+	db.authenticate(PARAMS['mongodb']['username'], PARAMS['mongodb']['password'])
+
 	# sites.updatesites()
 	for i in db.site.find({'active':True}, timeout=False):
 		try:

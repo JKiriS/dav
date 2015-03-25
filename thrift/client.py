@@ -6,6 +6,8 @@ sys.path.append('./gen-py')
  
 # from recsys import RecSys
 from search import Search
+from rec import Rec
+from cls import Cls
 
 from bson import ObjectId
  
@@ -15,10 +17,10 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
  
 try:
-	transport = TSocket.TSocket('localhost', 9092)
+	transport = TSocket.TSocket('115.156.196.215', 9092)
 	transport = TTransport.TBufferedTransport(transport)
 	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	# client = RecSys.Client(protocol)
+	# client = Cls.Client(protocol)
 	client = Search.Client(protocol)
 	transport.open()
  

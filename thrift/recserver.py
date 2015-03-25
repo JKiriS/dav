@@ -2,8 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import socket
-import sys
-sys.path.append('./gen-py')
+import os, sys, getopt
+
+opts, args = getopt.getopt(sys.argv[1:], "f:")
+if len(opts) == 0:
+	exit()
+import json
+PARAMS = json.load(file(opts[0][1]))
+sys.path.append(PARAMS['thrift']['gen-py'])
  
 from rec import Rec
 from rec.ttypes import *
@@ -13,50 +19,38 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
+import logging
+import logging.config
+logging.config.fileConfig(PARAMS['logger']['python'])
+logger = logging.getLogger("thrift")
+
+import jieba
+stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
+	for line in open(PARAMS['jieba']['stopwords']) ])
+stopwords[' '] = 1
+stopwords['.'] = 1
+logger.info('stopwords load success')
+
+cs = json.load(file(PARAMS['category']))
+LSI_DIR = PARAMS['recommend']['dir']
+
 import pymongo
+conn = pymongo.Connection(PARAMS['mongodb']['ip'])
+db = conn['feed']
+db.authenticate(PARAMS['mongodb']['username'], PARAMS['mongodb']['password'])
+logger.info('mongodb connection success')
+
 from bson import ObjectId
 import datetime
 import math
 import random
-import jieba
 import pickle
-import json
-import os
 import numpy as np
 from gensim import corpora, models, similarities
-
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
-import logging
-import logging.config
-logging.config.fileConfig("logger.conf")
-logger = logging.getLogger("thrift")
-
-PARAMS = json.load(file(os.path.join(BASE_DIR, 'self.cfg')))
-PARAMS['db_ip'] = 'localhost'
-stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
-	for line in open(os.path.join(BASE_DIR, 'rsbackend/stopwords.txt')) ])
-stopwords[' '] = 1
-stopwords['.'] = 1
-cs = json.load(file(os.path.join(BASE_DIR, 'rsbackend/cs.json')))
-LSI_DIR = os.path.join(BASE_DIR, 'rsbackend/lsiindex')
-
-class DateEncoder(json.JSONEncoder):
-	def default(self, obj):
-		if isinstance(obj, datetime.datetime):
-			return obj.__str__()
-		return json.JSONEncoder.default(self, obj)
-
-conn = pymongo.Connection(PARAMS['db_ip'])
-db = conn['feed']
-db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
 
 class RecHandler:
 	def updateRList(self, uid, db=db):
 		try:
-			# conn = pymongo.Connection(PARAMS['db_ip'])
-			# db = conn['feed']
-			# db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
 			upre = db.upre.find_one({'_id':ObjectId(uid)})
 			oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
 			oldrlist = [] if oldrlist == None else oldrlist.get('rlist')
@@ -103,9 +97,6 @@ class RecHandler:
 	def updateLsiIndex(self, category, db=db):
 		try:
 			category = category.decode('utf-8')
-			# conn = pymongo.Connection(PARAMS['db_ip'])
-			# db = conn['feed']
-			# db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
 			t = datetime.datetime.now() - datetime.timedelta(days=180)
 			itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
 			texts_origin = []
@@ -143,9 +134,6 @@ class RecHandler:
 	def updateLsiDic(self, category, db=db):
 		try:
 			category = category.decode('utf-8')
-			# conn = pymongo.Connection(PARAMS['db_ip'])
-			# db = conn['feed']
-			# db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
 			t = datetime.datetime.now() - datetime.timedelta(days=180)
 			itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
 			texts_origin = []
@@ -169,9 +157,6 @@ class RecHandler:
 
 	def updateUPre(self, uid, db=db):
 		try:
-			# conn = pymongo.Connection(PARAMS['db_ip'])
-			# db = conn['feed']
-			# db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
 			pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
 			pre['timestamp'] = datetime.datetime.now()
 			for s in db.source.find():
@@ -247,13 +232,12 @@ class RecHandler:
 if __name__ == '__main__':
 	handler = RecHandler()
 	processor = Rec.Processor(handler)
-	transport = TSocket.TServerSocket("115.156.196.215", 9090)
+	transport = TSocket.TServerSocket(PARAMS['thrift']['rec_ip'], PARAMS['thrift']['rec_port'])
 	tfactory = TTransport.TBufferedTransportFactory()
 	pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 	 
-	# server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 	server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
 	 
-	print "Starting thrift server in python..."
+	logger.info("Starting recommend service at port "+ repr(PARAMS['thrift']['rec_port']) + "...")
 	server.serve()
-	print "done!"
+	logger.info("done!")

@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import socket
-import sys
-sys.path.append('./gen-py')
- 
+import os, sys, getopt
+
+opts, args = getopt.getopt(sys.argv[1:], "f:")
+if len(opts) == 0:
+	exit()
+import json
+PARAMS = json.load(file(opts[0][1]))
+sys.path.append(PARAMS['thrift']['gen-py'])
+
 from cls import Cls
 from cls.ttypes import *
 
@@ -13,43 +19,34 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
+import logging
+import logging.config
+logging.config.fileConfig(PARAMS['logger']['python'])
+logger = logging.getLogger("thrift")
+
+import jieba
+stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
+	for line in open(PARAMS['jieba']['stopwords']) ])
+stopwords[' '] = 1
+stopwords['.'] = 1
+logger.info('stopwords load success')
+
+cs = json.load(file(PARAMS['category']))
+CLS_DIR = PARAMS['classify']['dir']
+
 import pymongo
+conn = pymongo.Connection(PARAMS['mongodb']['ip'])
+db = conn['feed']
+db.authenticate(PARAMS['mongodb']['username'], PARAMS['mongodb']['password'])
+logger.info('mongodb connection success')
+
 from bson import ObjectId
 import datetime
 import math
 import random
-import jieba
 import pickle
-import json
-import os
 import numpy as np
-from gensim import corpora, models, similarities
-
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
-import logging
-import logging.config
-logging.config.fileConfig("logger.conf")
-logger = logging.getLogger("thrift")
-
-PARAMS = json.load(file(os.path.join(BASE_DIR, 'self.cfg')))
-PARAMS['db_ip'] = 'localhost'
-stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
-	for line in open(os.path.join(BASE_DIR, 'rsbackend/stopwords.txt')) ])
-stopwords[' '] = 1
-stopwords['.'] = 1
-cs = json.load(file(os.path.join(BASE_DIR, 'rsbackend/cs.json')))
-CLS_DIR = os.path.join(BASE_DIR, 'rsbackend/cls')
-
-class DateEncoder(json.JSONEncoder):
-	def default(self, obj):
-		if isinstance(obj, datetime.datetime):
-			return obj.__str__()
-		return json.JSONEncoder.default(self, obj)
-
-conn = pymongo.Connection(PARAMS['db_ip'])
-db = conn['feed']
-db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
+from gensim import corpora, models
 
 class ClsHandler:
 	def updateClassifyDic(self):
@@ -69,9 +66,6 @@ class ClsHandler:
 
 	def trainClassify(self, db=db):
 		try:
-			# conn = pymongo.Connection(PARAMS['db_ip'])
-			# db = conn['feed']
-			# db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
 			dictionary = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
 			t = datetime.datetime.now() - datetime.timedelta(days=60)
 			itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
@@ -112,9 +106,6 @@ class ClsHandler:
 	def classify(self, category, db=db):
 		try:
 			category = category.decode('utf-8') # chinese decode
-			# conn = pymongo.Connection(PARAMS['db_ip'])
-			# db = conn['feed']
-			# db.authenticate(PARAMS['db_username'], PARAMS['db_password'])
 			texts_origin = []
 			ids = []
 			for i in db.item.find({'category':category}).limit(200):
@@ -165,13 +156,12 @@ class ClsHandler:
 if __name__ == '__main__':
 	handler = ClsHandler()
 	processor = Cls.Processor(handler)
-	transport = TSocket.TServerSocket("115.156.196.215", 9091)
+	transport = TSocket.TServerSocket(PARAMS['thrift']['cls_ip'], PARAMS['thrift']['cls_port'])
 	tfactory = TTransport.TBufferedTransportFactory()
 	pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 	 
-	# server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 	server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
 	 
-	print "Starting thrift server in python..."
+	logger.info("Starting classify service at port "+ repr(PARAMS['thrift']['cls_port']) + " ...")
 	server.serve()
-	print "done!"
+	logger.info("done!")

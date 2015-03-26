@@ -110,9 +110,13 @@ cs = json.load(file('cs.json'))
 # for v in db.verification.find():
 # 	db1.verification.insert(v)
 
-for v in db.verification.find():
-	if isinstance(v['option'][0], int):
-		for i in range(3):
-			v['option'][i] = cs[v['option'][i]]
-	db.verification.save(v)
+# for v in db.verification.find():
+# 	if isinstance(v['option'][0], int):
+# 		for i in range(3):
+# 			v['option'][i] = cs[v['option'][i]]
+# 	db.verification.save(v)
+
+ids = []
+ids.append(db.verification.find_one()['_id'])
+print ids
 	

@@ -12,8 +12,12 @@ sys.path.append(PARAMS['thrift']['gen-py'])
 cs = json.load(file(PARAMS['category']))
 
 from search import Search
+# from search.ttypes import *
 from rec import Rec
+# from rec.ttypes import *
 from cls import Cls
+# from cls.ttypes import *
+from common.ttypes import *
 
 from bson import ObjectId
  
@@ -22,15 +26,25 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-def 
+import pymongo
+conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
+db = conn_primary['feed']
+db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 
 def job_feed():
-	try:
-		feeds.run()
-	except Exception, e:
-		print e
+	db.job.insert({'function':'job_feed', \
+		'starttime':now() + datetime.timedelta(hours=12), 'status':'waiting'})
+	feeds.run()
+	db.job.insert({'function':'job_updateLsiIndex', \
+		'starttime':now() + datetime.timedelta(minutes=17), 'status':'waiting'})
+	db.job.insert({'function':'job_updateSearchIndex', \
+		'starttime':now() + datetime.timedelta(minutes=37), 'status':'waiting'})
+	db.job.insert({'function':'job_classify', \
+		'starttime':now() + datetime.timedelta(minutes=52), 'status':'waiting'})
 
 def job_updateUPre():
+	db.job.insert({'function':'job_updateUPre', \
+		'starttime':now() + datetime.timedelta(hours=24), 'status':'waiting'})
 	try:
 		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
 		transport = TTransport.TBufferedTransport(transport)
@@ -38,12 +52,14 @@ def job_updateUPre():
 		client = Rec.Client(protocol)
 		transport.open()
 		for u in db.user.find() 
-			print client.updateUPre(str(u['_id']))
+			client.updateUPre(str(u['_id']))
 		transport.close()	 
 	except Thrift.TException, ex:
 		print "%s" % (ex.message)
 
 def job_updateRList():
+	db.job.insert({'function':'job_updateRList', \
+		'starttime':now() + datetime.timedelta(minutes=58), 'status':'waiting'})
 	try:
 		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
 		transport = TTransport.TBufferedTransport(transport)
@@ -51,7 +67,10 @@ def job_updateRList():
 		client = Rec.Client(protocol)
 		transport.open()
 		for u in db.user.find() 
-			client.updateRList(str(u['_id']))
+			try:
+				client.updateRList(str(u['_id']))
+			except Exception, e:
+				print e
 		transport.close()	 
 	except Thrift.TException, ex:
 		print "%s" % (ex.message)
@@ -64,12 +83,17 @@ def job_updateLsiIndex():
 		client = Rec.Client(protocol)
 		transport.open()
 		for c in cs 
-			client.updateLsiIndex(c)
+			try:
+				client.updateLsiIndex(c)
+			except Exception, e:
+				print e
 		transport.close()	 
 	except Thrift.TException, ex:
 		print "%s" % (ex.message)
 
 def job_updateLsiDic():
+	db.job.insert({'function':'job_updateLsiDic', \
+		'starttime':now() + datetime.timedelta(days=5), 'status':'waiting'})
 	try:
 		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
 		transport = TTransport.TBufferedTransport(transport)
@@ -77,12 +101,17 @@ def job_updateLsiDic():
 		client = Rec.Client(protocol)
 		transport.open()
 		for c in cs 
-			client.updateLsiDic(c)
+			try:
+				client.updateLsiDic(c)
+			except Exception, e:
+				print e
 		transport.close()	 
 	except Thrift.TException, ex:
 		print "%s" % (ex.message)
 
 def job_updateClassifyDic():
+	db.job.insert({'function':'job_updateClassifyDic', \
+		'starttime':now() + datetime.timedelta(days=15), 'status':'waiting'})
 	try:
 		transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
 		transport = TTransport.TBufferedTransport(transport)
@@ -91,17 +120,21 @@ def job_updateClassifyDic():
 		transport.open()
 		client.updateClassifyDic()
 		transport.close()	 
+		db.job.insert({'function':'job_updateClassifyDic', \
+			'starttime':now() + datetime.timedelta(minutes=13), 'status':'waiting'})
 	except Thrift.TException, ex:
 		print "%s" % (ex.message)
 
 def job_trainClassify():
+	db.job.insert({'function':'job_updateClassifyDic', \
+		'starttime':now() + datetime.timedelta(days=10), 'status':'waiting'})
 	try:
 		transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
 		transport = TTransport.TBufferedTransport(transport)
 		protocol = TBinaryProtocol.TBinaryProtocol(transport)
 		client = Cls.Client(protocol)
 		transport.open()
-		client.trainClassify(str(u['_id']))
+		client.trainClassify()
 		transport.close()	 
 	except Thrift.TException, ex:
 		print "%s" % (ex.message)
@@ -132,17 +165,12 @@ def job_updateSearchIndex():
 
 if __name__ == '__main__':
 	while True:
-		import pymongo
-		conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
-		db = conn_primary['feed']
-		db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
-
 		for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
 				'status':'waiting'}, timeout=False):
 			try:
 				db.job.update({'_id':j['_id']}, {'$set':{'status':'running'}})
-				exec( j['module'] + '.run()' )
-				db.job.remove({'_id':j['_id']})
+				exec( j['function'] + '()' )
+				db.job.update({'_id':j['_id']}, {'$set':{'status':'completed'}})
 			except Exception, e:
 				db.job.update({'_id':j['_id']}, {'$set':{'status':'failed'}})
 				print j['module'] + str(e)

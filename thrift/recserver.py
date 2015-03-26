@@ -35,19 +35,34 @@ stopwords = {}.fromkeys([ line.rstrip().decode('utf-8') \
 	for line in open(PARAMS['jieba']['stopwords']) ])
 stopwords[' '] = 1
 stopwords['.'] = 1
-logger.info('stopwords load success')
+logger.info('jieba and stopwords load success')
 
 cs = json.load(file(PARAMS['category']))
 LSI_DIR = PARAMS['recommend']['dir']
 
 import pymongo
-conn_local = pymongo.Connection(PARAMS['db_local']['ip'])
-db_local = conn_local['feed']
-db_local.authenticate(PARAMS['db_local']['username'], PARAMS['db_local']['password'])
-conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
-db_primary = conn_primary['feed']
-db_primary.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
-logger.info('mongodb connection success')
+class DBManager:
+	def __init__(self):
+		self._db_local = None
+		self._db_primary = None
+
+	def getlocal(self):
+		if self._db_local is None:
+			self._conn_local = pymongo.Connection(PARAMS['db_local']['ip'])
+			self._db_local = conn_local['feed']
+			self._db_local.authenticate(PARAMS['db_local']['username'], PARAMS['db_local']['password'])
+			logger.info('local mongodb connection success')
+		return self._db_local
+
+	def getprimary(self):
+		if self._db_primary is None:
+			self._conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
+			self._db_primary = conn_primary['feed']
+			self._db_primary.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
+			logger.info('primary connection success')
+		return self._db_primary
+
+dbm = DBManager()
 
 from bson import ObjectId
 import datetime
@@ -58,185 +73,218 @@ import numpy as np
 from gensim import corpora, models, similarities
 
 class RecHandler:
-	def updateRList(self, uid, db=db_local, db_primary=db_primary):
-		try:
-			upre = db.upre.find_one({'_id':ObjectId(uid)})
-			oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
-			oldrlist = [] if oldrlist == None else oldrlist.get('rlist')
-			score = np.array([])
-			ids = []
-			for c in cs:
-				score_c = None
-				cpath = os.path.join(LSI_DIR, c)
-				itemIds = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
-				if len(itemIds) == 0:
-					continue
-				ids += itemIds
-				lsi = models.LsiModel.load(os.path.join(cpath,'gs.lsi'))
-				dic = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
-				index = similarities.MatrixSimilarity.load(os.path.join(cpath,'gs.index'))
-				for i in db.item.find({'_id':{'$in':upre['visits']},'category':c}):
-					segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
-					segs *= 2
-					segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
-					test_bow = dic.doc2bow(segs)
-					test_lsi = lsi[test_bow]
-					score_c = index[test_lsi] if score_c == None else score_c + index[test_lsi]
-				if score_c != None:
-					score = np.hstack(( score, score_c * math.sqrt(upre['category'].get(c, 1)) ))
-				else :
-					score = np.hstack(( score, np.zeros(len(itemIds)) ))
-			maxs = max(score)
-			if maxs > 0:
-				score = .7 * score / maxs
-			score += .3 * np.random.random(len(score))
-			res = [[ids[i], score[i]] for i in range(len(ids))]
-			for r in res:
-				if r[0] in oldrlist: 
-					r[1] *= .9
-				if r[0] in upre['visits']: 
-					r[1] *= 0
-			rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
-			db_primary.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':datetime.datetime.now()})
-			return json.dumps({'success':True})
-		except Exception, e:
-			logger.error(e)
-			return json.dumps({'success':False, 'msg':e})
-
-	def updateLsiIndex(self, category, db=db_local, db_primary=db_primary):
-		try:
-			category = category.decode('utf-8')
-			t = datetime.datetime.now() - datetime.timedelta(days=180)
-			itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
-			texts_origin = []
-			itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
-			readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
-			cpath = os.path.join(LSI_DIR, category)
-			itemIds = []
-			for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
-				itemIds.append(ObjectId(i['_id']))
-				segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
+	def updateRList(self, uid):
+		logger.info('update user(' + uid + ')\'s recommend list' )
+		db = dbm.getlocal()
+		upre = db.upre.find_one({'_id':ObjectId(uid)})
+		if upre is None:
+			ex = DataError()
+			ex.who = 'upre(_id=' + uid + ')'
+			raise ex
+		oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
+		oldrlist = [] if oldrlist is None else oldrlist.get('rlist')
+		score = np.array([])
+		ids = []
+		clicks = []
+		favos = []
+		for c in cs:
+			score_c = None
+			cpath = os.path.join(LSI_DIR, c)
+			ids_c = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
+			if len(ids_c) == 0:
+				continue
+			for i in db.item.find({'_id':{'$in':ids_c}}).sort('pubdate',pymongo.DESCENDING):
+				clicks.append(i['click_num'])
+				favos.append(i['favo_num'])
+			ids += ids_c
+			lsi = models.LsiModel.load(os.path.join(cpath,'gs.lsi'))
+			dic = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
+			index = similarities.MatrixSimilarity.load(os.path.join(cpath,'gs.index'))
+			for i in db.item.find({'_id':{'$in':upre['visits']},'category':c}):
+				segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
 				segs *= 2
-				segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
-				texts_origin.append(segs)
-			pickle.dump(itemIds, open(os.path.join(cpath,'ids.pkl'), 'wb'))
-			if len(texts_origin) == 0:
-				return json.dumps({'success':True})
-			all_tokens = sum(texts_origin, [])
-			token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
-			texts = [[word for word in text if word not in token_once] for text in texts_origin]
-			dictionary = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
-			if len(dictionary) == 0:
-				return json.dumps({'success':False, 'msg':'dict error'})
-			corpus = [dictionary.doc2bow(text) for text in texts]
-			tfidf = models.TfidfModel(corpus)
-			corpus_tfidf = tfidf[corpus]
-			lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=30)
-			lsi.save(os.path.join(cpath,'gs.lsi'))
-			index = similarities.MatrixSimilarity(lsi[corpus])
-			index.save(os.path.join(cpath,'gs.index'))
-			return 'success'
-		except Exception, e:
-			logger.error(e)
-			return json.dumps({'success':False, 'msg':e})
-
-	def updateLsiDic(self, category, db=db_local, db_primary=db_primary):
-		try:
-			category = category.decode('utf-8')
-			t = datetime.datetime.now() - datetime.timedelta(days=180)
-			itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
-			texts_origin = []
-			itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
-			readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
-			cpath = os.path.join(LSI_DIR, category)
-			for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
-				segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
-				segs *= 2
-				segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
-				texts_origin.append(segs)
-			all_tokens = sum(texts_origin, [])
-			token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
-			texts = [[word for word in text if word not in token_once] for text in texts_origin]
-			dictionary = corpora.Dictionary(texts)
-			dictionary.save(os.path.join(cpath,'gs.dic'))
-			return 'success'
-		except Exception, e:
-			logger.error(e)
-			return json.dumps({'success':False, 'reason':e})
-
-	def updateUPre(self, uid, db=db_local, db_primary=db_primary):
-		try:
-			pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
-			pre['timestamp'] = datetime.datetime.now()
-			for s in db.source.find():
-				pre['source'][s['name']] = 0
-			for c in db.category.find():
-				pre['category'][c['name']] = 0
-			# get the latesttime 
-			latest = db.behavior.find({'uid':ObjectId(uid)})\
-				.sort('timestamp', pymongo.DESCENDING).limit(1)
-			if latest.count() > 0:
-				latesttime = latest[0]['timestamp']
+				segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
+				test_bow = dic.doc2bow(segs)
+				test_lsi = lsi[test_bow]
+				score_c = index[test_lsi] if score_c == None else score_c + index[test_lsi]
+			if score_c != None:
+				score = np.hstack(( score, score_c * math.sqrt(upre['category'].get(c, 1)) ))
 			else :
-				db_primary.upre.save(pre)
-				return 'success'
-			# search
-			for i in db.behavior.find({'uid':ObjectId(uid), 'action':'search'})\
-				.sort('timestamp', pymongo.DESCENDING).limit(500):
-				deltaT = latesttime - i['timestamp']
+				score = np.hstack(( score, np.zeros(len(ids_c)) ))
+		if not len(ids) == len(score) == len(clicks) == len(favos):
+			ex = DataError()
+			ex.who = 'ids'
+			raise ex 
+		clicks = np.array(clicks)
+		favos = np.array(favos)
+		maxs = max(score)
+		if maxs > 0:
+			score = .35* score / maxs
+		maxs = max(clicks)
+		if maxs > 0:
+			score += .2 * clicks / maxs
+		maxs = max(favos)
+		if maxs > 0:
+			score += .3 * favos / maxs
+		score += .15 * np.random.random(len(score))
+		res = [[ids[i], score[i]] for i in range(len(ids))]
+		for r in res:
+			if r[0] in oldrlist: 
+				r[1] *= .9
+			if r[0] in upre['visits']: 
+				r[1] *= 0
+		rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
+		db_primary = dbm.getprimary()
+		db_primary.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':datetime.datetime.now()})
+		
+		res = Result()
+		res.success = True
+		return res
+		
+
+	def updateLsiIndex(self, category):
+		category = category.decode('utf-8')
+		t = datetime.datetime.now() - datetime.timedelta(days=180)
+		db = dbm.getlocal()
+		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
+		texts_origin = []
+		itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
+		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
+		cpath = os.path.join(LSI_DIR, category)
+		itemIds = []
+		for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
+			itemIds.append(i['_id'])
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
+			segs *= 2
+			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
+			texts_origin.append(segs)
+		pickle.dump(itemIds, open(os.path.join(cpath,'ids.pkl'), 'wb'))
+		if len(texts_origin) == 0:
+			ex = DataError()
+			ex.who = 'texts_origin'
+			raise ex
+		all_tokens = sum(texts_origin, [])
+		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
+		texts = [[word for word in text if word not in token_once] for text in texts_origin]
+		dictionary = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
+		if len(dictionary) == 0:
+			ex = FileError()
+			ex.who = 'lsidic'
+			raise ex
+		corpus = [dictionary.doc2bow(text) for text in texts]
+		tfidf = models.TfidfModel(corpus)
+		corpus_tfidf = tfidf[corpus]
+		lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=30)
+		lsi.save(os.path.join(cpath,'gs.lsi'))
+		index = similarities.MatrixSimilarity(lsi[corpus])
+		index.save(os.path.join(cpath,'gs.index'))		
+		res = Result()
+		res.success = True
+		return res
+
+	def updateLsiDic(self, category):
+		category = category.decode('utf-8')
+		t = datetime.datetime.now() - datetime.timedelta(days=180)
+		db = dbm.getlocal()
+		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()	
+		itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
+		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
+		cpath = os.path.join(LSI_DIR, category)
+		texts_origin = []
+		for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
+			segs *= 2
+			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
+			texts_origin.append(segs)
+		if len(texts_origin) == 0:
+			ex = DataError()
+      		ex.who = 'texts_origin'
+      		raise ex
+		all_tokens = sum(texts_origin, [])
+		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
+		texts = [[word for word in text if word not in token_once] for text in texts_origin]
+		dictionary = corpora.Dictionary(texts)
+		dictionary.save(os.path.join(cpath,'gs.dic'))
+		
+		res = Result()
+		res.success = True
+		return res
+
+	def updateUPre(self, uid):
+		pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
+		pre['timestamp'] = datetime.datetime.now()
+		db = dbm.getlocal()
+		for s in db.source.find():
+			pre['source'][s['name']] = 0
+		for c in db.category.find():
+			pre['category'][c['name']] = 0
+		# get the latesttime 
+		latest = db.behavior.find({'uid':ObjectId(uid)})\
+			.sort('timestamp', pymongo.DESCENDING).limit(1)
+		if latest.count() > 0:
+			latesttime = latest[0]['timestamp']
+		else :
+			res = Result()
+			res.success = True
+			res.msg = 'user' + uid + 'has no behavior history'
+			return res
+		# search
+		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'search'})\
+			.sort('timestamp', pymongo.DESCENDING).limit(500):
+			deltaT = latesttime - i['timestamp']
+			timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i['target'], cut_all=False))
+			for s in segs:
+				pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
+		# visit source
+		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitsource'})\
+			.sort('timestamp', pymongo.DESCENDING).limit(500):
+			deltaT = latesttime - i['timestamp']
+			timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
+			pre['source'][i['target']] = pre['source'].get(i['target'], 0) + 1.2 * timefactor
+		# visit category
+		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitcategory'})\
+			.sort('timestamp', pymongo.DESCENDING).limit(500):
+			deltaT = latesttime - i['timestamp']
+			timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
+			pre['category'][i['target']] = pre['category'].get(i['target'], 0) + 1.2 * timefactor
+		#clickitem
+		visits = {}
+		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'clickitem'})\
+				.sort('timestamp', pymongo.DESCENDING).limit(300):
+			visits[ObjectId(i['target'])] = i['timestamp']
+		if len(visits) > 0:
+			latest = max(visits.values())
+			for i in db.item.find({'_id':{'$in':visits.keys()}}):
+				deltaT = latest - visits[i['_id']]
 				timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
-				segs = filter(lambda s:s not in stopwords, jieba.cut(i['target'], cut_all=False))
+				pre['source'][i['source']] = pre['source'].get(i['source'], 0) + 1.2 * timefactor
+				pre['category'][i['category']] = pre['category'].get(i['category'], 0) + 1.2 * timefactor
+				segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
 				for s in segs:
 					pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
-			# visit source
-			for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitsource'})\
-				.sort('timestamp', pymongo.DESCENDING).limit(500):
-				deltaT = latesttime - i['timestamp']
-				timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
-				pre['source'][i['target']] = pre['source'].get(i['target'], 0) + 1.2 * timefactor
-			# visit category
-			for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitcategory'})\
-				.sort('timestamp', pymongo.DESCENDING).limit(500):
-				deltaT = latesttime - i['timestamp']
-				timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
-				pre['category'][i['target']] = pre['category'].get(i['target'], 0) + 1.2 * timefactor
-			#clickitem
-			visits = {}
-			for i in db.behavior.find({'uid':ObjectId(uid), 'action':'clickitem'})\
-					.sort('timestamp', pymongo.DESCENDING).limit(300):
-				visits[ObjectId(i['target'])] = i['timestamp']
-			if len(visits) > 0:
-				latest = max(visits.values())
-				for i in db.item.find({'_id':{'$in':visits.keys()}}):
-					deltaT = latest - visits[i['_id']]
-					timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
-					pre['source'][i['source']] = pre['source'].get(i['source'], 0) + 1.2 * timefactor
-					pre['category'][i['category']] = pre['category'].get(i['category'], 0) + 1.2 * timefactor
-					segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
-					for s in segs:
-						pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
-			#favo item
-			favos = {}
-			for i in db.behavior.find({'uid':ObjectId(uid), 'action':'addfavorite'})\
-					.sort('timestamp', pymongo.DESCENDING).limit(200):
-				favos[ObjectId(i['target'])] = i['timestamp']
-			if len(favos) > 0:
-				latest = max(favos.values())
-				for i in db.item.find({'_id':{'$in':favos.keys()}}):
-					deltaT = latest - favos[i['_id']]
-					timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 60.))
-					pre['source'][i['source']] = pre['source'].get(i['source'], 0) + 1.5 * timefactor
-					pre['category'][i['category']] = pre['category'].get(i['category'], 0) + 1.5 * timefactor
-					segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
-					for s in segs:
-						pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
-			pre['wd'] = dict(sorted(pre['wd'].items(), key = lambda y:y[1], reverse=True)[:100])
-			pre['visits'] = visits.keys()
-			db_primary.upre.save(pre)
-			return 'success'
-		except Exception, e:
-			logger.error(e)
-			return json.dumps({'success':False, 'msg':e})
+		#favo item
+		favos = {}
+		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'addfavorite'})\
+				.sort('timestamp', pymongo.DESCENDING).limit(200):
+			favos[ObjectId(i['target'])] = i['timestamp']
+		if len(favos) > 0:
+			latest = max(favos.values())
+			for i in db.item.find({'_id':{'$in':favos.keys()}}):
+				deltaT = latest - favos[i['_id']]
+				timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 60.))
+				pre['source'][i['source']] = pre['source'].get(i['source'], 0) + 1.5 * timefactor
+				pre['category'][i['category']] = pre['category'].get(i['category'], 0) + 1.5 * timefactor
+				segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
+				for s in segs:
+					pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
+		pre['wd'] = dict(sorted(pre['wd'].items(), key = lambda y:y[1], reverse=True)[:100])
+		pre['visits'] = visits.keys()
+		db_primary = dbm.getprimary()
+		db_primary.upre.save(pre)
+		res = Result()
+		res.success = True
+		return res
 
 import win32serviceutil
 import win32service

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pymongo
 import urllib2
 from bs4 import BeautifulSoup
 import feedparser
@@ -229,10 +228,10 @@ def pento(site):
 
 def run():
 	global db
-	conn = pymongo.Connection()
-	conn = pymongo.Connection(PARAMS['mongodb']['ip'])
-	db = conn['feed']
-	db.authenticate(PARAMS['mongodb']['username'], PARAMS['mongodb']['password'])
+	import pymongo
+	conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
+	db = conn_primary['feed']
+	db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 
 	# sites.updatesites()
 	for i in db.site.find({'active':True}, timeout=False):
@@ -240,12 +239,12 @@ def run():
 			exec( i['parser']+'(i)' )
 		except Exception, e:
 			print i['url'] + str(e)
-	db.item.update({'pubdate':{'$gt':now()}}, {'$set':{'pubdate':now()}}, multi=True)
-	db.site.update({'latest':{'$gt':now()}}, {'$set':{'latest':now()}}, multi=True)
+	# db.item.update({'pubdate':{'$gt':now()}}, {'$set':{'pubdate':now()}}, multi=True)
+	# db.site.update({'latest':{'$gt':now()}}, {'$set':{'latest':now()}}, multi=True)
 	# db.job.insert({'module':'updateindex', 'starttime':now() + datetime.timedelta(minutes=10)})
 	# db.job.insert({'module':'calcupre', 'starttime':now() + datetime.timedelta(minutes=5)})
-	db.job.insert({'module':'feeds', \
-		'starttime':now() + datetime.timedelta(hours=12), 'status':'waiting'})
+	# db.job.insert({'module':'feeds', \
+	# 	'starttime':now() + datetime.timedelta(hours=12), 'status':'waiting'})
 	# db.job.insert({'module':'updatesearchindex', \
 	# 	'starttime':now() + datetime.timedelta(minutes=10), 'status':'waiting'})
 	conn.close()

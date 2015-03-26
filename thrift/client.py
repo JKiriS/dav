@@ -4,7 +4,6 @@
 import sys
 sys.path.append('./gen-py')
  
-# from recsys import RecSys
 from search import Search
 from rec import Rec
 from cls import Cls
@@ -17,11 +16,11 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
  
 try:
-	transport = TSocket.TSocket('115.156.196.215', 9092)
+	transport = TSocket.TSocket('115.156.196.215', 9091)
 	transport = TTransport.TBufferedTransport(transport)
 	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	# client = Cls.Client(protocol)
-	client = Search.Client(protocol)
+	client = Cls.Client(protocol)
+	# client = Search.Client(protocol)
 	transport.open()
  
 	print 'start'
@@ -30,10 +29,10 @@ try:
 	# print client.updateLsiIndex('文化')
 	# print client.updateLsiDic('文化')
 	# print client.trainClassify()
-	# print client.classify('文化')
-	sid = ObjectId()
-	print sid
-	print client.search("python", str(sid))
+	# print client.classify('综合')
+	# sid = ObjectId()
+	# print sid
+	# print client.search("python", str(sid))
 	# print client.updateSearchIndex()
 
 	transport.close()

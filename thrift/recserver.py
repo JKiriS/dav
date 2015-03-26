@@ -4,11 +4,17 @@
 import socket
 import os, sys, getopt
 
-opts, args = getopt.getopt(sys.argv[1:], "f:")
-if len(opts) == 0:
-	exit()
+# opts, args = getopt.getopt(sys.argv[1:], "f:")
+# # if len(opts) == 0:
+# # 	exit()
+# PARAMS_DIR = opts[0][1]
+# sys.argv.remove(opts[0][0])
+# sys.argv.remove(opts[0][1])
+# if not os.path.isfile(PARAMS_DIR):
+# 	PARAMS_DIR = "e:/dav/self.cfg"
+PARAMS_DIR = "e:/dav/self.cfg"
 import json
-PARAMS = json.load(file(opts[0][1]))
+PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
  
 from rec import Rec
@@ -35,9 +41,12 @@ cs = json.load(file(PARAMS['category']))
 LSI_DIR = PARAMS['recommend']['dir']
 
 import pymongo
-conn = pymongo.Connection(PARAMS['mongodb']['ip'])
-db = conn['feed']
-db.authenticate(PARAMS['mongodb']['username'], PARAMS['mongodb']['password'])
+conn_local = pymongo.Connection(PARAMS['db_local']['ip'])
+db_local = conn_local['feed']
+db_local.authenticate(PARAMS['db_local']['username'], PARAMS['db_local']['password'])
+conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
+db_primary = conn_primary['feed']
+db_primary.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 logger.info('mongodb connection success')
 
 from bson import ObjectId
@@ -49,7 +58,7 @@ import numpy as np
 from gensim import corpora, models, similarities
 
 class RecHandler:
-	def updateRList(self, uid, db=db):
+	def updateRList(self, uid, db=db_local, db_primary=db_primary):
 		try:
 			upre = db.upre.find_one({'_id':ObjectId(uid)})
 			oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
@@ -88,13 +97,13 @@ class RecHandler:
 				if r[0] in upre['visits']: 
 					r[1] *= 0
 			rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
-			db.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':datetime.datetime.now()})
-			return 'success'
+			db_primary.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':datetime.datetime.now()})
+			return json.dumps({'success':True})
 		except Exception, e:
 			logger.error(e)
-			return 'failed'
+			return json.dumps({'success':False, 'msg':e})
 
-	def updateLsiIndex(self, category, db=db):
+	def updateLsiIndex(self, category, db=db_local, db_primary=db_primary):
 		try:
 			category = category.decode('utf-8')
 			t = datetime.datetime.now() - datetime.timedelta(days=180)
@@ -112,13 +121,13 @@ class RecHandler:
 				texts_origin.append(segs)
 			pickle.dump(itemIds, open(os.path.join(cpath,'ids.pkl'), 'wb'))
 			if len(texts_origin) == 0:
-				return 'success'
+				return json.dumps({'success':True})
 			all_tokens = sum(texts_origin, [])
 			token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 			texts = [[word for word in text if word not in token_once] for text in texts_origin]
 			dictionary = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
 			if len(dictionary) == 0:
-				return 'dict error'
+				return json.dumps({'success':False, 'msg':'dict error'})
 			corpus = [dictionary.doc2bow(text) for text in texts]
 			tfidf = models.TfidfModel(corpus)
 			corpus_tfidf = tfidf[corpus]
@@ -129,9 +138,9 @@ class RecHandler:
 			return 'success'
 		except Exception, e:
 			logger.error(e)
-			return 'failed'
+			return json.dumps({'success':False, 'msg':e})
 
-	def updateLsiDic(self, category, db=db):
+	def updateLsiDic(self, category, db=db_local, db_primary=db_primary):
 		try:
 			category = category.decode('utf-8')
 			t = datetime.datetime.now() - datetime.timedelta(days=180)
@@ -153,9 +162,9 @@ class RecHandler:
 			return 'success'
 		except Exception, e:
 			logger.error(e)
-			return 'failed'
+			return json.dumps({'success':False, 'reason':e})
 
-	def updateUPre(self, uid, db=db):
+	def updateUPre(self, uid, db=db_local, db_primary=db_primary):
 		try:
 			pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
 			pre['timestamp'] = datetime.datetime.now()
@@ -169,7 +178,7 @@ class RecHandler:
 			if latest.count() > 0:
 				latesttime = latest[0]['timestamp']
 			else :
-				db.upre.save(pre)
+				db_primary.upre.save(pre)
 				return 'success'
 			# search
 			for i in db.behavior.find({'uid':ObjectId(uid), 'action':'search'})\
@@ -223,21 +232,46 @@ class RecHandler:
 						pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
 			pre['wd'] = dict(sorted(pre['wd'].items(), key = lambda y:y[1], reverse=True)[:100])
 			pre['visits'] = visits.keys()
-			db.upre.save(pre)
+			db_primary.upre.save(pre)
 			return 'success'
 		except Exception, e:
 			logger.error(e)
-			return 'failed'
+			return json.dumps({'success':False, 'msg':e})
 
-if __name__ == '__main__':
-	handler = RecHandler()
-	processor = Rec.Processor(handler)
-	transport = TSocket.TServerSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-	tfactory = TTransport.TBufferedTransportFactory()
-	pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-	 
-	server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
-	 
-	logger.info("Starting recommend service at port "+ repr(PARAMS['recommend']['port']) + "...")
-	server.serve()
-	logger.info("done!")
+import win32serviceutil
+import win32service
+import win32event
+
+class recserver(win32serviceutil.ServiceFramework):
+	_svc_name_ = "RecService"
+	_svc_display_name_ = "recommend service"
+	def __init__(self, args):
+		win32serviceutil.ServiceFramework.__init__(self, args)
+		# Create an event which we will use to wait on.
+		# The "service stop" request will set this event.
+		self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+
+	def SvcStop(self):
+		# Before we do anything, tell the SCM we are starting the stop process.
+		self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+		# And set my event.
+		win32event.SetEvent(self.hWaitStop)
+
+	def SvcDoRun(self):
+		# We do nothing other than wait to be stopped!
+		logger.info("run recommend service")
+		handler = RecHandler()
+		processor = Rec.Processor(handler)
+		transport = TSocket.TServerSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
+		tfactory = TTransport.TBufferedTransportFactory()
+		pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+		 
+		server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+		 
+		logger.info("Starting recommend service at port "+ repr(PARAMS['recommend']['port']) + " ...")
+		server.serve()
+		logger.info("done!")
+		win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
+
+if __name__=='__main__':
+	win32serviceutil.HandleCommandLine(recserver)

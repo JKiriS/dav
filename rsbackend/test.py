@@ -52,9 +52,9 @@ import os
 # 	if 'children' in c:
 # 		for cc in c['children']:
 # 			m[cc['name']] = c['name']
-# conn = pymongo.Connection('54.187.240.68') #
-# db = conn['feed']
-# db.authenticate('JKiriS','910813gyb')
+conn = pymongo.Connection('54.187.240.68') #
+db = conn['feed']
+db.authenticate('JKiriS','910813gyb')
 # for i in m:
 # 	db.site.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
 # 	db.item.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
@@ -109,3 +109,10 @@ cs = json.load(file('cs.json'))
 
 # for v in db.verification.find():
 # 	db1.verification.insert(v)
+
+for v in db.verification.find():
+	if isinstance(v['option'][0], int):
+		for i in range(3):
+			v['option'][i] = cs[v['option'][i]]
+	db.verification.save(v)
+	

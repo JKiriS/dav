@@ -38,143 +38,118 @@ def job_feed():
 	feeds.run()
 	db.job.insert({'function':'job_updateLsiIndex', \
 		'starttime':now() + datetime.timedelta(minutes=17), 'status':'waiting'})
-	db.job.insert({'function':'job_updateSearchIndex', \
-		'starttime':now() + datetime.timedelta(minutes=37), 'status':'waiting'})
+	# db.job.insert({'function':'job_updateSearchIndex', \
+	# 	'starttime':now() + datetime.timedelta(minutes=37), 'status':'waiting'})
 	db.job.insert({'function':'job_classify', \
 		'starttime':now() + datetime.timedelta(minutes=52), 'status':'waiting'})
 
 def job_updateUPre():
 	db.job.insert({'function':'job_updateUPre', \
 		'starttime':now() + datetime.timedelta(hours=24), 'status':'waiting'})
-	try:
-		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Rec.Client(protocol)
-		transport.open()
-		for u in db.user.find():
-			client.updateUPre(str(u['_id']))
-		transport.close()	 
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Rec.Client(protocol)
+	transport.open()
+	for u in db.user.find():
+		client.updateUPre(str(u['_id']))
+	transport.close()	 
+
 
 def job_updateRList():
 	db.job.insert({'function':'job_updateRList', \
 		'starttime':now() + datetime.timedelta(minutes=58), 'status':'waiting'})
-	try:
-		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Rec.Client(protocol)
-		transport.open()
-		for u in db.user.find():
-			try:
-				client.updateRList(str(u['_id']))
-			except Exception, e:
-				print e
-		transport.close()	 
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Rec.Client(protocol)
+	transport.open()
+	for u in db.user.find():
+		try:
+			client.updateRList(str(u['_id']))
+		except Exception, e:
+			print e
+	transport.close()	
 
 def job_updateLsiIndex():
-	try:
-		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Rec.Client(protocol)
-		transport.open()
-		for c in cs:
-			try:
-				client.updateLsiIndex(c.encode('utf-8'))
-			except Exception, e:
-				print e
-		transport.close()	 
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Rec.Client(protocol)
+	transport.open()
+	for c in cs:
+		try:
+			client.updateLsiIndex(c.encode('utf-8'))
+		except Exception, e:
+			print e
+	transport.close()	 
 
 def job_updateLsiDic():
-	# db.job.insert({'function':'job_updateLsiDic', \
-	# 	'starttime':now() + datetime.timedelta(days=5), 'status':'waiting'})
-	try:
-		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Rec.Client(protocol)
-		transport.open()
-		for c in cs: 
-			try:
-				client.updateLsiDic(c.encode('utf-8'))
-			except Exception, e:
-				print e
-		transport.close()	 
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	db.job.insert({'function':'job_updateLsiDic', \
+		'starttime':now() + datetime.timedelta(days=5), 'status':'waiting'})
+	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Rec.Client(protocol)
+	transport.open()
+	for c in cs: 
+		try:
+			client.updateLsiDic(c.encode('utf-8'))
+		except Exception, e:
+			print e
+	transport.close()	 
 
 def job_updateClassifyDic():
 	db.job.insert({'function':'job_updateClassifyDic', \
 		'starttime':now() + datetime.timedelta(days=15), 'status':'waiting'})
-	try:
-		transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Cls.Client(protocol)
-		transport.open()
-		client.updateClassifyDic()
-		transport.close()	 
-		db.job.insert({'function':'job_updateClassifyDic', \
-			'starttime':now() + datetime.timedelta(minutes=13), 'status':'waiting'})
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Cls.Client(protocol)
+	transport.open()
+	client.updateClassifyDic()
+	transport.close()	 
+	db.job.insert({'function':'job_trainClassify', \
+		'starttime':now() + datetime.timedelta(minutes=13), 'status':'waiting'})
 
 def job_trainClassify():
-	db.job.insert({'function':'job_updateClassifyDic', \
-		'starttime':now() + datetime.timedelta(days=10), 'status':'waiting'})
-	try:
-		transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Cls.Client(protocol)
-		transport.open()
-		client.trainClassify()
-		transport.close()	 
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Cls.Client(protocol)
+	transport.open()
+	client.trainClassify()
+	transport.close()	 
+
 
 def job_classify():
-	try:
-		transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Cls.Client(protocol)
-		transport.open()
-		client.classify('综合')
-		transport.close()	 
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Cls.Client(protocol)
+	transport.open()
+	client.classify('综合')
+	transport.close()	 
 
 def job_updateSearchIndex():
-	try:
-		transport = TSocket.TSocket(PARAMS['search']['ip'], PARAMS['search']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Search.Client(protocol)
-		transport.open()
-		client.updateSearchIndex()
-		transport.close()	 
-	except Thrift.TException, ex:
-		print "%s" % (ex.message)
+	transport = TSocket.TSocket(PARAMS['search']['ip'], PARAMS['search']['port'])
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Search.Client(protocol)
+	transport.open()
+	client.updateSearchIndex()
+	transport.close()	 
 
 if __name__ == '__main__':
-	# while True:
-	# 	for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
-	# 			'status':'waiting'}, timeout=False):
-	# 		try:
-	# 			db.job.update({'_id':j['_id']}, {'$set':{'status':'running'}})
-	# 			exec( j['function'] + '()' )
-	# 			db.job.update({'_id':j['_id']}, {'$set':{'status':'completed'}})
-	# 		except Exception, e:
-	# 			db.job.update({'_id':j['_id']}, {'$set':{'status':'failed'}})
-	# 			print j['module'] + str(e)
-	# 	conn.close()
-	# 	time.sleep(60 * 15)
-	job_classify()
+	while True:
+		for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
+				'status':'waiting'}, timeout=False):
+			try:
+				db.job.update({'_id':j['_id']}, {'$set':{'status':'running'}})
+				exec( j['function'] + '()' )
+				db.job.update({'_id':j['_id']}, {'$set':{'status':'completed'}})
+			except Exception, e:
+				print e
+				db.job.update({'_id':j['_id']}, {'$set':{'status':'failed'}})
+				print j['module'] + str(e)
+		time.sleep(60 * 15)

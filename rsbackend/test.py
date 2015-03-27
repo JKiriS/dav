@@ -116,7 +116,8 @@ cs = json.load(file('cs.json'))
 # 			v['option'][i] = cs[v['option'][i]]
 # 	db.verification.save(v)
 
-ids = []
-ids.append(db.verification.find_one()['_id'])
-print ids
+flock = open('write.lock','w+')
+flock.close()
+import os
+print os.path.isfile('write.lock1')
 	

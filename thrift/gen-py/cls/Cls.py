@@ -89,6 +89,10 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.de is not None:
+      raise result.de
+    if result.fe is not None:
+      raise result.fe
     raise TApplicationException(TApplicationException.MISSING_RESULT, "trainClassify failed: unknown result");
 
   def classify(self, category):
@@ -120,6 +124,10 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.de is not None:
+      raise result.de
+    if result.fe is not None:
+      raise result.fe
     raise TApplicationException(TApplicationException.MISSING_RESULT, "classify failed: unknown result");
 
 
@@ -162,7 +170,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = trainClassify_result()
-    result.success = self._handler.trainClassify()
+    try:
+      result.success = self._handler.trainClassify()
+    except common.ttypes.DataError, de:
+      result.de = de
+    except common.ttypes.FileError, fe:
+      result.fe = fe
     oprot.writeMessageBegin("trainClassify", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -173,7 +186,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = classify_result()
-    result.success = self._handler.classify(args.category)
+    try:
+      result.success = self._handler.classify(args.category)
+    except common.ttypes.DataError, de:
+      result.de = de
+    except common.ttypes.FileError, fe:
+      result.fe = fe
     oprot.writeMessageBegin("classify", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -235,7 +253,7 @@ class updateClassifyDic_result:
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -251,8 +269,9 @@ class updateClassifyDic_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -266,8 +285,8 @@ class updateClassifyDic_result:
       return
     oprot.writeStructBegin('updateClassifyDic_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -342,14 +361,20 @@ class trainClassify_result:
   """
   Attributes:
    - success
+   - de
+   - fe
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'de', (common.ttypes.DataError, common.ttypes.DataError.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'fe', (common.ttypes.FileError, common.ttypes.FileError.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, de=None, fe=None,):
     self.success = success
+    self.de = de
+    self.fe = fe
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -361,8 +386,21 @@ class trainClassify_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.de = common.ttypes.DataError()
+          self.de.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.fe = common.ttypes.FileError()
+          self.fe.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -376,8 +414,16 @@ class trainClassify_result:
       return
     oprot.writeStructBegin('trainClassify_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.de is not None:
+      oprot.writeFieldBegin('de', TType.STRUCT, 1)
+      self.de.write(oprot)
+      oprot.writeFieldEnd()
+    if self.fe is not None:
+      oprot.writeFieldBegin('fe', TType.STRUCT, 2)
+      self.fe.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -389,6 +435,8 @@ class trainClassify_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.de)
+    value = (value * 31) ^ hash(self.fe)
     return value
 
   def __repr__(self):
@@ -471,14 +519,20 @@ class classify_result:
   """
   Attributes:
    - success
+   - de
+   - fe
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'de', (common.ttypes.DataError, common.ttypes.DataError.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'fe', (common.ttypes.FileError, common.ttypes.FileError.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, de=None, fe=None,):
     self.success = success
+    self.de = de
+    self.fe = fe
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -490,8 +544,21 @@ class classify_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.de = common.ttypes.DataError()
+          self.de.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.fe = common.ttypes.FileError()
+          self.fe.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -505,8 +572,16 @@ class classify_result:
       return
     oprot.writeStructBegin('classify_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.de is not None:
+      oprot.writeFieldBegin('de', TType.STRUCT, 1)
+      self.de.write(oprot)
+      oprot.writeFieldEnd()
+    if self.fe is not None:
+      oprot.writeFieldBegin('fe', TType.STRUCT, 2)
+      self.fe.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -518,6 +593,8 @@ class classify_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.de)
+    value = (value * 31) ^ hash(self.fe)
     return value
 
   def __repr__(self):

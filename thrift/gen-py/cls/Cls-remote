@@ -24,9 +24,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] function [arg1 [arg2...]]')
   print('')
   print('Functions:')
-  print('  string updateClassifyDic()')
-  print('  string trainClassify()')
-  print('  string classify(string category)')
+  print('  Result updateClassifyDic()')
+  print('  Result trainClassify()')
+  print('  Result classify(string category)')
   print('')
   sys.exit(0)
 

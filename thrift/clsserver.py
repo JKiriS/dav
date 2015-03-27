@@ -39,6 +39,7 @@ logger.info('jieba and stopwords load success')
 
 cs = json.load(file(PARAMS['category']))
 CLS_DIR = PARAMS['classify']['dir']
+LSI_DIR = PARAMS['recommend']['dir']
 
 import pymongo
 class DBManager:
@@ -65,36 +66,94 @@ class DBManager:
 dbm = DBManager()
 
 from bson import ObjectId
-import datetime
+import datetime, time
 import math
 import random
 import pickle
 import numpy as np
 from gensim import corpora, models
 
+class ClsFileManager:
+	def __init__(self):
+		self._dic = None
+		self._model = None
+		self._ids = None
+	def _wait(self):
+		for i in range(10):
+			if os.path.isfile(os.path.join(CLS_DIR, 'write.lock')):
+				time.sleep(10)
+			if i == 9:
+				ex = FileError()
+				ex.who = os.path.join(CLS_DIR, 'write.lock')
+				raise ex
+			else:
+				break
+	def _lock(self):
+		if os.path.isfile(os.path.join(CLS_DIR, 'write.lock')):
+			return False
+		else:
+			flock = open(os.path.join(CLS_DIR, 'write.lock'),'w+')
+			flock.close()
+			return True
+	def _clearlock(self):
+		if os.path.isfile(os.path.join(CLS_DIR, 'write.lock')):
+			os.remove(os.path.join(CLS_DIR, 'write.lock'))
+	def getdic(self):
+		if self._dic is None:
+			self._wait()
+			self._dic = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
+		return self._dic
+	def getmodel(self):
+		if self._model is None:
+			self._wait()
+			self._model = pickle.load(open(os.path.join(CLS_DIR, 'cls.pkl'), 'rb'))
+		return self._model
+	def getid(self):
+		if self._ids is None:
+			self._wait()
+			self._ids = pickle.load(open(os.path.join(CLS_DIR,'ids.pkl'), 'rb'))
+		return self._ids
+	def setdic(self, newdic):
+		self._dic = newdic
+		self._wait()
+		self._lock()
+		self._dic.save(os.path.join(CLS_DIR, 'cls.dic'))
+		self._clearlock()	
+		return True
+	def setmodel(self, newmodel):
+		self._model = newmodel
+		self._wait()
+		self._lock()
+		pickle.dump(self._model, open(os.path.join(CLS_DIR, 'cls.pkl'), 'wb'))
+		self._clearlock()
+		return True
+	def setid(self, newid):
+		self._ids = newid
+		self._wait()
+		self._lock()
+		pickle.dump(self._ids, open(os.path.join(CLS_DIR,'ids.pkl'), 'wb'))
+		self._clearlock()
+		return True
+cfm = ClsFileManager()
+
 class ClsHandler:
 	def updateClassifyDic(self):
 		logger.info('update classify dictionary')
 		dic = None
 		for c in cs:
-			cpath = os.path.join(LSI_DIR,c)
+			cpath = os.path.join(LSI_DIR, c)
 			if dic is None:
 				dic = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
 			else:
 				dic.merge_with(corpora.Dictionary.load(os.path.join(cpath,'gs.dic')))
-		dic.save(os.path.join(CLS_DIR, 'cls.dic'))
+		cfm.setdic(dic)
 		res = Result()
 		res.success = True
 		return res
 
 	def trainClassify(self):
 		logger.info('train Classify model')
-		try:
-			dictionary = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
-		except:
-			ex = FileError()
-			ex.who = 'clsdic'
-			raise ex
+		dictionary = cfm.getdic()
 		t = datetime.datetime.now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
@@ -126,7 +185,7 @@ class ClsHandler:
 		from sklearn.naive_bayes import MultinomialNB  
 		clf = MultinomialNB(alpha = 0.01)   
 		clf.fit(train_data, train_target)
-		pickle.dump(clf, open(os.path.join(CLS_DIR, 'cls.pkl'), 'wb'))
+		cfm.setmodel(clf)
 		res = Result()
 		res.success = True
 		return res
@@ -134,12 +193,7 @@ class ClsHandler:
 	def classify(self, category):
 		category = category.decode('utf-8') # chinese decode
 		logger.info('classify items of category ' + category)
-		try:
-			dictionary = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
-		except:
-			ex = FileError()
-			ex.who = 'clsdic'
-			raise ex
+		dictionary = cfm.getdic()
 		texts_origin = []
 		ids = []
 		db = dbm.getlocal()
@@ -162,8 +216,8 @@ class ClsHandler:
 		for ix, doc in enumerate(corpus_tfidf):
 			for jx, d in doc:
 				test_data[ix, jx] = d
-		clf = pickle.load(open(os.path.join(CLS_DIR, 'cls.pkl'), 'rb'))
-		pickle.dump(ids, open(os.path.join(CLS_DIR, 'test_ids.pkl'), 'wb'))
+		clf = cfm.getmodel()
+		cfm.setid(ids)
 		clears = {}
 		unclears = {}
 		for i, d in enumerate(clf.predict_proba(test_data)):

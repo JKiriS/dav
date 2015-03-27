@@ -12,7 +12,7 @@ sys.path.append(PARAMS['thrift']['gen-py'])
 now = lambda : datetime.datetime.now()
 cs = json.load(file(PARAMS['category']))
 
-from search import Search
+# from search import Search
 # from search.ttypes import *
 from rec import Rec
 # from rec.ttypes import *

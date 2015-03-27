@@ -18,7 +18,7 @@ PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
  
 from rec import Rec
-from rec.ttypes import *
+from common.ttypes import *
 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
@@ -49,7 +49,7 @@ class DBManager:
 	def getlocal(self):
 		if self._db_local is None:
 			self._conn_local = pymongo.Connection(PARAMS['db_local']['ip'])
-			self._db_local = conn_local['feed']
+			self._db_local = self._conn_local['feed']
 			self._db_local.authenticate(PARAMS['db_local']['username'], PARAMS['db_local']['password'])
 			logger.info('local mongodb connection success')
 		return self._db_local
@@ -57,7 +57,7 @@ class DBManager:
 	def getprimary(self):
 		if self._db_primary is None:
 			self._conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
-			self._db_primary = conn_primary['feed']
+			self._db_primary = self._conn_primary['feed']
 			self._db_primary.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 			logger.info('primary connection success')
 		return self._db_primary
@@ -74,7 +74,7 @@ from gensim import corpora, models, similarities
 
 class RecHandler:
 	def updateRList(self, uid):
-		logger.info('update user(' + uid + ')\'s recommend list' )
+		logger.info('update recommend list of user ' + uid)
 		db = dbm.getlocal()
 		upre = db.upre.find_one({'_id':ObjectId(uid)})
 		if upre is None:
@@ -82,7 +82,7 @@ class RecHandler:
 			ex.who = 'upre(_id=' + uid + ')'
 			raise ex
 		oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
-		oldrlist = [] if oldrlist is None else oldrlist.get('rlist')
+		oldrlist = [] if not oldrlist else oldrlist.get('rlist')
 		score = np.array([])
 		ids = []
 		clicks = []
@@ -93,7 +93,7 @@ class RecHandler:
 			ids_c = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
 			if len(ids_c) == 0:
 				continue
-			for i in db.item.find({'_id':{'$in':ids_c}}).sort('pubdate',pymongo.DESCENDING):
+			for i in db.item.find({'_id':{'$in':ids_c}},{'click_num':1,'favo_num':1}).sort('pubdate',pymongo.DESCENDING):
 				clicks.append(i['click_num'])
 				favos.append(i['favo_num'])
 			ids += ids_c
@@ -106,8 +106,8 @@ class RecHandler:
 				segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
 				test_bow = dic.doc2bow(segs)
 				test_lsi = lsi[test_bow]
-				score_c = index[test_lsi] if score_c == None else score_c + index[test_lsi]
-			if score_c != None:
+				score_c = index[test_lsi] if score_c is None else score_c + index[test_lsi]
+			if score_c is not None:
 				score = np.hstack(( score, score_c * math.sqrt(upre['category'].get(c, 1)) ))
 			else :
 				score = np.hstack(( score, np.zeros(len(ids_c)) ))
@@ -119,13 +119,13 @@ class RecHandler:
 		favos = np.array(favos)
 		maxs = max(score)
 		if maxs > 0:
-			score = .35* score / maxs
+			score = .5* score / maxs
 		maxs = max(clicks)
 		if maxs > 0:
-			score += .2 * clicks / maxs
+			score += .15 * clicks / maxs
 		maxs = max(favos)
 		if maxs > 0:
-			score += .3 * favos / maxs
+			score += .2 * favos / maxs
 		score += .15 * np.random.random(len(score))
 		res = [[ids[i], score[i]] for i in range(len(ids))]
 		for r in res:
@@ -136,7 +136,6 @@ class RecHandler:
 		rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
 		db_primary = dbm.getprimary()
 		db_primary.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':datetime.datetime.now()})
-		
 		res = Result()
 		res.success = True
 		return res
@@ -144,6 +143,7 @@ class RecHandler:
 
 	def updateLsiIndex(self, category):
 		category = category.decode('utf-8')
+		logger.info('update lsi index of category ' + category)
 		t = datetime.datetime.now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
@@ -184,6 +184,7 @@ class RecHandler:
 
 	def updateLsiDic(self, category):
 		category = category.decode('utf-8')
+		logger.info('update lsi dictionary of category ' + category)
 		t = datetime.datetime.now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()	
@@ -198,19 +199,19 @@ class RecHandler:
 			texts_origin.append(segs)
 		if len(texts_origin) == 0:
 			ex = DataError()
-      		ex.who = 'texts_origin'
-      		raise ex
+			ex.who = 'texts_origin'
+			raise ex
 		all_tokens = sum(texts_origin, [])
 		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 		texts = [[word for word in text if word not in token_once] for text in texts_origin]
 		dictionary = corpora.Dictionary(texts)
-		dictionary.save(os.path.join(cpath,'gs.dic'))
-		
+		dictionary.save(os.path.join(cpath,'gs.dic'))		
 		res = Result()
 		res.success = True
 		return res
 
 	def updateUPre(self, uid):
+		logger.info('update preferences of user ' + uid)
 		pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
 		pre['timestamp'] = datetime.datetime.now()
 		db = dbm.getlocal()

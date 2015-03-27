@@ -1,5 +1,5 @@
 ﻿struct Result {
-  1: bool success = True,
+  1: bool success = true,
   2: optional string msg,
   3: optional map<string,string> data
 }

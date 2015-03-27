@@ -18,7 +18,7 @@ PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 
 from cls import Cls
-from cls.ttypes import *
+from common.ttypes import *
 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
@@ -49,7 +49,7 @@ class DBManager:
 	def getlocal(self):
 		if self._db_local is None:
 			self._conn_local = pymongo.Connection(PARAMS['db_local']['ip'])
-			self._db_local = conn_local['feed']
+			self._db_local = self._conn_local['feed']
 			self._db_local.authenticate(PARAMS['db_local']['username'], PARAMS['db_local']['password'])
 			logger.info('local mongodb connection success')
 		return self._db_local
@@ -57,7 +57,7 @@ class DBManager:
 	def getprimary(self):
 		if self._db_primary is None:
 			self._conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
-			self._db_primary = conn_primary['feed']
+			self._db_primary = self._conn_primary['feed']
 			self._db_primary.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 			logger.info('primary connection success')
 		return self._db_primary
@@ -74,7 +74,7 @@ from gensim import corpora, models
 
 class ClsHandler:
 	def updateClassifyDic(self):
-		logger.info('update classify dictionary' )
+		logger.info('update classify dictionary')
 		dic = None
 		for c in cs:
 			cpath = os.path.join(LSI_DIR,c)
@@ -88,7 +88,7 @@ class ClsHandler:
 		return res
 
 	def trainClassify(self):
-		logger.info('train Classify model' )
+		logger.info('train Classify model')
 		try:
 			dictionary = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
 		except:
@@ -111,8 +111,8 @@ class ClsHandler:
 			train_target = np.hstack(( train_target, np.zeros(len(texts_origin) - tnum_before) + ix ))
 		if len(texts_origin) == 0:
 			ex = DataError()
-      		ex.who = 'texts_origin'
-      		raise ex
+			ex.who = 'texts_origin'
+			raise ex
 		all_tokens = sum(texts_origin, [])
 		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 		texts = [[word for word in text if word not in token_once] for text in texts_origin]
@@ -131,8 +131,9 @@ class ClsHandler:
 		res.success = True
 		return res
 
-	def classify(self):
+	def classify(self, category):
 		category = category.decode('utf-8') # chinese decode
+		logger.info('classify items of category ' + category)
 		try:
 			dictionary = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
 		except:
@@ -147,7 +148,7 @@ class ClsHandler:
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
 			texts_origin.append(segs)
 			ids.append(i['_id'])
-		if len(texts_origin) == 0 || len(texts_origin) != len(ids):
+		if len(texts_origin) == 0 or len(texts_origin) != len(ids):
 			ex = DataError()
 			ex.who = 'texts_origin'
 			raise ex
@@ -173,6 +174,7 @@ class ClsHandler:
 				unclears[ ids[i] ] = top_prob
 			else:
 				clears[res[0][0]] = clears.get(res[0][0], []) + [ ids[i] ]
+		db_primary = dbm.getprimary()
 		db_primary.item.update({"_id":{"$in":unclears.keys()}}, {"$set":{'category_origin':category}}, multi=True)
 		for nc in clears:
 			db_primary.item.update({"_id":{"$in":clears[nc]}}, {"$set":{'category':cs[nc], 'category_origin':category}}, multi=True)
@@ -182,10 +184,9 @@ class ClsHandler:
 						标题: {0}<br/>
 						正文: {1}
 					'''.format(uci['title'], uci['des'])
-			option = [ o[0] for o in cs[unclears[uci['_id']]] ] + [u'其他']
+			option = [ cs[o[0]] for o in unclears[uci['_id']] ] + [u'其他']
 			veris.append({ '_id':uci['_id'], 'rand':[random.random(), 0], \
 				'question':question, 'option':option, 'data_origin':{'id':uci['_id'], 'prob':uci['_id']} })
-		db_primary = dbm.getprimary()
 		db_primary.verification.insert(veris, continue_on_error=True)
 		res = Result()
 		res.success = True
@@ -195,7 +196,7 @@ import win32serviceutil
 import win32service
 import win32event
 
-class recserver(win32serviceutil.ServiceFramework):
+class clsserver(win32serviceutil.ServiceFramework):
 	_svc_name_ = "ClsService"
 	_svc_display_name_ = "classify service"
 	def __init__(self, args):
@@ -225,4 +226,5 @@ class recserver(win32serviceutil.ServiceFramework):
 		win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
 
 if __name__ == '__main__':
-	win32serviceutil.HandleCommandLine(recserver)
+	win32serviceutil.HandleCommandLine(clsserver)
+

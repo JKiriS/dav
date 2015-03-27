@@ -83,6 +83,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.de is not None:
+      raise result.de
     raise TApplicationException(TApplicationException.MISSING_RESULT, "updateRList failed: unknown result");
 
   def updateLsiIndex(self, category):
@@ -114,6 +116,10 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.de is not None:
+      raise result.de
+    if result.fe is not None:
+      raise result.fe
     raise TApplicationException(TApplicationException.MISSING_RESULT, "updateLsiIndex failed: unknown result");
 
   def updateLsiDic(self, category):
@@ -145,6 +151,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.de is not None:
+      raise result.de
     raise TApplicationException(TApplicationException.MISSING_RESULT, "updateLsiDic failed: unknown result");
 
   def updateUPre(self, uid):
@@ -208,7 +216,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = updateRList_result()
-    result.success = self._handler.updateRList(args.uid)
+    try:
+      result.success = self._handler.updateRList(args.uid)
+    except common.ttypes.DataError, de:
+      result.de = de
     oprot.writeMessageBegin("updateRList", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -219,7 +230,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = updateLsiIndex_result()
-    result.success = self._handler.updateLsiIndex(args.category)
+    try:
+      result.success = self._handler.updateLsiIndex(args.category)
+    except common.ttypes.DataError, de:
+      result.de = de
+    except common.ttypes.FileError, fe:
+      result.fe = fe
     oprot.writeMessageBegin("updateLsiIndex", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -230,7 +246,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = updateLsiDic_result()
-    result.success = self._handler.updateLsiDic(args.category)
+    try:
+      result.success = self._handler.updateLsiDic(args.category)
+    except common.ttypes.DataError, de:
+      result.de = de
     oprot.writeMessageBegin("updateLsiDic", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -319,14 +338,17 @@ class updateRList_result:
   """
   Attributes:
    - success
+   - de
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'de', (common.ttypes.DataError, common.ttypes.DataError.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, de=None,):
     self.success = success
+    self.de = de
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -338,8 +360,15 @@ class updateRList_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.de = common.ttypes.DataError()
+          self.de.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -353,8 +382,12 @@ class updateRList_result:
       return
     oprot.writeStructBegin('updateRList_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.de is not None:
+      oprot.writeFieldBegin('de', TType.STRUCT, 1)
+      self.de.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -366,6 +399,7 @@ class updateRList_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.de)
     return value
 
   def __repr__(self):
@@ -448,14 +482,20 @@ class updateLsiIndex_result:
   """
   Attributes:
    - success
+   - de
+   - fe
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'de', (common.ttypes.DataError, common.ttypes.DataError.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'fe', (common.ttypes.FileError, common.ttypes.FileError.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, de=None, fe=None,):
     self.success = success
+    self.de = de
+    self.fe = fe
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -467,8 +507,21 @@ class updateLsiIndex_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.de = common.ttypes.DataError()
+          self.de.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.fe = common.ttypes.FileError()
+          self.fe.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -482,8 +535,16 @@ class updateLsiIndex_result:
       return
     oprot.writeStructBegin('updateLsiIndex_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.de is not None:
+      oprot.writeFieldBegin('de', TType.STRUCT, 1)
+      self.de.write(oprot)
+      oprot.writeFieldEnd()
+    if self.fe is not None:
+      oprot.writeFieldBegin('fe', TType.STRUCT, 2)
+      self.fe.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -495,6 +556,8 @@ class updateLsiIndex_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.de)
+    value = (value * 31) ^ hash(self.fe)
     return value
 
   def __repr__(self):
@@ -577,14 +640,17 @@ class updateLsiDic_result:
   """
   Attributes:
    - success
+   - de
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'de', (common.ttypes.DataError, common.ttypes.DataError.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, de=None,):
     self.success = success
+    self.de = de
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -596,8 +662,15 @@ class updateLsiDic_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.de = common.ttypes.DataError()
+          self.de.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -611,8 +684,12 @@ class updateLsiDic_result:
       return
     oprot.writeStructBegin('updateLsiDic_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.de is not None:
+      oprot.writeFieldBegin('de', TType.STRUCT, 1)
+      self.de.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -624,6 +701,7 @@ class updateLsiDic_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.de)
     return value
 
   def __repr__(self):
@@ -709,7 +787,7 @@ class updateUPre_result:
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -725,8 +803,9 @@ class updateUPre_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -740,8 +819,8 @@ class updateUPre_result:
       return
     oprot.writeStructBegin('updateUPre_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

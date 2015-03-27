@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time, datetime
-import feeds
+# import feeds
 import json
 import sys
 
@@ -9,6 +9,7 @@ PARAMS_DIR = '../self.cfg'
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 
+now = lambda : datetime.datetime.now()
 cs = json.load(file(PARAMS['category']))
 
 from search import Search
@@ -51,7 +52,7 @@ def job_updateUPre():
 		protocol = TBinaryProtocol.TBinaryProtocol(transport)
 		client = Rec.Client(protocol)
 		transport.open()
-		for u in db.user.find() 
+		for u in db.user.find():
 			client.updateUPre(str(u['_id']))
 		transport.close()	 
 	except Thrift.TException, ex:
@@ -66,7 +67,7 @@ def job_updateRList():
 		protocol = TBinaryProtocol.TBinaryProtocol(transport)
 		client = Rec.Client(protocol)
 		transport.open()
-		for u in db.user.find() 
+		for u in db.user.find():
 			try:
 				client.updateRList(str(u['_id']))
 			except Exception, e:
@@ -82,9 +83,9 @@ def job_updateLsiIndex():
 		protocol = TBinaryProtocol.TBinaryProtocol(transport)
 		client = Rec.Client(protocol)
 		transport.open()
-		for c in cs 
+		for c in cs:
 			try:
-				client.updateLsiIndex(c)
+				client.updateLsiIndex(c.encode('utf-8'))
 			except Exception, e:
 				print e
 		transport.close()	 
@@ -92,17 +93,17 @@ def job_updateLsiIndex():
 		print "%s" % (ex.message)
 
 def job_updateLsiDic():
-	db.job.insert({'function':'job_updateLsiDic', \
-		'starttime':now() + datetime.timedelta(days=5), 'status':'waiting'})
+	# db.job.insert({'function':'job_updateLsiDic', \
+	# 	'starttime':now() + datetime.timedelta(days=5), 'status':'waiting'})
 	try:
 		transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
 		transport = TTransport.TBufferedTransport(transport)
 		protocol = TBinaryProtocol.TBinaryProtocol(transport)
 		client = Rec.Client(protocol)
 		transport.open()
-		for c in cs 
+		for c in cs: 
 			try:
-				client.updateLsiDic(c)
+				client.updateLsiDic(c.encode('utf-8'))
 			except Exception, e:
 				print e
 		transport.close()	 
@@ -164,15 +165,16 @@ def job_updateSearchIndex():
 		print "%s" % (ex.message)
 
 if __name__ == '__main__':
-	while True:
-		for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
-				'status':'waiting'}, timeout=False):
-			try:
-				db.job.update({'_id':j['_id']}, {'$set':{'status':'running'}})
-				exec( j['function'] + '()' )
-				db.job.update({'_id':j['_id']}, {'$set':{'status':'completed'}})
-			except Exception, e:
-				db.job.update({'_id':j['_id']}, {'$set':{'status':'failed'}})
-				print j['module'] + str(e)
-		conn.close()
-		time.sleep(60 * 15)
+	# while True:
+	# 	for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
+	# 			'status':'waiting'}, timeout=False):
+	# 		try:
+	# 			db.job.update({'_id':j['_id']}, {'$set':{'status':'running'}})
+	# 			exec( j['function'] + '()' )
+	# 			db.job.update({'_id':j['_id']}, {'$set':{'status':'completed'}})
+	# 		except Exception, e:
+	# 			db.job.update({'_id':j['_id']}, {'$set':{'status':'failed'}})
+	# 			print j['module'] + str(e)
+	# 	conn.close()
+	# 	time.sleep(60 * 15)
+	job_classify()

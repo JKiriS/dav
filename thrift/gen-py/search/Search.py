@@ -229,7 +229,7 @@ class search_result:
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -245,8 +245,9 @@ class search_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -260,8 +261,8 @@ class search_result:
       return
     oprot.writeStructBegin('search_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -339,7 +340,7 @@ class updateSearchIndex_result:
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -355,8 +356,9 @@ class updateSearchIndex_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -370,8 +372,8 @@ class updateSearchIndex_result:
       return
     oprot.writeStructBegin('updateSearchIndex_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

@@ -18,11 +18,12 @@ except:
 
 
 class Iface:
-  def search(self, wd, id):
+  def search(self, wd, start, length):
     """
     Parameters:
      - wd
-     - id
+     - start
+     - length
     """
     pass
 
@@ -37,20 +38,22 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def search(self, wd, id):
+  def search(self, wd, start, length):
     """
     Parameters:
      - wd
-     - id
+     - start
+     - length
     """
-    self.send_search(wd, id)
+    self.send_search(wd, start, length)
     return self.recv_search()
 
-  def send_search(self, wd, id):
+  def send_search(self, wd, start, length):
     self._oprot.writeMessageBegin('search', TMessageType.CALL, self._seqid)
     args = search_args()
     args.wd = wd
-    args.id = id
+    args.start = start
+    args.length = length
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -124,7 +127,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = search_result()
-    result.success = self._handler.search(args.wd, args.id)
+    result.success = self._handler.search(args.wd, args.start, args.length)
     oprot.writeMessageBegin("search", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -148,18 +151,21 @@ class search_args:
   """
   Attributes:
    - wd
-   - id
+   - start
+   - length
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'wd', None, None, ), # 1
-    (2, TType.STRING, 'id', None, None, ), # 2
+    (2, TType.I32, 'start', None, None, ), # 2
+    (3, TType.I32, 'length', None, None, ), # 3
   )
 
-  def __init__(self, wd=None, id=None,):
+  def __init__(self, wd=None, start=None, length=None,):
     self.wd = wd
-    self.id = id
+    self.start = start
+    self.length = length
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -176,8 +182,13 @@ class search_args:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.STRING:
-          self.id = iprot.readString();
+        if ftype == TType.I32:
+          self.start = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.length = iprot.readI32();
         else:
           iprot.skip(ftype)
       else:
@@ -194,9 +205,13 @@ class search_args:
       oprot.writeFieldBegin('wd', TType.STRING, 1)
       oprot.writeString(self.wd)
       oprot.writeFieldEnd()
-    if self.id is not None:
-      oprot.writeFieldBegin('id', TType.STRING, 2)
-      oprot.writeString(self.id)
+    if self.start is not None:
+      oprot.writeFieldBegin('start', TType.I32, 2)
+      oprot.writeI32(self.start)
+      oprot.writeFieldEnd()
+    if self.length is not None:
+      oprot.writeFieldBegin('length', TType.I32, 3)
+      oprot.writeI32(self.length)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -208,7 +223,8 @@ class search_args:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.wd)
-    value = (value * 31) ^ hash(self.id)
+    value = (value * 31) ^ hash(self.start)
+    value = (value * 31) ^ hash(self.length)
     return value
 
   def __repr__(self):

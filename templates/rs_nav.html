@@ -43,6 +43,9 @@
 			            </li>
 			            <li><a href="{% url 'logout' %}"><span>退出</span></a></li>
 			            <li class="divider"></li>
+			            {% if request.user.is_superuser %}
+			            <li><a href="/console/rs"><span>控制面板</span></a></li>
+			            {% endif %}
 			            <li><a href="{% url 'selfpre' %}"><span>可视化</span></a></li>
 			            {% endif %}
 			          </ul>

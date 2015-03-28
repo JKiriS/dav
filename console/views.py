@@ -81,7 +81,7 @@ class ServiceManager:
 			if self._data[self._services[sid]]['status'] == 'closed' and \
 				commands.getstatusoutput("cd ~ && ./startdbsync.sh")[0] == 0:
 				self._data[self._services[sid]]['status'] = 'running'
-		elif sid == 'JobManager'
+		elif sid == 'JobManager':
 			if self._data[self._services[sid]]['status'] == 'closed' and \
 				commands.getstatusoutput("cd ~/dav/rsbackend && nohup python jobmanager.py &")[0] == 0:
 				self._data[self._services[sid]]['status'] = 'running'
@@ -93,7 +93,7 @@ class ServiceManager:
 			if self._data[self._services[sid]]['status'] == 'running' and \
 				commands.getstatusoutput("kill -9 $(ps -A|awk '/mongosync/{print $1}')")[0] == 0:
 				self._data[self._services[sid]]['status'] = 'closed'
-		elif sid == 'JobManager'
+		elif sid == 'JobManager':
 			if self._data[self._services[sid]]['status'] == 'running' and \
 				commands.getstatusoutput("kill -9 $(ps -A|awk '/jobmanager/{print $1}')")[0] == 0:
 				self._data[self._services[sid]]['status'] = 'closed'

@@ -17,11 +17,11 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
  
 
-transport = TSocket.TSocket('115.156.132.145', 9092)
-transport = TTransport.TBufferedTransport(transport)
-protocol = TBinaryProtocol.TBinaryProtocol(transport)
-# client = Cls.Client(protocol)
-client = Search.Client(protocol)
+transport = TSocket.TSocket('localhost', 9092)
+# transport = TTransport.TBufferedTransport(transport)
+# protocol = TBinaryProtocol.TBinaryProtocol(transport)
+# # client = Cls.Client(protocol)
+# client = Search.Client(protocol)
 transport.open()
 
 print 'start'

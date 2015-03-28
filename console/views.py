@@ -13,41 +13,90 @@ from dav import settings
 import os.path
 import random
 import urllib2
+import re
+
+PARAMS_DIR = os.path.join(settings.BASE_DIR, 'self.cfg')
+PARAMS = json.load(file(PARAMS_DIR))
 
 # Create your views here.
 now = lambda : datetime.datetime.now()
+
+class ServiceManager:
+	def __init__(self):
+		self._services = {}
+		self._data = [
+			{'id':'ClsService','name':'classify','domain':'rs','status':'running'},
+			{'id':'RecService','name':'recommend','domain':'rs','status':'running'},
+			{'id':'SearchService','name':'search','domain':'rs','status':'running'},
+			{'id':'DBSync','name':'DBSync','domain':'main','status':'running'},
+			{'id':'JobManager','name':'JobManager','domain':'main','status':'running'},
+		]
+		for i, s in enumerate(self._data):
+			self._services[s['id']] = i
+
+	def _getstatusbycmd(self, sid, cmd):
+		import commands
+		try:
+			output = commands.getoutput(cmd)
+			if output == '':
+				raise Exception()
+			for i in output.split('\n'):
+				print i
+				if not re.search(r'grep', i):					
+					self._data[self._services[sid]]['status'] = 'running'
+					return
+			self._data[self._services[sid]]['status'] = 'closed'
+		except:
+			self._data[self._services[sid]]['status'] = 'closed'
+	def getstatus(self):
+		from thrift.transport import TSocket
+		#test ClsService
+		try: 
+			TSocket.TSocket(PARAMS['classify']['ip'],PARAMS['classify']['ip']).open()
+		except :
+			self._data[self._services['ClsService']]['status']  = 'closed'
+		# test RecService
+		try:
+			TSocket.TSocket(PARAMS['recommend']['ip'],PARAMS['recommend']['ip']).open()
+		except :
+			self._data[self._services['RecService']]['status'] = 'closed'
+		# test SearchService
+		try:
+			TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['ip']).open()
+		except :
+			self._data[self._services['SearchService']]['status']  = 'closed'
+		# test DBSync
+		self._getstatusbycmd('DBSync', 'ps aux|grep mongosync')
+		self._getstatusbycmd('JobManager', 'ps aux|grep jobmanager.py')
+
+	def getservices(self):
+		self.getstatus()
+		return self._data
+
+	def open(self, target):
+		raise Exception()
+
+	def close(self, target):
+		raise Exception()
+
+sm = ServiceManager()
 
 def rsconsole(request):
 	if not request.user.is_superuser:
 		return HttpResponseRedirect('/account/login?redirecturl=/console/rs')
 	return render(request, 'rs_console.html', locals())
 
-
-gservices = [
-			{'id':'ClsService','name':'classify','domain':'rs','status':'running'},
-			{'id':'RecService','name':'recommend','domain':'rs','status':'running'},
-			{'id':'SearchService','name':'search','domain':'rs','status':'running'},
-			{'id':'DBSync','name':'DBSync','domain':'main','status':'closed'},
-			{'id':'JobManager','name':'JobManager','domain':'main','status':'running'},
-		]
 def getservices(request):
 	if request.method == 'POST':
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
 		res = {}
-		services = gservices
+		services = sm.getservices()
 		t = get_template('services.html')
 		c = Context(locals())
 		res['data'] = t.render(c)
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
-
-def findservice(target):
-	for s in gservices:
-		if s['id'] == target:
-			return s
-	return Exception()
-
 
 def setservices(request):
 	if request.method == 'POST':
@@ -57,11 +106,10 @@ def setservices(request):
 		cmd = request.POST['cmd']
 		res = {}
 		try:
-			s = findservice(target)
 			if cmd == u'关闭':
-				s['status'] = 'closed'
+				sm.close(target)
 			else:
-				s['status'] = 'running'
+				sm.open(target)
 			tem =  Template('''
 				<td>{{ s.name }}</td>
 				<td>{{ s.domain }}</td>

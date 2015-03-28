@@ -16,6 +16,13 @@ PARAMS = json.load(file('../self.cfg'))
 socket.setdefaulttimeout(PARAMS['feed']['timeout'])
 now = lambda : datetime.datetime.now()
 
+class RsslistNull(Exception):
+	def __init__(self):
+		self.code = 1001
+		self.msg = 'Rsslist is empty'
+	def __str__(self):
+		return 'Error[' + repr(self.code) + ' ' + self.msg
+
 def simplerss(i, site):
 	rss = {'click_num':0, 'favo_num':0}
 	try:
@@ -41,6 +48,8 @@ def saveRsslist(rsslist, site):
 		db.item.insert(rsslist, continue_on_error=True)
 		site['latest'] = rsslist[0]['pubdate']
 		db.site.save(site)
+	else :
+		raise RsslistNull()
 
 def checkRss(rss):
 	if 'des' not in rss or len(rss['des']) < 6:
@@ -226,6 +235,9 @@ def pento(site):
 			pass
 	saveRsslist(rsslist, site)
 
+'''
+site status: enabled running error disabled
+'''
 def run():
 	global db
 	import pymongo
@@ -233,11 +245,13 @@ def run():
 	db = conn_primary['feed']
 	db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 
-	# sites.updatesites()
-	for i in db.site.find({'active':True}, timeout=False):
+	for i in db.site.find({'status':{'$ne':'disabled'}}, timeout=False):
 		try:
+			db.site.update({'_id':i['_id']}, {'$set':{'status':'running'}})
 			exec( i['parser']+'(i)' )
+			db.site.update({'_id':i['_id']}, {'$set':{'status':'enabled'}})
 		except Exception, e:
+			db.site.update({'_id':i['_id']}, {'$set':{'status':'error'}})
 			print i['url'] + str(e)
 	conn_primary.close()
 

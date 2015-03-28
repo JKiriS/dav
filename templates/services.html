@@ -1,0 +1,17 @@
+<table class="table table-hover">
+	<tr class="info">
+		<th>服务名</th>
+		<th>所属</th>
+  		<th>状态</th>
+	</tr>
+	{% for s in services %}
+	<tr class="active" id="{{ s.id }}">
+		<td>{{ s.name }}</td>
+		<td>{{ s.domain }}</td>
+  		<td class="status">
+			<span class="status-label">{{ s.status }}</span>
+			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'running' %}关闭{% else %}开启{% endifequal %}</button>
+		</td>
+	</tr>
+	{% endfor %}
+</table>

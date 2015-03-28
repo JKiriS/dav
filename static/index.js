@@ -1,7 +1,6 @@
 var _params = {"start":0};
 
 $(document).ready(function(){
-
 	function addColor(){
 		_color = ["red","green","blue","gold","brown","purple","pink",];
 		$(".item").css("border-bottom",function(){
@@ -12,12 +11,20 @@ $(document).ready(function(){
 	}
 
 	// get initial content
-	$.post("",_params,function(res){
-		if (res.status=="success"){
-			$("div.itemlist").empty();
-			$("div.itemlist").append(res.data);
-			_params = res.params;
-			addColor();
+	if($("div.itemlist").length > 0){
+		$.post("",_params,function(res){
+			if (res.data){
+				$("div.itemlist").empty();
+				$("div.itemlist").append(res.data);
+				_params = res.params;
+				addColor();
+			}
+		});
+	}
+
+	$.post("/rs/getcs",{"fromurl":window.location.href},function(res){
+		if (res.data){
+			$(".model-container").append(res.data);
 		}
 	});
 
@@ -52,16 +59,21 @@ $(document).ready(function(){
 		$(".activeitem .tagadd, .activeitem .newtag").toggle('fast');
 		if( name!="" ){
 			$.post("/rs/additemtag", {"name":name,"itemid":itemid}, function(res){
-				if (res.status=="success")
-					$(".activeitem .tagadd:first").before(res.data);
+				if (res.data)
+					$(".activeitem .itemtag:last").after(res.data);
 			});
 		}
+		return false;
 	});
 
 	//click item, tag or source
 	$(".itemlist").on("click", "a.itemtitle", function(){
 		var target = $(this).parents(".item").attr("id");
-		$.post("/rs/behaviorrecorder", {"target":target});
+		var behaviordata = {"target":target, "fromurl":window.location.href};
+		if( "searchid" in _params ){
+			behaviordata.searchid = _params.searchid;
+		}
+		$.post("/rs/behaviorrecorder", behaviordata);
 	});
 
 	//get more items
@@ -98,32 +110,32 @@ $(document).ready(function(){
 	});
 
 	//favorite
-	$(".itemlist").on("click", "a.favo", function(){
+	$(".content").on("mouseenter mouseleave", ".favorite[title='添加收藏']",function(){
+    	$(this).children("img").toggle();
+    });
+	$(".content").on("click", "a.favorite", function(){
 		var target = $(this).parents(".item").attr("id");
 		if($(this).attr("title") == "添加收藏"){
 			$(this).attr("title", "取消收藏");
-			$(this).children(".glyphicon").removeClass("glyphicon-star-empty");
-			$(this).children(".glyphicon").addClass("glyphicon-star");
-			$(this).next().html(parseInt($(this).next().html()) + 1);
+			$(this).children("img").attr("src", "/static/img/favo.jpg");
 			$.post("/rs/addfavorite", {"target":target});
 		}
 		else{
 			$(this).attr("title", "添加收藏");
-			$(this).children(".glyphicon").removeClass("glyphicon-star");
-			$(this).children(".glyphicon").addClass("glyphicon-star-empty");
-			$(this).next().html(parseInt($(this).next().html()) - 1);
+			$(this).children("img").attr("src", "/static/img/unfavo.jpg");
 			$.post("/rs/removefavorite", {"target":target});
 		}
 	});
 
 	//
 	$("a#lookclassify").on("click", function(){
-		$(".category-source").toggle("fast");
+		$("#scModal").modal("toggle");
 	});
-	$(".category-source .panel-heading a.close").on("click", function(){
-		$(".category-source").hide();
-	})
-	$(".category-source button.category,.category-source button.source").on('click', function(){
+	$(".content").on("click", ".view-all-sources a", function(){
+		$(".view-all-sources").hide();
+		$(".category-source .source-hide").toggle("fast");
+	});
+	$(".content").on("click", ".category-source button.category,.category-source button.source", function(){
 		if($(this).hasClass("btn-success")){
 			$(this).removeClass("btn-success");
 		}
@@ -137,7 +149,7 @@ $(document).ready(function(){
 			$(".category-source button[type='submit']").attr("disabled","disabled");
 		}
 	});
-	$(".category-source").submit(function(){
+	$(".content").on("submit", ".category-source", function(){
 		var _sources = [];
 		var _categories = [];
 		$(".category-source .category.btn-success").each(function(){
@@ -147,7 +159,8 @@ $(document).ready(function(){
 			_sources.push($(this).html());
 		});
 		window.location.href = "/rs/lookclassify?" + 
-			$.param({'source':_sources, 'category':_categories});
+			$.param({'source':_sources, 'category':_categories, "orderby":$(".order-by").val()});
 		return false;
 	});
+
 });

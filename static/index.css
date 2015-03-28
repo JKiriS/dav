@@ -41,24 +41,24 @@ ul.dropdown-menu li {
 .load-large {
 	margin-top: 80px;
 }
-
-/*.itemlist {
-	margin-top: 50px;
-}*/
+.content {
+    margin-top: 50px;
+    margin-bottom: 20px;
+}
 
 .item {
     background-color: white;  
     border-color: silver;
-    margin-top: 10px;
     padding-left: 5px;
     text-align: left;
 }
 
 .item img {
     float: right;
+    margin-bottom: 15px;
 }
 
-/*.item .favorite{
+.item .favorite{
     float: right;
     width: 40px;
     height: 40px;
@@ -70,8 +70,7 @@ ul.dropdown-menu li {
     float: right;
     width: 40px;
     margin: 0;
-    display: none;
-}*/
+}
 
 .itemtop {
     margin-top: 15px;
@@ -85,7 +84,7 @@ ul.dropdown-menu li {
 
 .itemtag {  
     color: rgb(113, 90, 152);
-    margin-right: 10px;
+    margin-right: 5px;
 }
 
 .itemtaglist {
@@ -127,7 +126,6 @@ ul.dropdown-menu li {
     height: 40px;
     font-size: 18px;
     padding-top: 7px;
-    margin-bottom: 10px;
 }
 
 .load-sm {
@@ -146,33 +144,35 @@ ul.dropdown-menu li {
 	font-size: 40px;
 }
 
-
-.visit-favo-data {
-    float: right;
-    font-size: 25px;
-    margin-right: 5px;
-    margin-left: 15px;
+.svgdiv {
+    margin-top: 10px;
+    margin-left: 10px;
+    padding: 10px;
+    text-align: center;
 }
 
-.visit-favo-data .badge-data {
-    float: right;
-    font-size: 10px;
+svg {
+    margin-left: 5px;
 }
 
-.visit-favo-data .favo{
-    color: rgb(250, 204, 59);
+svg.source rect {
+    fill: green;
 }
 
-.content {
-    margin-top: 50px;
+svg.source rect:hover {
+    fill: orange;
 }
 
 .category-source {
-    text-align: left;
+    text-align:left;
 }
 
 .category-source form {
     padding: 10px;
+}
+
+.category-source .order-by {
+    margin-top: 5px;
 }
 
 .category-source button {
@@ -181,6 +181,11 @@ ul.dropdown-menu li {
     margin-bottom: 5px; 
 }
 
-.category-source .panel-heading a.close {
-    float: right;
+.category-source .view-all-sources{
+    text-align: center;
+    width: inherit;
+}
+
+.category-source .source-hide {
+    display: none;
 }

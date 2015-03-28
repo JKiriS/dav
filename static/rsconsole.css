@@ -1,0 +1,62 @@
+.console-group {
+    margin-top: 10px;
+}
+
+.console-group-header {
+    height: 40px;
+    background-color: #337AB7;
+    text-align: left;
+    -moz-border-radius: 5px 5px 0px 0px;
+    -webkit-border-radius: 5px 5px 0px 0px;
+    border-radius: 5px 5px 0px 0px;
+}
+
+.console-group-title {
+    margin-top: 5px;
+    font-size: 20px;
+    margin-left: 20px;
+    display: inline-block;
+}
+
+.console-group-header .glyphicon {
+    float: right;
+    margin-right: 20px;
+    margin-top: 10px;
+    font-size: 17px;
+}
+
+.console-group-content {
+    background-color: white;
+}
+
+.table {
+   margin-bottom: 0px; 
+}
+
+.console-group-content {
+    background-color: white;
+    height: 200px; 
+    overflow: scroll; 
+    overflow-x:hidden;
+}
+
+#sites .console-group-content {    
+    height: 350px; 
+    overflow: scroll; 
+    overflow-x:hidden;
+}
+
+.console-group-footer {
+    background-color: white;
+    text-align: right;
+}
+
+.console-group-footer button {
+    margin-right: 20px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.console-group-content .status button {
+    display: none;
+}

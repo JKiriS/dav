@@ -1,0 +1,23 @@
+<table class="table table-hover">
+	<tr class="info">
+		<th>URL</th>
+  		<th>解析器</th>
+  		<th>类别</th>
+  		<th>源</th>
+  		<th>最后抓取</th>
+  		<th>状态</th>
+	</tr>
+	{% for s in sites %}
+	<tr class="active" id="{{ s.id }}">
+		<td><span title="{{ s.url }}">{{ s.url |slice:"30" }}</span></td>
+  		<td>{{ s.parser }}</td>
+  		<td>{{ s.category }}</td>
+  		<td>{{ s.source }}</td>
+  		<td>{{ s.latest|date:"Y-m-d H:i" }}</td>
+  		<td class="status">
+  			<span class="status-label">{{ s.status }}</span>
+  			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'disabled' %}启用{% else %}禁用{% endifequal %}</button>
+  		</td>
+	</tr>
+	{% endfor %}
+</table>

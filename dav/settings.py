@@ -35,13 +35,14 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'mongoengine.django.mongo_auth',
     'mapv',
     'historyv',
     'rs',
     'verificate',
     'account',
     'templatelib',
-    'mongoengine.django.mongo_auth',
+    'console',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -60,11 +61,11 @@ WSGI_APPLICATION = 'dav.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 import json
-params = json.load(file(os.path.join(BASE_DIR, "self.cfg")))
+PARAMS = json.load(file(os.path.join(BASE_DIR, "self.cfg")))
 
 from mongoengine import connect
-connect('feed', alias='default', host='localhost', \
-    port=27017, username=params['db_username'], password=params['db_password'])
+connect('feed', alias='default', host='localhost', port=27017, \
+    username=PARAMS['db_local']['username'], password=PARAMS['db_local']['password'])
 
 DATABASES = {
     'default': {

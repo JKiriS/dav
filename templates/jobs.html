@@ -1,0 +1,25 @@
+<table class="table table-hover">
+    <tr class="info">
+      <th>任务名</th>
+        <th>状态</th>
+        <th>执行时间</th>
+        <th>操作</th>
+    </tr>
+    {% for j in jobs %}
+    <tr class="active" id="{{ j.id }}">
+      <td>{{ j.function }}</td>
+      <td>{{ j.status }}</td>
+      <td>{{ j.starttime|date:"Y-m-d H:i:s" }}</td>
+      <td>
+        {% ifequal j.status 'waiting' %}
+        <button class="btn btn-primary btn-sm" disabled="disabled">修改</button>
+        <button class="btn btn-primary btn-sm">取消</button>
+        {% else %}
+           {% ifequal j.status 'canceled' %}
+            <button class="btn btn-primary btn-sm">激活</button>
+            {% endifequal %}
+        {% endifequal %}
+      </td>
+    </tr>
+    {% endfor %}
+</table>

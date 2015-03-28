@@ -39,8 +39,18 @@ ul.dropdown-menu li {
 }
 
 .load-large {
-	margin-top: 80px;
+	margin-top: 50px;
+    background-color: white;
+    text-align: center;
+    height: 400px;
 }
+
+.load-large img {
+    margin-top: 175px;
+    height: 50px;
+}
+
+
 .content {
     margin-top: 50px;
     margin-bottom: 20px;

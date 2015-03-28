@@ -10,11 +10,24 @@ from mongoengine import Q
 import datetime, time
 from bson import ObjectId
 from dav import settings
-import os.path
+import os.path, sys
 import random
 import urllib2
+ 
+from thrift import Thrift
+from thrift.transport import TSocket
+from thrift.transport import TTransport
+from thrift.protocol import TBinaryProtocol
 
 # Create your views here.
+
+PARAMS_DIR = os.path.join(settings.BASE_DIR, 'self.cfg')
+PARAMS = json.load(file(PARAMS_DIR))
+
+sys.path.append(PARAMS['thrift']['gen-py'])
+from search import Search
+from common import *
+
 now = lambda : datetime.datetime.now()
 
 def index(request):
@@ -163,6 +176,7 @@ def getcs(request):
 
 def search(request):
 	col = 'search'
+	request.encoding='gb2312'
 	if request.method == 'POST':
 		b = behavior(uid=request.user.id, action='search', \
 			target=request.GET['wd'], timestamp=now())
@@ -172,17 +186,25 @@ def search(request):
 		res = {}
 		res['params'] = request.POST.copy()
 		if 'searchid' not in request.POST:
-			url = 'http://127.0.0.1:8899' + request.get_full_path()[3:]
-			html = urllib2.urlopen(url).read()
-			searchresponse = json.loads(html)
-			if searchresponse['status'] == 'success':
-				searchid = searchresponse['searchid']
+			# try:
+			transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
+			transport = TTransport.TBufferedTransport(transport)
+			protocol = TBinaryProtocol.TBinaryProtocol(transport)
+			client = Search.Client(protocol)
+			transport.open()
+			searchid = str(ObjectId())
+			sresult = client.search(request.GET['wd'].encode('utf-8'), searchid)
+			if sresult.success == True:
 				res['params']['searchid'] = searchid
 				res['data'] = ''
 			else :
-				res['reason'] = searchresponse['reason']
+				res['reason'] = sresult.msg
 				response.write( json.dumps(res, ensure_ascii=False) )
 				return response
+			# except Exception, e:
+			# 	res['reason'] = e
+			# 	response.write( json.dumps(res, ensure_ascii=False) )
+			# 	return response
 		else :
 			searchid = request.POST['searchid']
 

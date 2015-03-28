@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time, datetime
-# import feeds
+import feeds
 import json
 import sys
 
@@ -151,5 +151,5 @@ if __name__ == '__main__':
 			except Exception, e:
 				print e
 				db.job.update({'_id':j['_id']}, {'$set':{'status':'failed'}})
-				print j['module'] + str(e)
+				print j['function'] + str(e)
 		time.sleep(60 * 15)

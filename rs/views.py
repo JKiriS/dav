@@ -10,7 +10,7 @@ from mongoengine import Q
 import datetime, time
 from bson import ObjectId
 from dav import settings
-import os.path
+import os.path, sys
 import random
 import urllib2
  
@@ -184,42 +184,30 @@ def search(request):
 		response['Content-Type'] = 'application/json'
 		res = {}
 		res['params'] = request.POST.copy()
-		if 'searchid' not in request.POST:
-			try:
-				transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
-				transport = TTransport.TBufferedTransport(transport)
-				protocol = TBinaryProtocol.TBinaryProtocol(transport)
-				client = Search.Client(protocol)
-				transport.open()
-				sid = ObjectId()
-				sresult = client.search(request.GET['wd'], str(sid))
-				if sresult.success == True:
-					searchid = searchresponse['searchid']
-					res['params']['searchid'] = searchid
-					res['data'] = ''
-				else :
-					res['reason'] = sresult.msg
-					response.write( json.dumps(res, ensure_ascii=False) )
-					return response
-			except Exception, e:
-				res['reason'] = e
-				response.write( json.dumps(res, ensure_ascii=False) )
-				return response
-		else :
-			searchid = request.POST['searchid']
-
-		skipnum = int(request.POST['start'])
-		slist = searchresult.objects(id=ObjectId(searchid)).first()
-		itemlist = item.objects(id__in=slist.result[skipnum:skipnum+15])
-		orders = slist.result[skipnum:skipnum+15]
-
+		start = int(request.POST['start'])
+		if start == 0:
+			res['params']['searchid'] = str(ObjectId())
+		# try:
+		transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
+		transport = TTransport.TBufferedTransport(transport)
+		protocol = TBinaryProtocol.TBinaryProtocol(transport)
+		client = Search.Client(protocol)
+		transport.open()
+		sresult = client.search(request.GET['wd'].encode('utf-8'), start, 15)
+		searchresult = eval(sresult.data['searchresult'])
+		print searchresult
+		hasmore = eval(sresult.data['hasmore'])
+		itemlist = item.objects(id__in=searchresult)
+		orders = searchresult
 		wd = request.GET['wd']
-		hasmore = True if len(orders) >= 15 else False
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())
 		res['data'] = t.render(c)
-		res['params']['start'] = repr(skipnum + len(itemlist))
-		response.write( json.dumps(res, ensure_ascii=False) )
+		res['params']['start'] = repr(start + len(itemlist))
+		# except Exception, e:
+		# 	res['reason'] = e
+		# 	print e
+		response.write( json.dumps(res) )
 		return response
 	if 'wd' in request.GET:
 		wd = request.GET['wd']

@@ -34,7 +34,7 @@ print 'start'
 sid = ObjectId()
 print sid
 sresult = client.search(u"java", 0, 15)
-searchreult = eval(sresult.data['searchresult'])
+searchresult = eval(sresult.data['searchresult'])
 hasmore = eval(sresult.data['hasmore'])
 print hasmore, searchreult
 # print client.updateSearchIndex()

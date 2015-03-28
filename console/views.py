@@ -52,17 +52,23 @@ class ServiceManager:
 		from thrift.transport import TSocket
 		#test ClsService
 		try: 
-			TSocket.TSocket(PARAMS['classify']['ip'],PARAMS['classify']['port']).open()
+			transport = TSocket.TSocket(PARAMS['classify']['ip'],PARAMS['classify']['port'])
+			transport.open()
+			transport.close()
 		except :
 			self._data[self._services['ClsService']]['status']  = 'closed'
 		# test RecService
 		try:
-			TSocket.TSocket(PARAMS['recommend']['ip'],PARAMS['recommend']['port']).open()
+			transport = TSocket.TSocket(PARAMS['recommend']['ip'],PARAMS['recommend']['port'])
+			transport.open()
+			transport.close()
 		except :
 			self._data[self._services['RecService']]['status'] = 'closed'
 		# test SearchService
 		try:
-			TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port']).open()
+			transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
+			transport.open()
+			transport.close()
 		except :
 			self._data[self._services['SearchService']]['status']  = 'closed'
 		# test DBSync

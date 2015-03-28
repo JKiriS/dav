@@ -14,6 +14,7 @@ import os.path
 import random
 import urllib2
 import re
+import commands
 
 PARAMS_DIR = os.path.join(settings.BASE_DIR, 'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
@@ -35,7 +36,6 @@ class ServiceManager:
 			self._services[s['id']] = i
 
 	def _getstatusbycmd(self, sid, cmd):
-		import commands
 		try:
 			output = commands.getoutput(cmd)
 			if output == '':
@@ -73,11 +73,32 @@ class ServiceManager:
 		self.getstatus()
 		return self._data
 
-	def open(self, target):
-		raise Exception()
+	def getservice(self, sid):
+		return self._data[self._services[sid]]
 
-	def close(self, target):
-		raise Exception()
+	def open(self, sid):
+		if sid == 'DBSync':
+			if self._data[self._services[sid]]['status'] == 'closed' and \
+				commands.getstatusoutput("cd ~ && ./startdbsync.sh")[0] == 0:
+				self._data[self._services[sid]]['status'] = 'running'
+		elif sid == 'JobManager'
+			if self._data[self._services[sid]]['status'] == 'closed' and \
+				commands.getstatusoutput("cd ~/dav/rsbackend && nohup python jobmanager.py &")[0] == 0:
+				self._data[self._services[sid]]['status'] = 'running'
+		else:
+			raise Exception()
+
+	def close(self, sid):
+		if sid == 'DBSync':
+			if self._data[self._services[sid]]['status'] == 'running' and \
+				commands.getstatusoutput("kill -9 $(ps -A|awk '/mongosync/{print $1}')")[0] == 0:
+				self._data[self._services[sid]]['status'] = 'closed'
+		elif sid == 'JobManager'
+			if self._data[self._services[sid]]['status'] == 'running' and \
+				commands.getstatusoutput("kill -9 $(ps -A|awk '/jobmanager/{print $1}')")[0] == 0:
+				self._data[self._services[sid]]['status'] = 'closed'
+		else:
+			raise Exception()
 
 sm = ServiceManager()
 
@@ -110,6 +131,7 @@ def setservices(request):
 				sm.close(target)
 			else:
 				sm.open(target)
+			s = sm.getservice(target)
 			tem =  Template('''
 				<td>{{ s.name }}</td>
 				<td>{{ s.domain }}</td>

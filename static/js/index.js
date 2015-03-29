@@ -104,7 +104,7 @@ $(document).ready(function(){
 	$("#nav-search").submit(function(){
 		var wd = $.trim($("#nav-search input").val());
 		if(wd != ""){
-			window.location.href = "/rs/search?wd=" + wd.replace("%", "%25");
+			window.location.href = "/rs/search?wd=" + encodeURI(wd);
 		}
 		return false;
 	});

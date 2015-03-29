@@ -6,7 +6,7 @@ import json
 import feeds
 import sys
 
-PARAMS_DIR = '../self.cfg'
+PARAMS_DIR = os.path.join(pos.path.dirname(os.path.abspath(os.curdir)),'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 
@@ -169,17 +169,12 @@ class UpdateSearchIndex(ThriftJob):
 		self._client.updateSearchIndex()
 
 if __name__ == '__main__':
-	# while True:
-	# 	for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'}\
-	# 		, timeout=False).sort('starttime',pymongo.ASCENDING):
-	# 		try:
-	# 			exec( j['runable'] )
-	# 		except Exception, e:
-	# 			print j['name'] + str(e)
-	# 	time.sleep(60 * 5)
-	# Feed(timedelta(seconds=1)).save()
-	time.sleep(2)
-	for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'}\
-		, timeout=False).sort('starttime',pymongo.ASCENDING):
-		exec( j['runable'] )
+	while True:
+		for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'}\
+			, timeout=False).sort('starttime',pymongo.ASCENDING):
+			try:
+				exec( j['runable'] )
+			except Exception, e:
+				print j['name'] + str(e)
+		time.sleep(60 * 5)
 	

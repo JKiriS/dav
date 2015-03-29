@@ -12,7 +12,8 @@ import random
 import socket
 from xml.etree import ElementTree as ET
 
-PARAMS = json.load(file('../self.cfg'))
+PARAMS_DIR = PARAMS_DIR = os.path.join(pos.path.dirname(os.path.abspath(os.curdir)),'self.cfg')
+PARAMS = json.load(file(PARAMS_DIR))
 
 import pymongo
 conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])

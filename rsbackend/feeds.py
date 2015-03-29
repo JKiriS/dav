@@ -11,6 +11,7 @@ import urlparse
 import random
 import socket
 from xml.etree import ElementTree as ET
+import os
 
 PARAMS_DIR = PARAMS_DIR = os.path.join(pos.path.dirname(os.path.abspath(os.curdir)),'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))

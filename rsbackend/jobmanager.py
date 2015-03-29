@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timedelta
 import json
 import feeds
-import sys
+import sys, os
 
 PARAMS_DIR = os.path.join(pos.path.dirname(os.path.abspath(os.curdir)),'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))

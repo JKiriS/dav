@@ -6,7 +6,7 @@ import json
 import feeds
 import sys, os
 
-PARAMS_DIR = os.path.join(os.path.dirname(os.path.abspath(os.curdir)),'self.cfg')
+PARAMS_DIR = os.path.join(os.path.abspath(os.curdir),'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 

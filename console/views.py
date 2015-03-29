@@ -34,7 +34,6 @@ class ServiceManager:
 		]
 		for i, s in enumerate(self._data):
 			self._services[s['id']] = i
-
 	def _getstatusbycmd(self, sid, cmd):
 		try:
 			output = commands.getoutput(cmd)
@@ -72,37 +71,23 @@ class ServiceManager:
 		except :
 			self._data[self._services['SearchService']]['status']  = 'closed'
 		# test DBSync
-		self._getstatusbycmd('DBSync', 'ps aux|grep mongosync')
+		self._getstatusbycmd('DBSync', 'ps aux|grep ubuntu.mongosync')
 		self._getstatusbycmd('JobManager', 'ps aux|grep jobmanager.py')
-
 	def getservices(self):
 		self.getstatus()
 		return self._data
-
 	def getservice(self, sid):
 		return self._data[self._services[sid]]
-
 	def open(self, sid):
-		if sid == 'DBSync':
-			if self._data[self._services[sid]]['status'] == 'closed' and \
-				commands.getstatusoutput("cd ~ && ./startdbsync.sh")[0] == 0:
-				self._data[self._services[sid]]['status'] = 'running'
-		elif sid == 'JobManager':
-			if self._data[self._services[sid]]['status'] == 'closed' and \
-				commands.getstatusoutput("cd ~/dav/rsbackend && nohup python jobmanager.py &")[0] == 0:
-				self._data[self._services[sid]]['status'] = 'running'
+		if self._data[self._services[sid]]['status'] == 'closed' and \
+			commands.getstatusoutput("~/dav/servicesmanager.sh -s " + sid)[0] == 0:
+			self._data[self._services[sid]]['status'] = 'running'
 		else:
 			raise Exception()
-
 	def close(self, sid):
-		if sid == 'DBSync':
-			if self._data[self._services[sid]]['status'] == 'running' and \
-				commands.getstatusoutput("kill -9 $(ps -A|awk '/mongosync/{print $1}')")[0] == 0:
-				self._data[self._services[sid]]['status'] = 'closed'
-		elif sid == 'JobManager':
-			if self._data[self._services[sid]]['status'] == 'running' and \
-				commands.getstatusoutput("kill -9 $(ps -A|awk '/jobmanager/{print $1}')")[0] == 0:
-				self._data[self._services[sid]]['status'] = 'closed'
+		if self._data[self._services[sid]]['status'] == 'running' and \
+			commands.getstatusoutput("~/dav/servicesmanager.sh -q -s " + sid)[0] == 0:
+			self._data[self._services[sid]]['status'] = 'closed'
 		else:
 			raise Exception()
 

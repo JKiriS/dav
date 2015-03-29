@@ -1,23 +1,21 @@
 # -*- coding: utf-8 -*-
 
-import time, datetime
-import feeds
+import time
+from datetime import datetime, timedelta
 import json
+import feeds
 import sys
 
-PARAMS_DIR = '../self.cfg'
+PARAMS_DIR = 'e:/dav/self.cfg'
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 
-now = lambda : datetime.datetime.now()
+now = lambda : datetime.now()
 cs = json.load(file(PARAMS['category']))
 
-# from search import Search
-# from search.ttypes import *
 from rec import Rec
-# from rec.ttypes import *
 from cls import Cls
-# from cls.ttypes import *
+from search import Search
 from common.ttypes import *
 
 from bson import ObjectId
@@ -32,124 +30,156 @@ conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
 db = conn_primary['feed']
 db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 
-def job_feed():
-	db.job.insert({'function':'job_feed', \
-		'starttime':now() + datetime.timedelta(hours=12), 'status':'waiting'})
-	feeds.run()
-	db.job.insert({'function':'job_updateLsiIndex', \
-		'starttime':now() + datetime.timedelta(minutes=17), 'status':'waiting'})
-	# db.job.insert({'function':'job_updateSearchIndex', \
-	# 	'starttime':now() + datetime.timedelta(minutes=37), 'status':'waiting'})
-	db.job.insert({'function':'job_classify', \
-		'starttime':now() + datetime.timedelta(minutes=52), 'status':'waiting'})
+class Job:
+	def __init__(self, stime, jid, status='waiting'):
+		self._name = self.__class__.__name__
+		if isinstance(stime, timedelta):
+			self._starttime = now() + stime
+		elif isinstance(stime, float):
+			self._starttime = datetime.fromtimestamp(stime)
+		self._status = status
+		self._id = jid
+	def run(self):
+		pass
+	def save(self):
+		db.job.save({'_id':self._id,'name':self._name,'runable':self._cmd(),
+			'starttime':self._starttime,'status':self._status})
+	def _cmd(self):
+		t = time.mktime(self._starttime.timetuple())
+		return '{}({},ObjectId("{}")).run()'\
+				.format(self._name,t,self._id)
 
-def job_updateUPre():
-	db.job.insert({'function':'job_updateUPre', \
-		'starttime':now() + datetime.timedelta(hours=24), 'status':'waiting'})
-	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Rec.Client(protocol)
-	transport.open()
-	for u in db.user.find():
-		client.updateUPre(str(u['_id']))
-	transport.close()	 
+class Feed(Job):
+	def __init__(self, stime, jid=ObjectId()):
+		Job.__init__(self, stime, jid)
+	def run(self):
+		reload(feeds)
+		# Feed(timedelta(hours=12)).save()
+		db.job.update({'_id':self._id},{'$set':{'status':'running'}})
+		feeds.run()
+		db.job.update({'_id':self._id},{'$set':{'status':'comleted'}})
+		# UpdateLsiIndex(timedelta(minutes=17)).save()
+		# UpdateSearchIndex(timedelta(minutes=37)).save()
+		# Classify(timedelta(minutes=52)).save()
 
+def rundeco(func):
+    def _deco(self, *args, **argv):
+    	self._connect()
+        try:
+        	db.job.update({'_id':self._id},{'$set':{'status':'running'}})
+        	func(self, *args, **argv)
+        	db.job.update({'_id':self._id},{'$set':{'status':'comleted'}})
+        except Exception, e:
+        	print e
+        	db.job.update({'_id':self._id},{'$set':{'status':'failed'}})
+        self._transport.close()
+    return _deco
 
-def job_updateRList():
-	db.job.insert({'function':'job_updateRList', \
-		'starttime':now() + datetime.timedelta(minutes=58), 'status':'waiting'})
-	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Rec.Client(protocol)
-	transport.open()
-	for u in db.user.find():
-		try:
-			client.updateRList(str(u['_id']))
-		except Exception, e:
-			print e
-	transport.close()	
+class ThriftJob(Job):
+	def __init__(self, service, stime, jid):
+		Job.__init__(self, stime, jid)
+		self._service = service
+	def _connect(self):
+		self._transport = TSocket.TSocket(PARAMS[self._service]['ip'], PARAMS[self._service]['port'])
+		self._transport = TTransport.TBufferedTransport(self._transport)
+		self._protocol = TBinaryProtocol.TBinaryProtocol(self._transport)
+		if self._service == 'recommend':
+			self._client = Rec.Client(self._protocol)
+		elif self._service == 'classify':
+			self._client = Cls.Client(self._protocol)
+		elif self._service == 'search':
+			self._client = Search.Client(self._protocol)
+		self._transport.open()
 
-def job_updateLsiIndex():
-	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Rec.Client(protocol)
-	transport.open()
-	for c in cs:
-		try:
-			client.updateLsiIndex(c.encode('utf-8'))
-		except Exception, e:
-			print e
-	transport.close()	 
-
-def job_updateLsiDic():
-	db.job.insert({'function':'job_updateLsiDic', \
-		'starttime':now() + datetime.timedelta(days=5), 'status':'waiting'})
-	transport = TSocket.TSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Rec.Client(protocol)
-	transport.open()
-	for c in cs: 
-		try:
-			client.updateLsiDic(c.encode('utf-8'))
-		except Exception, e:
-			print e
-	transport.close()	 
-
-def job_updateClassifyDic():
-	db.job.insert({'function':'job_updateClassifyDic', \
-		'starttime':now() + datetime.timedelta(days=15), 'status':'waiting'})
-	transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Cls.Client(protocol)
-	transport.open()
-	client.updateClassifyDic()
-	transport.close()	 
-	db.job.insert({'function':'job_trainClassify', \
-		'starttime':now() + datetime.timedelta(minutes=13), 'status':'waiting'})
-
-def job_trainClassify():
-	transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Cls.Client(protocol)
-	transport.open()
-	client.trainClassify()
-	transport.close()	 
-
-
-def job_classify():
-	transport = TSocket.TSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Cls.Client(protocol)
-	transport.open()
-	client.classify('综合')
-	transport.close()	 
-
-def job_updateSearchIndex():
-	transport = TSocket.TSocket(PARAMS['search']['ip'], PARAMS['search']['port'])
-	transport = TTransport.TBufferedTransport(transport)
-	protocol = TBinaryProtocol.TBinaryProtocol(transport)
-	client = Search.Client(protocol)
-	transport.open()
-	client.updateSearchIndex()
-	transport.close()	 
-
-if __name__ == '__main__':
-	while True:
-		for j in db.job.find({'starttime':{'$lt':datetime.datetime.now()}, \
-				'status':'waiting'}, timeout=False):
+class UpdateUPre(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'recommend', stime, jid)
+	@rundeco
+	def run(self):
+		UpdateUPre(timedelta(hours=24)).save()
+		for u in db.user.find():
 			try:
-				db.job.update({'_id':j['_id']}, {'$set':{'status':'running'}})
-				exec( j['function'] + '()' )
-				db.job.update({'_id':j['_id']}, {'$set':{'status':'completed'}})
+				self._client.updateUPre(str(u['_id']))
 			except Exception, e:
 				print e
-				db.job.update({'_id':j['_id']}, {'$set':{'status':'failed'}})
-				print j['function'] + str(e)
-		time.sleep(60 * 15)
+
+class UpdateRList(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'recommend', stime, jid)
+	@rundeco
+	def run(self):
+		UpdateRList(timedelta(minutes=58)).save()
+		for u in db.user.find():
+			try:
+				self._client.updateRList(str(u['_id']))
+			except Exception, e:
+				print e
+
+class UpdateLsiIndex(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'recommend', stime, jid)
+	@rundeco
+	def run(self):
+		for c in cs:
+			try:
+				self._client.updateLsiIndex(c.encode('utf-8'))
+			except Exception, e:
+				print e
+
+class UpdateLsiDic(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'recommend', stime, jid)
+	@rundeco
+	def run(self):
+		UpdateLsiDic(timedelta(days=5)).save()
+		for c in cs: 
+			try:
+				self._client.updateLsiDic(c.encode('utf-8'))
+			except Exception, e:
+				print e
+
+class UpdateClassifyDic(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'classify', stime, jid)
+	@rundeco
+	def run(self):
+		UpdateClassifyDic(timedelta(days=15)).save()
+		self._client.updateClassifyDic()
+		TrainClassifyModel(timedelta(minutes=13))
+
+class TrainClassifyModel(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'classify', stime, jid)
+	@rundeco
+	def run(self):
+		self._client.trainClassify()
+
+class Classify(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'classify', stime, jid)
+	@rundeco
+	def run(self):	 
+		self._client.classify('综合')
+
+class UpdateSearchIndex(ThriftJob):
+	def __init__(self, stime, jid=ObjectId()):
+		ThriftJob.__init__(self, 'search', stime, jid)
+	@rundeco
+	def run(self):	
+		self._client.updateSearchIndex()
+
+if __name__ == '__main__':
+	# while True:
+	# 	for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'}\
+	# 		, timeout=False).sort('starttime',pymongo.ASCENDING):
+	# 		try:
+	# 			exec( j['runable'] )
+	# 		except Exception, e:
+	# 			print j['name'] + str(e)
+	# 	time.sleep(60 * 5)
+	# Feed(timedelta(seconds=1)).save()
+	time.sleep(2)
+	for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'}\
+		, timeout=False).sort('starttime',pymongo.ASCENDING):
+		exec( j['runable'] )
+	

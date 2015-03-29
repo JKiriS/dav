@@ -34,7 +34,6 @@ class Parser:
 		self._site = site;
 		self._rsslist = []
 	def checkrss(self, rss):
-		print rss
 		if 'des' not in rss or len(rss['des']) < 10:
 			return False
 		elif len(rss['des']) >= 500:
@@ -42,7 +41,6 @@ class Parser:
 		rss['rand'] = [random.random(), 0]
 		self._rsslist.append(rss)
 	def save(self):
-		print len(self._rsslist)
 		if len(self._rsslist) > 0:
 			db.item.insert(self._rsslist, continue_on_error=True)
 			self._site['latest'] = self._rsslist[0]['pubdate']
@@ -78,7 +76,7 @@ class common(Parser):
 			des = rawtext['summary_detail']['value']
 			soup = BeautifulSoup(des)
 			rss['des'] = soup.get_text()
-	def parser(self):
+	def parse(self):
 		rawrss = feedparser.parse(self._site['url'])
 		for i in rawrss['entries']:
 			rss = self.simplerss(i)
@@ -89,7 +87,7 @@ class common(Parser):
 		self.save()
 
 class ifanr(Parser):
-	def parser(self):
+	def parse(self):
 		rawrss = urllib2.urlopen(self._site['url'])
 		channel = ET.parse(rawrss).find('./channel')
 		for i in channel.findall('item'):
@@ -143,7 +141,7 @@ class desImgInContent(common):
 				rss['imgurl'] = soup.find('img').get('src')
 
 class acfun(Parser):
-	def parser(self):
+	def parse(self):
 		baseurl = 'http://www.acfun.tv'
 		data = urllib2.urlopen(self._site['url']).read()
 		for i in json.loads(data):
@@ -162,7 +160,7 @@ class acfun(Parser):
 		self.save()
 
 class hustBBS(Parser):
-	def parser(self):
+	def parse(self):
 		html = urllib2.urlopen(self._site['url']).read()
 		soup = BeautifulSoup(html.decode('gbk'))
 		for i in soup.find_all('post'):
@@ -179,7 +177,7 @@ class hustBBS(Parser):
 		self.save()
 
 class googlenews(common):
-	def parser(self):
+	def parse(self):
 		rssraw = feedparser.parse(self._site['url'])
 		for i in rssraw['entries']:
 			rss = self.simplerss(i, False)
@@ -190,7 +188,7 @@ class googlenews(common):
 		self.save()
 
 class pento(Parser):
-	def parser(self):
+	def parse(self):
 		BASE_URL = 'http://www.pento.cn'
 		html = urllib2.urlopen(self._site['url']).read()
 		soup = BeautifulSoup(html)
@@ -217,7 +215,7 @@ def run():
 	for i in db.site.find({'status':{'$ne':'disabled'}}, timeout=False):
 		try:
 			db.site.update({'_id':i['_id']}, {'$set':{'status':'running'}})
-			exec( s['parser']+'(s).parser()' )
+			exec( i['parser']+'(i).parse()' )
 			db.site.update({'_id':i['_id']}, {'$set':{'status':'enabled'}})
 		except Exception, e:
 			db.site.update({'_id':i['_id']}, {'$set':{'status':'error'}})

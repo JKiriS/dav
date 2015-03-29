@@ -7,7 +7,7 @@
     </tr>
     {% for j in jobs %}
     <tr class="active" id="{{ j.id }}">
-      <td>{{ j.function }}</td>
+      <td>{{ j.name }}</td>
       <td>{{ j.status }}</td>
       <td>{{ j.starttime|date:"Y-m-d H:i:s" }}</td>
       <td>

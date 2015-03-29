@@ -186,28 +186,28 @@ def search(request):
 		res['params'] = request.POST.copy()
 		start = int(request.POST['start'])
 		if start == 0:
-			res['params']['searchid'] = str(ObjectId())
-			s = searchresult(wd=request.GET['wd'],timestamp=now())
+			sid = ObjectId()
+			res['params']['searchid'] = str(sid)
+			s = searchresult(id=sid,wd=request.GET['wd'],timestamp=now())
 			s.save()
-		# try:
-		transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
-		transport = TTransport.TBufferedTransport(transport)
-		protocol = TBinaryProtocol.TBinaryProtocol(transport)
-		client = Search.Client(protocol)
-		transport.open()
-		sresult = client.search(request.GET['wd'].encode('utf-8'), start, 15)
-		slist = eval(sresult.data['searchresult'])
-		hasmore = eval(sresult.data['hasmore'])
-		itemlist = item.objects(id__in=slist)
-		orders = slist
-		wd = request.GET['wd']
-		t = get_template('rs_itemlist.html')
-		c = Context(locals())
-		res['data'] = t.render(c)
-		res['params']['start'] = repr(start + len(itemlist))
-		# except Exception, e:
-		# 	res['reason'] = e
-		# 	print e
+		try:
+				transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
+				transport = TTransport.TBufferedTransport(transport)
+				protocol = TBinaryProtocol.TBinaryProtocol(transport)
+				client = Search.Client(protocol)
+				transport.open()
+				sresult = client.search(request.GET['wd'].encode('utf-8'), start, 15)
+				slist = eval(sresult.data['searchresult'])
+				hasmore = eval(sresult.data['hasmore'])
+				itemlist = item.objects(id__in=slist)
+				orders = slist
+				wd = request.GET['wd']
+				t = get_template('rs_itemlist.html')
+				c = Context(locals())
+				res['data'] = t.render(c)
+				res['params']['start'] = repr(start + len(itemlist))
+		except Exception, e:
+			res['error'] = e
 		response.write( json.dumps(res) )
 		return response
 	if 'wd' in request.GET:
@@ -215,17 +215,6 @@ def search(request):
 		return render(request, 'rs_main.html', locals())
 	else :
 		return HttpResponseRedirect('/rs/lookaround')
-
-def updateSearchIndex(request):
-	response = HttpResponse()
-	response['Content-Type'] = 'application/json'
-	url = 'http://127.0.0.1:8899/updateindex?pw=' + settings.params['search_password']
-	try:
-		res = urllib2.urlopen(url).read()		
-	except :
-		res = '{"reason":"SearchServer not available"}'
-	response.write( res )	
-	return response
 
 def selffavorites(request):
 	col = 'selffavorites'

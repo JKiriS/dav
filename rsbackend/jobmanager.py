@@ -54,13 +54,13 @@ class Feed(Job):
 		Job.__init__(self, stime, jid)
 	def run(self):
 		reload(feeds)
-		# Feed(timedelta(hours=12)).save()
+		Feed(timedelta(hours=12)).save()
 		db.job.update({'_id':self._id},{'$set':{'status':'running'}})
 		feeds.run()
 		db.job.update({'_id':self._id},{'$set':{'status':'comleted'}})
-		# UpdateLsiIndex(timedelta(minutes=17)).save()
-		# UpdateSearchIndex(timedelta(minutes=37)).save()
-		# Classify(timedelta(minutes=52)).save()
+		UpdateLsiIndex(timedelta(minutes=17)).save()
+		UpdateSearchIndex(timedelta(minutes=37)).save()
+		Classify(timedelta(minutes=52)).save()
 
 def rundeco(func):
     def _deco(self, *args, **argv):
@@ -108,7 +108,7 @@ class UpdateRList(ThriftJob):
 		ThriftJob.__init__(self, 'recommend', stime, jid)
 	@rundeco
 	def run(self):
-		UpdateRList(timedelta(minutes=58)).save()
+		UpdateRList(timedelta(hours=3)).save()
 		for u in db.user.find():
 			try:
 				self._client.updateRList(str(u['_id']))

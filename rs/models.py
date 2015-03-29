@@ -69,7 +69,7 @@ class upre(Document):
 
 class searchresult(Document):
 	wd = StringField()
-	result = ListField( ObjectIdField() )
+	# result = ListField( ObjectIdField() )
 	click = ListField( ObjectIdField() )
 	timestamp = DateTimeField()
 

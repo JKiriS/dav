@@ -36,7 +36,7 @@ print sid
 sresult = client.search(u"java", 0, 15)
 searchresult = eval(sresult.data['searchresult'])
 hasmore = eval(sresult.data['hasmore'])
-print hasmore, searchreult
+print hasmore, searchresult
 # print client.updateSearchIndex()
 
 transport.close()

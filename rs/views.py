@@ -187,6 +187,8 @@ def search(request):
 		start = int(request.POST['start'])
 		if start == 0:
 			res['params']['searchid'] = str(ObjectId())
+			s = searchresult(wd=request.GET['wd'],timestamp=now())
+			s.save()
 		# try:
 		transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
 		transport = TTransport.TBufferedTransport(transport)
@@ -194,11 +196,10 @@ def search(request):
 		client = Search.Client(protocol)
 		transport.open()
 		sresult = client.search(request.GET['wd'].encode('utf-8'), start, 15)
-		searchresult = eval(sresult.data['searchresult'])
-		print searchresult
+		slist = eval(sresult.data['searchresult'])
 		hasmore = eval(sresult.data['hasmore'])
-		itemlist = item.objects(id__in=searchresult)
-		orders = searchresult
+		itemlist = item.objects(id__in=slist)
+		orders = slist
 		wd = request.GET['wd']
 		t = get_template('rs_itemlist.html')
 		c = Context(locals())

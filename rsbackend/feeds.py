@@ -13,7 +13,7 @@ import socket
 from xml.etree import ElementTree as ET
 import os
 
-PARAMS_DIR = PARAMS_DIR = os.path.join(os.path.dirname(os.path.abspath(os.curdir)),'self.cfg')
+PARAMS_DIR = PARAMS_DIR = os.path.join(os.path.abspath(os.curdir),'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 
 import pymongo

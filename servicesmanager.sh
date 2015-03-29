@@ -20,18 +20,17 @@ elif [ $service = "DBSync" ] ; then
 		echo "startDBSync"
 		exit 0
 	else
-		kill -9 $(ps -A|awk '/mongosync/{print $1}')
+		kill -9 $(ps -ax|awk '/mongosync/{print $1}')
 		echo "stopDBSync"
 		exit 0
 	fi
 elif [ $service = "JobManager" ] ; then
 	if [ $quit -eq 0 ] ; then
-		cd ~/dav/rsbackend/
-		setsid python jobmanager.py & >~/dav/rsbackend/jobmanager.log 2>&1 &
+		setsid python ~/dav/rsbackend/jobmanager.py >~/dav/rsbackend/jobmanager.log 2>&1 &
 		echo "startJobManager"
 		exit 0
 	else
-		kill -9 $(ps -A|awk '/jobmanager/{print $1}')
+		kill -9 $(ps -ax|awk '/jobmanager/{print $1}')
 		echo "stopJobManager"
 		exit 0
 	fi

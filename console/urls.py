@@ -8,10 +8,13 @@ urlpatterns = patterns('',
     url(r'^rs$', 'console.views.rsconsole', name='rsconsole'),
     url(r'^getservices', 'console.views.getservices'),
     url(r'^setservices', 'console.views.setservices'),
-    url(r'^getsites', 'console.views.getsites'),
-    url(r'^setsites', 'console.views.setsites'),
+    
     url(r'^getjobs', 'console.views.getjobs'),
     url(r'^addjob', 'console.views.addjob'),
     url(r'^setjobs', 'console.views.setjobs'),
+
+    url(r'^getrssites', 'console.views.getrssites'),
+    url(r'^setrssites', 'console.views.setrssites'),
+    url(r'^addrssite', 'console.views.addrssite'),
     
 )

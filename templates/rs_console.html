@@ -86,7 +86,7 @@
 	</div>
 </div>
 
-<div class="table-responsive console-group  col-md-12" id="sites">
+<div class="table-responsive console-group  col-md-12" id="rssites">
 	<div class="console-group-header">
 		<span class="console-group-title">站点</span>
 		<a href="javascript:void(0)" class="refresh"><span class="glyphicon glyphicon-refresh"></span></a>
@@ -97,7 +97,7 @@
 	<div class="console-group-footer">
 		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addsite">添加新站点</button>
 	</div>
-	<div class="modal fade" id="addsite" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal fade" id="addrssite" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	  <div class="modal-dialog">
 	    <div class="modal-content">
 	      <div class="modal-header">
@@ -105,7 +105,7 @@
 	        <h4 class="modal-title" id="myModalLabel">添加新站点</h4>
 	      </div>
 	      <div class="modal-body">
-	        <form class="form-horizontal" action="/console/rs/addsite" method="POST" id="newsite">
+	        <form class="form-horizontal" action="/console/addrssite" method="POST" id="newsite">
 				{% csrf_token %}
 				<div class="form-group has-feedback" id="newsite-url">
 				    <label class="control-label col-sm-2">URL</label>

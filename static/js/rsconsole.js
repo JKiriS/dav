@@ -43,8 +43,8 @@ $(document).ready(function(){
 		var url = $.trim($("#newsite-url input").val());
 		var source = $.trim($("#newsite-source input").val());
 		var category = $.trim($("#newsite-category input").val());
-		var parser = $.trim($("#newsite-parser textarea").val());
-		$.post("/console/rs/addsite",{"url":url,"source":source,
+		var parser = $.trim($("#newsite-parser input").val());
+		$.post("/console/addrssite",{"url":url,"source":source,
 			"category":category,"parser":parser},function(res){
 			$("#newsite .form-group").removeClass("has-error");
 			if(res.errors){
@@ -54,8 +54,10 @@ $(document).ready(function(){
 				}
 			}
 			else{
-				$("#sites table").append(res.data);
+				$("#addrssite").hide();
+				$("#sites table tr:last").after(res.data);
 			}
+			return false
 		});
 	});
 	$("#newjob").submit(function(){

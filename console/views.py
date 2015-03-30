@@ -180,7 +180,6 @@ def addrssite(request):
 		response['Content-Type'] = 'application/json'
 		res = {}
 		try:
-			
 			s = site(url=request.POST['url'],parser=request.POST['parser'],\
 				source=request.POST['source'],category=request.POST['category'])
 			s.save()
@@ -201,7 +200,7 @@ def addrssite(request):
 			res['data'] = tem.render(c)
 		except Exception, e:
 			res['error'] = []
-			res['error'].append({'target':'stime', 'reason':str(e)})
+			res['error'].append({'target':'', 'reason':str(e)})
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 

@@ -42,8 +42,8 @@ $(document).ready(function(){
 	$("#newsite").submit(function(){
 		var url = $.trim($("#newsite-url input").val());
 		var source = $.trim($("#newsite-source input").val());
-		var category = $.trim($("#newsite-category input").val());
-		var parser = $.trim($("#newsite-parser input").val());
+		var category = $.trim($("#newsite-source .categories").val());
+		var parser = $.trim($("#newsite-parser .parsers").val());
 		$.post("/console/addrssite",{"url":url,"source":source,
 			"category":category,"parser":parser},function(res){
 			$("#newsite .form-group").removeClass("has-error");

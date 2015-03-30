@@ -38,11 +38,12 @@ class Job:
 			self.timestamp = time.mktime((now() + stime).timetuple())
 		elif isinstance(stime, float):
 			self.timestamp = stime
+		self.starttime = datetime.fromtimestamp(self.timestamp)
 		self.status = status
 		self.id = jid
 	def save(self):
 		db.job.save({'_id':self.id,'name':self.name,'runable':self._cmd(),
-			'starttime':datetime.fromtimestamp(self.timestamp),'status':self.status})
+			'starttime':self.starttime,'status':self.status})
 	def _cmd(self):
 		return '{}({},ObjectId("{}")).run()'\
 				.format(self.name,self.timestamp,self.id)

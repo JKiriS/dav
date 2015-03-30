@@ -51,7 +51,7 @@ $(document).ready(function(){
 				alert(res.error);
 			}
 			else{
-				$("#addrssite").hide();
+				$("#addrssite").modal('hide');
 				$("#rssites table tr:last").after(res.data);
 			}
 		});
@@ -70,7 +70,7 @@ $(document).ready(function(){
 				alert(res.error);
 			}
 			else{
-				$("#addjob").hide();
+				$("#addjob").modal('hide');
 				$("#jobs tr.info").after(res.data);
 			}
 		});

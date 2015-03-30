@@ -52,7 +52,7 @@ $(document).ready(function(){
 			}
 			else{
 				$("#addrssite").hide();
-				$("#sites table tr:last").after(res.data);
+				$("#rssites table tr:last").after(res.data);
 			}
 		});
 		return false

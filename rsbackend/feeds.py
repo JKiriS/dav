@@ -87,30 +87,15 @@ class common(Parser):
 			self.checkrss(rss)
 		self.save()
 
-class ifanr(Parser):
-	def parse(self):
-		rawrss = urllib2.urlopen(self._site['url'])
-		channel = ET.parse(rawrss).find('./channel')
-		for i in channel.findall('item'):
-			rss = {'click_num':0, 'favo_num':0}
-			rss['pubdate'] = datetime.datetime.strptime(i.find('pubDate').text[:-6], '%a, %d %b %Y %X')
-			if self._site.get('latest') and rss['pubdate'] <= self._site['latest']:
-				break
-			rss['source'] = self._site['source']
-			rss['tags'] = []
-			rss['category'] = self._site['category']
-			for t in i.findall('category'):
-				if t.text not in rss['tags']:
-					rss['tags'].append(t.text)
-			rss['title'] = i.find('title').text
-			rss['link'] = i.find('link').text
-			if i.find('image') != None:
-				rss['imgurl'] = i.find('image').text
-			des = i.find('description').text
+class imgInEnclosure(common):
+	def getdesimg(self, rss, rawtext):
+		if rss != None and 'summary_detail' in rawtext:	
+			des = rawtext['summary_detail']['value']
 			soup = BeautifulSoup(des)
-			rss['des'] = soup.get_text()
-			self.checkrss(rss)
-		self.save()
+			rss['des'] = soup.get_text()		
+		if rss != None and len(rawtext.enclosures) > 0 and \
+			rawtext.enclosures[0]['type'] == 'image/jpeg' :
+			rss['imgurl'] = rawtext.enclosures[0]['href']
 
 class imgInDes(common):
 	def getdesimg(self, rss, rawtext):
@@ -140,6 +125,31 @@ class desImgInContent(common):
 			rss['des'] = soup.get_text()
 			if soup.find('img'):
 				rss['imgurl'] = soup.find('img').get('src')
+
+class ifanr(Parser):
+	def parse(self):
+		rawrss = urllib2.urlopen(self._site['url'])
+		channel = ET.parse(rawrss).find('./channel')
+		for i in channel.findall('item'):
+			rss = {'click_num':0, 'favo_num':0}
+			rss['pubdate'] = datetime.datetime.strptime(i.find('pubDate').text[:-6], '%a, %d %b %Y %X')
+			if self._site.get('latest') and rss['pubdate'] <= self._site['latest']:
+				break
+			rss['source'] = self._site['source']
+			rss['tags'] = []
+			rss['category'] = self._site['category']
+			for t in i.findall('category'):
+				if t.text not in rss['tags']:
+					rss['tags'].append(t.text)
+			rss['title'] = i.find('title').text
+			rss['link'] = i.find('link').text
+			if i.find('image') != None:
+				rss['imgurl'] = i.find('image').text
+			des = i.find('description').text
+			soup = BeautifulSoup(des)
+			rss['des'] = soup.get_text()
+			self.checkrss(rss)
+		self.save()
 
 class acfun(Parser):
 	def parse(self):

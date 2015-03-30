@@ -121,17 +121,24 @@ cs = json.load(file('cs.json'))
 # import os
 # print os.path.isfile('write.lock1')
 
-import jobmanager
-import types
-for i in dir(jobmanager):
-	attr = getattr(jobmanager, i)
-	if type(attr) == types.ClassType and issubclass(attr, jobmanager.Job) \
-		and hasattr(attr, 'run'):
-		print i
+# import jobmanager
+# import types
+# for i in dir(jobmanager):
+# 	attr = getattr(jobmanager, i)
+# 	if type(attr) == types.ClassType and issubclass(attr, jobmanager.Job) \
+# 		and hasattr(attr, 'run'):
+# 		print i
 
-import feeds
-for i in dir(feeds):
-	attr = getattr(feeds, i)
-	if type(attr) == types.ClassType and issubclass(attr, feeds.Parser) \
-		and hasattr(attr, 'parse'):
-		print attr	
+# import feeds
+# for i in dir(feeds):
+# 	attr = getattr(feeds, i)
+# 	if type(attr) == types.ClassType and issubclass(attr, feeds.Parser) \
+# 		and hasattr(attr, 'parse'):
+# 		print attr	
+
+# import feedparser
+# d = feedparser.parse('http://www.pcbeta.com/portal.php?mod=rss')
+# rawtext = d.entries[0]
+# if len(rawtext.enclosures) > 0 and \
+# 	rawtext.enclosures[0]['type'] == 'image/jpeg' :
+# 	print rawtext.enclosures[0]['href']

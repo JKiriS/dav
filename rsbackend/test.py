@@ -52,9 +52,9 @@ import os
 # 	if 'children' in c:
 # 		for cc in c['children']:
 # 			m[cc['name']] = c['name']
-conn = pymongo.Connection('54.187.240.68') #
-db = conn['feed']
-db.authenticate('JKiriS','910813gyb')
+# conn = pymongo.Connection('54.187.240.68') #
+# db = conn['feed']
+# db.authenticate('JKiriS','910813gyb')
 # for i in m:
 # 	db.site.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
 # 	db.item.update({'category':i}, {'$set':{'category':m[i]}}, multi=True)
@@ -116,8 +116,22 @@ cs = json.load(file('cs.json'))
 # 			v['option'][i] = cs[v['option'][i]]
 # 	db.verification.save(v)
 
-flock = open('write.lock','w+')
-flock.close()
-import os
-print os.path.isfile('write.lock1')
-	
+# flock = open('write.lock','w+')
+# flock.close()
+# import os
+# print os.path.isfile('write.lock1')
+
+import jobmanager
+import types
+for i in dir(jobmanager):
+	attr = getattr(jobmanager, i)
+	if type(attr) == types.ClassType and issubclass(attr, jobmanager.Job) \
+		and hasattr(attr, 'run'):
+		print i
+
+import feeds
+for i in dir(feeds):
+	attr = getattr(feeds, i)
+	if type(attr) == types.ClassType and issubclass(attr, feeds.Parser) \
+		and hasattr(attr, 'parse'):
+		print attr	

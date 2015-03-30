@@ -59,10 +59,13 @@ $(document).ready(function(){
 		});
 	});
 	$("#newjob").submit(function(){
-		var name = $.trim($("#newjob-name input").val());
-		var starttime = $.trim($("#newjob-starttime input").val());
-		$.post("/console/rs/addjob",{"name":name,
-			"starttime":starttime},function(res){
+		var name = $.trim($(".jobtypes").val());
+		var stime = $.trim($("#newjob-stime input").val());
+		if(stime == "")
+			stime = "minutes=1";
+		stime = "timedelta(" + stime + ")"
+		$.post("/console/addjob",{"name":name,
+			"stime":stime},function(res){
 			$("#newjob .form-group").removeClass("has-error");
 			if(res.errors){
 				for (var i in res.errors){
@@ -71,8 +74,10 @@ $(document).ready(function(){
 				}
 			}
 			else{
-				$("#jobs table").append(res.data);
+				$("#addjob").hide();
+				$("#jobs tr.info").after(res.data);
 			}
 		});
+		return false;
 	});
 });

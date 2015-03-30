@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     url(r'^getsites', 'console.views.getsites'),
     url(r'^setsites', 'console.views.setsites'),
     url(r'^getjobs', 'console.views.getjobs'),
+    url(r'^addjob', 'console.views.addjob'),
     url(r'^setjobs', 'console.views.setjobs'),
     
 )

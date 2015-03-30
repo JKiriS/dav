@@ -37,7 +37,7 @@ class Job:
 		if isinstance(stime, timedelta):
 			self.starttime = now() + stime
 		elif isinstance(stime, float):
-			self.starttime = datetime.fromtimestamp(stime)
+			self.starttime = datetime.utcfromtimestamp(stime)
 		self.status = status
 		self.id = jid
 	def save(self):

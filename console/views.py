@@ -205,7 +205,7 @@ def setrssites(request):
 			''')
 			response.render(tem, locals())
 		except Exception, e:
-			response.seterror(u'无法' + cmd + ' site:' + target)
+			response.seterror(e)
 		return response.get()
 
 def getjobs(request):
@@ -272,5 +272,5 @@ def setjobs(request):
 			''')
 			response.render(tem, locals())
 		except Exception, e:
-			response.seterror(u'无法' + cmd + ' job:' + target)
+			response.seterror(e)
 		return response.get()

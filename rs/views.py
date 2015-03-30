@@ -200,8 +200,8 @@ def search(request):
 			if sresult.data:
 				slist = eval(sresult.data['searchresult'])
 				hasmore = eval(sresult.data['hasmore'])
-			itemlist = item.objects(id__in=slist)
-			orders = slist
+				itemlist = item.objects(id__in=slist)
+				orders = slist
 			wd = request.GET['wd']
 			t = get_template('rs_itemlist.html')
 			c = Context(locals())

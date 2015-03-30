@@ -179,28 +179,28 @@ def addrssite(request):
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
 		res = {}
-		try:
-			s = site(url=request.POST['url'],parser=request.POST['parser'],\
-				source=request.POST['source'],category=request.POST['category'])
-			s.save()
-			tem =  Template('''
-				<tr class="active" id="{{ s.id }}">
-					<td><span title="{{ s.url }}">{{ s.url |slice:"30" }}</span></td>
-			  		<td>{{ s.parser }}</td>
-			  		<td>{{ s.category }}</td>
-			  		<td>{{ s.source }}</td>
-			  		<td>{{ s.latest|date:"Y-m-d H:i" }}</td>
-			  		<td class="status">
-			  			<span class="status-label">{{ s.status }}</span>
-			  			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'disabled' %}启用{% else %}禁用{% endifequal %}</button>
-			  		</td>
-				</tr>
-			''')
-			c = Context(locals())
-			res['data'] = tem.render(c)
-		except Exception, e:
-			res['error'] = []
-			res['error'].append({'target':'', 'reason':str(e)})
+		# try:
+		s = site(url=request.POST['url'],parser=request.POST['parser'],\
+			source=request.POST['source'],category=request.POST['category'])
+		s.save()
+		tem =  Template('''
+			<tr class="active" id="{{ s.id }}">
+				<td><span title="{{ s.url }}">{{ s.url |slice:"30" }}</span></td>
+		  		<td>{{ s.parser }}</td>
+		  		<td>{{ s.category }}</td>
+		  		<td>{{ s.source }}</td>
+		  		<td>{{ s.latest|date:"Y-m-d H:i" }}</td>
+		  		<td class="status">
+		  			<span class="status-label">{{ s.status }}</span>
+		  			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'disabled' %}启用{% else %}禁用{% endifequal %}</button>
+		  		</td>
+			</tr>
+		''')
+		c = Context(locals())
+		res['data'] = tem.render(c)
+		# except Exception, e:
+		# 	res['error'] = []
+		# 	res['error'].append({'target':'', 'reason':str(e)})
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 

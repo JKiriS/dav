@@ -44,7 +44,6 @@ $(document).ready(function(){
 		var source = $.trim($("#newsite-source input").val());
 		var category = $.trim($("#newsite-source .categories").val());
 		var parser = $.trim($("#newsite-parser .parsers").val());
-		alert(url+source+category+parser);
 		$.post("/console/addrssite",{"url":url,"source":source,
 			"category":category,"parser":parser},function(res){
 			$("#newsite .form-group").removeClass("has-error");

@@ -35,18 +35,17 @@ class Job:
 	def __init__(self, stime, jid, status='waiting'):
 		self.name = self.__class__.__name__
 		if isinstance(stime, timedelta):
-			self.starttime = now() + stime
+			self.timestamp = time.mktime((now() + stime).timetuple())
 		elif isinstance(stime, float):
-			self.starttime = datetime.utcfromtimestamp(stime)
+			self.timestamp = stime
 		self.status = status
 		self.id = jid
 	def save(self):
 		db.job.save({'_id':self.id,'name':self.name,'runable':self._cmd(),
-			'starttime':self.starttime,'status':self.status})
+			'starttime':datetime.fromtimestamp(self.timestamp),'status':self.status})
 	def _cmd(self):
-		t = time.mktime(self.starttime.timetuple())
 		return '{}({},ObjectId("{}")).run()'\
-				.format(self.name,t,self.id)
+				.format(self.name,self.timestamp,self.id)
 
 class Feed(Job):
 	def __init__(self, stime, jid=ObjectId()):

@@ -11,7 +11,7 @@ PARAMS_DIR = os.path.join(BASE_DIR,'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 
-now = lambda : datetime.now()
+now = lambda : datetime.utcnow()
 cs = json.load(file(PARAMS['category']))
 
 from rec import Rec

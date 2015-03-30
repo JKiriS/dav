@@ -6,14 +6,12 @@ import json
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import Template, Context
 from django.template.loader import get_template
-from mongoengine import Q
 import time
 from datetime import datetime, timedelta
 from bson import ObjectId
 from dav import settings
+from dav.baseclasses import PostResponse
 import os.path, sys
-import random
-import urllib2
 import re
 import commands
 import types
@@ -25,7 +23,7 @@ PARAMS_DIR = os.path.join(settings.BASE_DIR, 'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 
 # Create your views here.
-now = lambda : datetime.now()
+now = lambda : datetime.utcnow()
 
 class ServiceManager:
 	def __init__(self):
@@ -54,28 +52,24 @@ class ServiceManager:
 			self._data[self._services[sid]]['status'] = 'closed'
 	def getstatus(self):
 		from thrift.transport import TSocket
-		#test ClsService
 		try: 
 			transport = TSocket.TSocket(PARAMS['classify']['ip'],PARAMS['classify']['port'])
 			transport.open()
 			transport.close()
 		except :
 			self._data[self._services['ClsService']]['status']  = 'closed'
-		# test RecService
 		try:
 			transport = TSocket.TSocket(PARAMS['recommend']['ip'],PARAMS['recommend']['port'])
 			transport.open()
 			transport.close()
 		except :
 			self._data[self._services['RecService']]['status'] = 'closed'
-		# test SearchService
 		try:
 			transport = TSocket.TSocket(PARAMS['search']['ip'],PARAMS['search']['port'])
 			transport.open()
 			transport.close()
 		except :
 			self._data[self._services['SearchService']]['status']  = 'closed'
-		# test DBSync
 		self._getstatusbycmd('DBSync', 'ps aux|grep ubuntu.mongosync')
 		self._getstatusbycmd('JobManager', 'ps aux|grep jobmanager.py')
 	def getservices(self):
@@ -123,20 +117,15 @@ def rsconsole(request):
 
 def getservices(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		services = sm.getservices()
 		t = get_template('services.html')
-		c = Context(locals())
-		res['data'] = t.render(c)
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+		response.render(get_template('services.html'), locals())
+		return response.get()
 
 def setservices(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
+		response = PostResponse()
 		target = request.POST['target']
 		cmd = request.POST['cmd']
 		res = {}
@@ -154,31 +143,21 @@ def setservices(request):
 					<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'running' %}关闭{% else %}开启{% endifequal %}</button>
 				</td>
 			''')
-			c = Context(locals())
-			res['data'] = tem.render(c)
+			response.render(tem, locals())
 		except Exception, e:
-			print e
-			res['error'] = u'无法' + cmd + target
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+			response.seterror(u'无法' + cmd + target)
+		return response.get()
 
 def getrssites(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		sites = site.objects()
-		t = get_template('sites.html')
-		c = Context(locals())
-		res['data'] = t.render(c)
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+		response.render(get_template('sites.html'), locals())
+		return response.get()
 
 def addrssite(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		try:
 			s = site(url=request.POST['url'],parser=request.POST['parser'],\
 				source=request.POST['source'],category=request.POST['category'])
@@ -196,21 +175,16 @@ def addrssite(request):
 			  		</td>
 				</tr>
 			''')
-			c = Context(locals())
-			res['data'] = tem.render(c)
+			response.render(tem, locals())
 		except Exception, e:
-			res['error'] = []
-			res['error'].append({'target':'', 'reason':str(e)})
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+			response.seterror(str(e))
+		return response.get()
 
 def setrssites(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
+		response = PostResponse()
 		target = request.POST['target']
 		cmd = request.POST['cmd']
-		res = {}
 		try:
 			s = site.objects(id=ObjectId(target)).first()
 			if cmd == u'禁用':
@@ -229,31 +203,21 @@ def setrssites(request):
 		  			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'enabled' %}禁用{% else %}启用{% endifequal %}</button>
 		  		</td>
 			''')
-			c = Context(locals())
-			res['data'] = tem.render(c)
+			response.render(tem, locals())
 		except Exception, e:
-			print e
-			res['error'] = u'无法' + cmd + ' site:' + target
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+			response.seterror(u'无法' + cmd + ' site:' + target)
+		return response.get()
 
 def getjobs(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		jobs = job.objects().order_by("-starttime").limit(30)
-		t = get_template('jobs.html')
-		c = Context(locals())
-		res['data'] = t.render(c)
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+		response.render(get_template('jobs.html'), locals())
+		return response.get()
 
 def addjob(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		try:
 			j = eval('jobmanager.'+request.POST['name']+'('+request.POST['stime']+')')
 			j.save()
@@ -274,21 +238,14 @@ def addjob(request):
 			      	</td>
 			     </tr>
 			''')
-			c = Context(locals())
-			res['data'] = tem.render(c)
+			response.render(tem, locals())
 		except Exception, e:
-			res['error'] = []
-			res['error'].append({'target':'stime', 'reason':str(e)})
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+			response.seterror({'target':'stime', 'reason':str(e)})
+		return response.get()
 
 def setjobs(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		target = request.POST['target']
-		cmd = request.POST['cmd']
-		res = {}
+		response = PostResponse()
 		try:
 			j = job.objects(id=ObjectId(target)).first()
 			if cmd == u'取消':
@@ -313,10 +270,7 @@ def setjobs(request):
 			        {% endifequal %}
 		      	</td>
 			''')
-			c = Context(locals())
-			res['data'] = tem.render(c)
+			response.render(tem, locals())
 		except Exception, e:
-			print e
-			res['error'] = u'无法' + cmd + ' job:' + target
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+			response.seterror(u'无法' + cmd + ' job:' + target)
+		return response.get()

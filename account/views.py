@@ -8,16 +8,12 @@ from account.models import User, UserRegisterForm, UserLoginForm
 from django.contrib import auth
 from django.template import Template, Context
 from django.views.decorators.csrf import csrf_protect
-#from mongoengine.django.auth import User
-
-# Create your views here.
+from dav.baseclasses import PostResponse
 
 @csrf_protect
 def register(request):
 	if request.method == 'POST': 
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		form = UserRegisterForm(request.POST)
 		if form.is_valid():
 			username = form.cleaned_data['uname']
@@ -30,21 +26,19 @@ def register(request):
 				user.is_active = True  
 				user.save()
 			else :
-				res['errors'] = [{'target':'email', 'reason':'该邮箱已被注册'},]
+				response.seterror([{'target':'email', 'reason':'该邮箱已被注册'},])
 		else:
-			res['errors'] = []
+			errors = []
 			for k in form.keys():
-				res['errors'].append({'target':k, 'reason':'输入无效'})
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+				errors.append({'target':k, 'reason':'输入无效'})
+			response.seterror(errors)
+		return response.get()
 	return render(request, 'register.html')
 
 @csrf_protect
 def login(request):
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		form = UserLoginForm(request.POST)
 		if form.is_valid():
 			email = form.cleaned_data['email']
@@ -59,17 +53,17 @@ def login(request):
 						request.session.set_expiry(60 * 60 * 24 * 7)
 						res['redirecturl'] = request.GET.get('redirecturl')
 					else :
-						res['errors'] = [{'target':'email','reason':'该用户已被禁用，请联系管理员'},]
+						response.seterror([{'target':'email','reason':'该用户已被禁用，请联系管理员'},])
 				else :
-					res['errors'] = [{'target':'pwd','reason':'密码输入错误'},]
+					response.seterror([{'target':'pwd','reason':'密码输入错误'},])
 			else :
-				res['errors'] = [{'target':'email','reason':'该邮箱尚未注册'},]
+				response.seterror([{'target':'email','reason':'该邮箱尚未注册'},])
 		else:
-			res['errors'] = []
+			errors = []
 			for k in form.keys():
-				res['errors'].append({'target':k, 'reason':'输入无效'})
-		response.write( json.dumps(res, ensure_ascii=False) )	
-		return response
+				errors.append({'target':k, 'reason':'输入无效'})
+			response.seterror(errors)
+		return response.get()
 	return render(request, 'login.html')
 
 def logout(request):

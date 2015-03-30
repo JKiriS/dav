@@ -143,15 +143,15 @@ $(document).ready(function(){
 			success = false;
 		if(success) {
 			$.post("", {"email":email,"pwd":pwd}, function(res){
-				if(!res.errors){
+				if(!res.error){
 					if(res.redirecturl != null)
 						window.location.href = res.redirecturl;
 					else
 						window.location.href = "/rs/";
 				}
 				else{
-					for (var i in res.errors){
-						checkInput(res.errors[i].target, "", res.errors[i].reason);
+					for (var i in res.error){
+						checkInput(res.error[i].target, "", res.error[i].reason);
 					}
 				}
 			});
@@ -179,11 +179,11 @@ $(document).ready(function(){
 		checkInput('des', des);
 		if(success) {
 			$.post("", {"uname":uname,"pwd":pwd,"email":email,"des":des}, function(res){
-				if(!res.errors)
+				if(!res.error)
 					window.location.href = "/account/login";
 				else{
-					for (var i in res.errors)
-						checkInput(res.errors[i].target, "", res.errors[i].reason);
+					for (var i in res.error)
+						checkInput(res.error[i].target, "", res.error[i].reason);
 				}
 			});
 			var qid = $(".veri_q .question").attr("id")

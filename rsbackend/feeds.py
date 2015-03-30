@@ -23,7 +23,7 @@ db = conn_primary['feed']
 db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 
 socket.setdefaulttimeout(PARAMS['feed']['timeout'])
-now = lambda : datetime.datetime.now()
+now = lambda : datetime.datetime.utcnow()
 
 class RsslistNull(Exception):
 	def __init__(self):

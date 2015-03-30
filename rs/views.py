@@ -10,9 +10,9 @@ from mongoengine import Q
 import datetime, time
 from bson import ObjectId
 from dav import settings
+from dav.baseclasses import PostResponse
 import os.path, sys
 import random
-import urllib2
  
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -28,7 +28,7 @@ sys.path.append(PARAMS['thrift']['gen-py'])
 from search import Search
 from common import *
 
-now = lambda : datetime.datetime.now()
+now = lambda : datetime.datetime.utcnow()
 
 def index(request):
 	if request.user.is_authenticated():
@@ -39,19 +39,13 @@ def index(request):
 def lookaround(request):
 	col = 'lookaround'
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
+		response = PostResponse(request.POST)
 		itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5), \
 			rand__near=[random.random(), 0]).limit(15)
 		hasmore = True if len(itemlist) >= 15 else False
-		t = get_template('rs_itemlist.html')
-		c = Context(locals())
-		res = {}
-		res['data'] = t.render(c)
-		res['params'] = request.POST.copy()
-		res['params']['start'] = 0
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+		response.render(get_template('rs_itemlist.html'), locals())
+		response.setparams('start', 0)
+		return response.get()
 	
 	return render(request, 'rs_main.html', locals())
 
@@ -60,23 +54,15 @@ def recommend(request):
 	if not request.user.is_authenticated():
 		return HttpResponseRedirect('/account/login?redirecturl=/rs/recommend')
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
+		response = PostResponse(request.POST)
 		skipnum = int(request.POST['start'])
 		urlist = rlist.objects(id=request.user.id).first()
-
 		itemlist = item.objects(id__in=urlist.rlist[skipnum:skipnum+15])
 		orders = urlist.rlist[skipnum:skipnum+15]
-
 		hasmore = True if len(orders) >= 15 else False
-		t = get_template('rs_itemlist.html')
-		c = Context(locals())
-		res = {}
-		res['data'] = t.render(c)
-		res['params'] = request.POST.copy()
-		res['params']['start'] = repr(skipnum + len(itemlist))
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+		response.render(get_template('rs_itemlist.html'), locals())
+		response.setparams('start', repr(skipnum + len(itemlist)))
+		return response.get()
 
 	return render(request, 'rs_main.html', locals())
 
@@ -85,39 +71,29 @@ def lookclassify(request):
 	param_c = request.GET.getlist('category[]',[])
 	param_s = request.GET.getlist('source[]',[])
 	if request.method == 'POST':
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
-		res['params'] = request.POST.copy()
+		response = PostResponse(request.POST)
 		skipnum = int(request.POST['start'])
 		orderby = request.GET.get('orderby', 'time')
 		if orderby == 'time':
 			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
 				.order_by("-pubdate").skip(skipnum).limit(15)
-			hasmore = True if len(itemlist) >= 15 else False
-			res['params']['start'] = repr(skipnum + len(itemlist))
 		elif orderby == 'hot':
 			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
 				.order_by("-click_num").skip(skipnum).limit(15)
-			hasmore = True if len(itemlist) >= 15 else False
-			res['params']['start'] = repr(skipnum + len(itemlist))
 		elif orderby == 'favo':
 			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
 				.order_by("-favo_num").skip(skipnum).limit(15)
-			hasmore = True if len(itemlist) >= 15 else False
-			res['params']['start'] = repr(skipnum + len(itemlist))
 		else:
 			itemlist = item.objects( (Q(source__in=param_s) | Q(category__in=param_c)) & \
 				Q(pubdate__gte=now()-datetime.timedelta(days=10)) & \
 				Q(rand__near=[random.random(), 0]) ).limit(15)
-			hasmore = True if len(itemlist) >= 15 else False
-			res['params']['start'] = 0
-
-		t = get_template('rs_itemlist.html')
-		c = Context(locals())
-		res['data'] = t.render(c)
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+		hasmore = True if len(itemlist) >= 15 else False
+		if orderby == 'random':
+			response.setparams('start', 0)
+		else:
+			response.setparams('start', repr(skipnum + len(itemlist)))
+		response.render(get_template('rs_itemlist.html'), locals())
+		return response.get()
 	if len(param_c) + len(param_s) > 0:
 		for c in param_c:
 			category.objects(name=c).update(inc__visit_num=1) 
@@ -139,10 +115,8 @@ def lookclassify(request):
 		return HttpResponseRedirect('/rs/lookaround')
 
 def getcs(request):
-	response = HttpResponse()
 	if request.method == 'POST':
-		response['Content-Type'] = 'application/json'
-		res = {}
+		response = PostResponse()
 		_url = request.POST.get('fromurl').split('?')
 		from django.http import QueryDict
 		try:
@@ -168,11 +142,9 @@ def getcs(request):
 		sources_show = sources[:10]
 		sources_hide = sources[10:]
 		has_hide = True if len(sources_hide) > 0 else False
-		t = get_template('rs_category_source.html')
-		c = Context(locals())
-		res['data'] = t.render(c)
-		response.write( json.dumps(res, ensure_ascii=False) )
-	return response
+		response.render(get_template('rs_category_source.html'), locals())
+		return response.get()
+		return response
 
 def search(request):
 	col = 'search'
@@ -180,14 +152,11 @@ def search(request):
 		b = behavior(uid=request.user.id, action='search', \
 			target=request.GET['wd'], timestamp=now())
 		b.save()
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
-		res = {}
-		res['params'] = request.POST.copy()
+		response = PostResponse(request.POST)
 		start = int(request.POST['start'])
 		if start == 0:
 			sid = ObjectId()
-			res['params']['searchid'] = str(sid)
+			response.setparams('searchid', str(sid))
 			s = searchresult(id=sid,wd=request.GET['wd'],timestamp=now())
 			s.save()
 		try:
@@ -197,19 +166,18 @@ def search(request):
 			client = Search.Client(protocol)
 			transport.open()
 			sresult = client.search(request.GET['wd'].encode('utf-8'), start, 15)
+			transport.close()
+			
 			slist = eval(sresult.data['searchresult']) if sresult.data else []
 			hasmore = eval(sresult.data['hasmore']) if sresult.data else False 
 			itemlist = item.objects(id__in=slist)
 			orders = slist
 			wd = request.GET['wd']
-			t = get_template('rs_itemlist.html')
-			c = Context(locals())
-			res['data'] = t.render(c)
-			res['params']['start'] = repr(start + len(itemlist))
+			response.render(get_template('rs_itemlist.html'), locals())
+			response.setparams('start', repr(skipnum + len(itemlist)))
 		except Exception, e:
-			res['error'] = str(e)
-		response.write( json.dumps(res) )
-		return response
+			response.seterror(str(e))
+		return response.get()
 	if 'wd' in request.GET:
 		wd = request.GET['wd']
 		return render(request, 'rs_main.html', locals())
@@ -221,8 +189,7 @@ def selffavorites(request):
 	if not request.user.is_authenticated():
 		return HttpResponseRedirect('/account/login?redirecturl=/rs/selffavorites')
 	if request.method == 'POST' and request.user.is_authenticated():
-		response = HttpResponse()
-		response['Content-Type'] = 'application/json'
+		response = PostResponse(request.POST)
 		skipnum = int(request.POST['start'])
 		if skipnum == 0:
 			itemlist = item.objects(id__in=request.user.favorites[-15-skipnum:])
@@ -231,15 +198,10 @@ def selffavorites(request):
 			itemlist = item.objects(id__in=request.user.favorites[-15-skipnum:-skipnum])
 			orders = request.user.favorites[-15-skipnum:-skipnum][::-1]
 
-		t = get_template('rs_itemlist.html')
 		hasmore = True if len(itemlist) >= 15 else False
-		c = Context(locals())
-		res = {}
-		res['data'] = t.render(c)
-		res['params'] = request.POST.copy()
-		res['params']['start'] = repr(skipnum + len(itemlist))
-		response.write( json.dumps(res, ensure_ascii=False) )
-		return response
+		response.render(get_template('rs_itemlist.html'), locals())
+		response.setparams('start', repr(skipnum + len(itemlist)))
+		return response.get()
 
 	return render(request, 'rs_main.html', locals())
 
@@ -262,10 +224,8 @@ def behaviorrecorder(request):
 	return HttpResponse()
 
 def additemtag(request):
-	response = HttpResponse()
-	response['Content-Type'] = 'application/json'
-	res = {}
 	if request.method == 'POST':
+		response = PostResponse()
 		i = item.objects(id=request.POST['itemid']).first()
 		b = behavior(uid=request.user.id,action='addtag',\
 			target=request.POST['itemid'],timestamp=now())
@@ -275,27 +235,23 @@ def additemtag(request):
 			i.save()
 			tem = Template('''<a class="itemtag" target="_blank" 
 				href="{% url 'lookclassified' %}?tag={{ t }}">#{{ t }}</span></a>''')
-			res['data'] = tem.render( Context({'t': request.POST['name']}) )
-	response.write( json.dumps(res, ensure_ascii=False) )
-	return response
+			response.render(tem, {'t': request.POST['name']})
+		return response.get()
 
 def getupre(request):
-	response = HttpResponse()
-	response['Content-Type'] = 'application/json'
-	res = {}
+	response = PostResponse()
 	pre = upre.objects(id=request.user.id).first()
 	if pre:
 		if request.GET['target'] == 'source' and pre.source :
-			res['data'] = map(lambda a:{'name':a[0],'count':a[1]}, \
-				sorted(pre.source.iteritems(), key=lambda a:a[1], reverse=True))[:30]
+			response.setdata(map(lambda a:{'name':a[0],'count':a[1]}, \
+				sorted(pre.source.iteritems(), key=lambda a:a[1], reverse=True))[:30])
 		if request.GET['target'] == 'category' and pre.category :
-			res['data'] = map(lambda a:{'name':a[0],'count':a[1]}, \
-				sorted(pre.category.iteritems(), key=lambda a:a[1], reverse=True))[:30]
+			response.setdata(map(lambda a:{'name':a[0],'count':a[1]}, \
+				sorted(pre.category.iteritems(), key=lambda a:a[1], reverse=True))[:30])
 		if request.GET['target'] == 'wd' and pre.wd:
-			res['data'] = map(lambda a:{'name':a[0],'count':a[1]}, \
-				sorted(pre.wd.iteritems(), key=lambda a:a[1], reverse=True))[:100]
-	response.write( json.dumps(res, ensure_ascii=False) )
-	return response
+			response.setdata(map(lambda a:{'name':a[0],'count':a[1]}, \
+				sorted(pre.wd.iteritems(), key=lambda a:a[1], reverse=True))[:100])
+	return response.get()
 
 def addfavorite(request):
 	if request.method == 'POST':

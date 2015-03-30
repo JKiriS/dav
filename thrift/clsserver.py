@@ -40,6 +40,7 @@ logger.info('jieba and stopwords load success')
 cs = json.load(file(PARAMS['category']))
 CLS_DIR = PARAMS['classify']['dir']
 LSI_DIR = PARAMS['recommend']['dir']
+now = lambda:datetime.datetime.utcnow()
 
 import pymongo
 class DBManager:
@@ -154,7 +155,7 @@ class ClsHandler:
 	def trainClassify(self):
 		logger.info('train Classify model')
 		dictionary = cfm.getdic()
-		t = datetime.datetime.now() - datetime.timedelta(days=180)
+		t = now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
 		texts_origin = []

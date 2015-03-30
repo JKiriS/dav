@@ -39,6 +39,7 @@ logger.info('jieba and stopwords load success')
 
 cs = json.load(file(PARAMS['category']))
 LSI_DIR = PARAMS['recommend']['dir']
+now = lambda:datetime.datetime.utcnow()
 
 import pymongo
 class DBManager:
@@ -218,7 +219,7 @@ class RecHandler:
 				r[1] *= 0
 		rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
 		db_primary = dbm.getprimary()
-		db_primary.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':datetime.datetime.now()})
+		db_primary.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':now()})
 		res = Result()
 		res.success = True
 		return res		
@@ -226,7 +227,7 @@ class RecHandler:
 	def updateLsiIndex(self, category):
 		category = category.decode('utf-8')
 		logger.info('update lsi index of category ' + category)
-		t = datetime.datetime.now() - datetime.timedelta(days=180)
+		t = now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
 		texts_origin = []
@@ -266,7 +267,7 @@ class RecHandler:
 	def updateLsiDic(self, category):
 		category = category.decode('utf-8')
 		logger.info('update lsi dictionary of category ' + category)
-		t = datetime.datetime.now() - datetime.timedelta(days=180)
+		t = now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()	
 		itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
@@ -293,7 +294,7 @@ class RecHandler:
 	def updateUPre(self, uid):
 		logger.info('update preferences of user ' + uid)
 		pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
-		pre['timestamp'] = datetime.datetime.now()
+		pre['timestamp'] = now()
 		db = dbm.getlocal()
 		for s in db.source.find():
 			pre['source'][s['name']] = 0

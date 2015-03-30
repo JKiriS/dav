@@ -66,7 +66,7 @@ def rundeco(func):
         try:
         	db.job.update({'_id':self.id},{'$set':{'status':'running'}})
         	func(self, *args, **argv)
-        	db.job.update({'_id':self.id},{'$set':{'status':'comleted'}})
+        	db.job.update({'_id':self.id},{'$set':{'status':'completed'}})
         except Exception, e:
         	print e
         	db.job.update({'_id':self.id},{'$set':{'status':'failed'}})

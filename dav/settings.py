@@ -91,7 +91,7 @@ SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE =  'Asia/Shanghai'
+TIME_ZONE =  'UTC'
 
 USE_I18N = True
 

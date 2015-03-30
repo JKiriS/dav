@@ -7,7 +7,7 @@ $(document).ready(function(){
 			}
 		})
 	}
-	load("sites");
+	load("rssites");
 	load("jobs");
 	load("services");
 	$(".console-group-header a.refresh").on("click",function(){

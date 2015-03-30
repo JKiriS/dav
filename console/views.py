@@ -7,20 +7,25 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import Template, Context
 from django.template.loader import get_template
 from mongoengine import Q
-import datetime, time
+import time
+from datetime import datetime, timedelta
 from bson import ObjectId
 from dav import settings
-import os.path
+import os.path, sys
 import random
 import urllib2
 import re
 import commands
+import types
+
+sys.path.append(os.path.join(settings.BASE_DIR, 'rsbackend'))
+import jobmanager, feeds
 
 PARAMS_DIR = os.path.join(settings.BASE_DIR, 'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 
 # Create your views here.
-now = lambda : datetime.datetime.now()
+now = lambda : datetime.now()
 
 class ServiceManager:
 	def __init__(self):
@@ -79,23 +84,41 @@ class ServiceManager:
 	def getservice(self, sid):
 		return self._data[self._services[sid]]
 	def open(self, sid):
-		if self._data[self._services[sid]]['status'] == 'closed' and \
-			commands.getstatusoutput("~/dav/servicesmanager.sh -s " + sid)[0] == 0:
-			self._data[self._services[sid]]['status'] = 'running'
-		else:
-			raise Exception()
+		commands.getstatusoutput("~/dav/servicesmanager.sh -s " + sid)
+		self.getstatus()
 	def close(self, sid):
-		if self._data[self._services[sid]]['status'] == 'running' and \
-			commands.getstatusoutput("~/dav/servicesmanager.sh -q -s " + sid)[0] == 0:
-			self._data[self._services[sid]]['status'] = 'closed'
-		else:
-			raise Exception()
+		commands.getstatusoutput("~/dav/servicesmanager.sh -q -s " + sid)
+		self.getstatus()
 
 sm = ServiceManager()
+
+def getJobTypes():
+	jobtypes = []
+	reload(jobmanager)
+	for i in dir(jobmanager):
+		attr = getattr(jobmanager, i)
+		if type(attr) == types.ClassType and issubclass(attr, jobmanager.Job) \
+			and hasattr(attr, 'run'):
+			jobtypes.append(i)
+	return jobtypes
+
+def getParsers():
+	parsers = []
+	reload(feeds)
+	for i in dir(feeds):
+		attr = getattr(feeds, i)
+		if type(attr) == types.ClassType and issubclass(attr, feeds.Parser) \
+			and hasattr(attr, 'parse'):
+			parsers.append(i)
+	return parsers
 
 def rsconsole(request):
 	if not request.user.is_superuser:
 		return HttpResponseRedirect('/account/login?redirecturl=/console/rs')
+	jobtypes = getJobTypes()
+	parsers = getParsers()
+	categories = json.load(file(PARAMS['category']))
+	categories.append(u'综合')
 	return render(request, 'rs_console.html', locals())
 
 def getservices(request):
@@ -196,6 +219,40 @@ def getjobs(request):
 		response.write( json.dumps(res, ensure_ascii=False) )
 		return response
 
+def addjob(request):
+	if request.method == 'POST':
+		response = HttpResponse()
+		response['Content-Type'] = 'application/json'
+		res = {}
+		try:
+			print 'jobmanager.'+request.POST['name']+'('+request.POST['stime']+')'
+			j = eval('jobmanager.'+request.POST['name']+'('+request.POST['stime']+')')
+			j.save()
+			tem =  Template('''
+				<tr class="active" id="{{ j.id }}">
+					<td>{{ j.name }}</td>
+	      			<td>{{ j.status }}</td>
+			      	<td>{{ j.starttime|date:"Y-m-d H:i:s" }}</td>
+			      	<td>
+			        	{% ifequal j.status 'waiting' %}
+				        <button class="btn btn-primary btn-sm" disabled="disabled">修改</button>
+				        <button class="btn btn-primary btn-sm">取消</button>
+				        {% else %}
+				           {% ifequal j.status 'canceled' %}
+				            <button class="btn btn-primary btn-sm">激活</button>
+				            {% endifequal %}
+				        {% endifequal %}
+			      	</td>
+			     </tr>
+			''')
+			c = Context(locals())
+			res['data'] = tem.render(c)
+		except Exception, e:
+			res['error'] = []
+			res['error'].append({'target':'stime', 'reason':str(e)})
+		response.write( json.dumps(res, ensure_ascii=False) )
+		return response
+
 def setjobs(request):
 	if request.method == 'POST':
 		response = HttpResponse()
@@ -213,7 +270,7 @@ def setjobs(request):
 				j['status'] = 'waiting'
 			j.save()
 			tem =  Template('''
-				<td>{{ j.function }}</td>
+				<td>{{ j.name }}</td>
       			<td>{{ j.status }}</td>
 		      	<td>{{ j.starttime|date:"Y-m-d H:i:s" }}</td>
 		      	<td>

@@ -55,23 +55,29 @@
 	        <h4 class="modal-title" id="myModalLabel">添加新任务</h4>
 	      </div>
 	      <div class="modal-body">
-	        <form class="form-horizontal" action="/console/rs/addjob" method="POST" id="newjob">
+	        <form class="form-horizontal" id="newjob">
 				{% csrf_token %}
 				<div class="form-group has-feedback" id="newjob-name">
 				    <label class="control-label col-sm-2">任务名</label>
 				    <div class="col-sm-9">
-				      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">			
+				      <select class="form-control jobtypes">
+				      	{% for j in jobtypes %}
+				          <option value="{{ j }}">{{ j }}</option>
+				        {% endfor %}
+				      </select>			
 				    </div>
 				</div>
-				<div class="form-group has-feedback" id="newjob-starttime">
+				<div class="form-group has-feedback" id="newjob-stime">
 				    <label class="control-label col-sm-2">执行时间</label>
-				    <div class="col-sm-9">
-				      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">
-				    </div>
+				    <div class="input-group col-sm-9">
+					  <span class="input-group-addon">timedelta(</span>
+					  <input type="text" class="form-control" placeholder="days=0,hours=0,minutes=1,seconds=0">
+					  <span class="input-group-addon">)</span>
+					</div>
 				</div>
 				<div class="modal-footer">
 	        		<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-	        		<button type="submit" class="btn btn-primary" disabled="disabled">添加</button>
+	        		<button type="submit" class="btn btn-primary">添加</button>
 	      		</div>
 			</form>
 	      </div>
@@ -116,13 +122,21 @@
 				<div class="form-group has-feedback" id="newsite-category">
 				    <label class="control-label col-sm-2">类别</label>
 				    <div class="col-sm-9">
-				      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">			
+				      <select class="form-control categories">
+				      	{% for c in categories %}
+				          <option value="{{ c }}">{{ c }}</option>
+				        {% endfor %}
+				      </select>				
 				    </div>
 				</div>
 				<div class="form-group has-feedback" id="newsite-parser">
 				    <label class="control-label col-sm-2">解析器</label>
 				    <div class="col-sm-9">
-				      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">
+				      <select class="form-control parsers">
+				      	{% for p in parsers %}
+				          <option value="{{ p }}">{{ p }}</option>
+				        {% endfor %}
+				      </select>	
 				    </div>
 				</div>
 				<div class="modal-footer">

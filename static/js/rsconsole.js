@@ -48,17 +48,18 @@ $(document).ready(function(){
 			"category":category,"parser":parser},function(res){
 			$("#newsite .form-group").removeClass("has-error");
 			if(res.errors){
+				ex = '';
 				for (var i in res.errors){
-					var t = "#newsite-" + res.errors[i].target;
-					$(t).addClass("has-error");
+					ex = ex + res.errors[i];
 				}
+				alert(ex);
 			}
 			else{
 				$("#addrssite").hide();
 				$("#sites table tr:last").after(res.data);
 			}
-			return false
 		});
+		return false
 	});
 	$("#newjob").submit(function(){
 		var name = $.trim($(".jobtypes").val());
@@ -70,10 +71,11 @@ $(document).ready(function(){
 			"stime":stime},function(res){
 			$("#newjob .form-group").removeClass("has-error");
 			if(res.errors){
+				ex = '';
 				for (var i in res.errors){
-					var t = "#newjob-" + res.errors[i].target;
-					$(t).addClass("has-error");
+					ex = ex + res.errors[i];
 				}
+				alert(ex);
 			}
 			else{
 				$("#addjob").hide();

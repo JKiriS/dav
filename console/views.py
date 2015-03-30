@@ -247,6 +247,8 @@ def setjobs(request):
 	if request.method == 'POST':
 		response = PostResponse()
 		try:
+			target = request.POST['target']
+			cmd = request.POST['cmd']
 			j = job.objects(id=ObjectId(target)).first()
 			if cmd == u'取消':
 				j['status'] = 'canceled'
@@ -272,5 +274,5 @@ def setjobs(request):
 			''')
 			response.render(tem, locals())
 		except Exception, e:
-			response.seterror(e)
+			response.seterror(str(e))
 		return response.get()

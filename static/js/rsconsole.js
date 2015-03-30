@@ -42,17 +42,13 @@ $(document).ready(function(){
 	$("#newsite").submit(function(){
 		var url = $.trim($("#newsite-url input").val());
 		var source = $.trim($("#newsite-source input").val());
-		var category = $.trim($("#newsite-source .categories").val());
+		var category = $.trim($("#newsite-category .categories").val());
 		var parser = $.trim($("#newsite-parser .parsers").val());
 		$.post("/console/addrssite",{"url":url,"source":source,
 			"category":category,"parser":parser},function(res){
 			$("#newsite .form-group").removeClass("has-error");
-			if(res.errors){
-				ex = '';
-				for (var i in res.errors){
-					ex = ex + res.errors[i];
-				}
-				alert(ex);
+			if(res.error){
+				alert(res.error);
 			}
 			else{
 				$("#addrssite").hide();
@@ -70,12 +66,8 @@ $(document).ready(function(){
 		$.post("/console/addjob",{"name":name,
 			"stime":stime},function(res){
 			$("#newjob .form-group").removeClass("has-error");
-			if(res.errors){
-				ex = '';
-				for (var i in res.errors){
-					ex = ex + res.errors[i];
-				}
-				alert(ex);
+			if(res.error){
+				alert(res.error);
 			}
 			else{
 				$("#addjob").hide();

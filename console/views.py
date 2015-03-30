@@ -212,7 +212,7 @@ def getjobs(request):
 		response = HttpResponse()
 		response['Content-Type'] = 'application/json'
 		res = {}
-		jobs = job.objects().order_by("-starttime")
+		jobs = job.objects().order_by("-starttime").limit(30)
 		t = get_template('jobs.html')
 		c = Context(locals())
 		res['data'] = t.render(c)

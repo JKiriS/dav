@@ -197,11 +197,10 @@ def search(request):
 			client = Search.Client(protocol)
 			transport.open()
 			sresult = client.search(request.GET['wd'].encode('utf-8'), start, 15)
-			if sresult.data:
-				slist = eval(sresult.data['searchresult'])
-				hasmore = eval(sresult.data['hasmore'])
-				itemlist = item.objects(id__in=slist)
-				orders = slist
+			slist = eval(sresult.data['searchresult']) if sresult.data else []
+			hasmore = eval(sresult.data['hasmore']) if sresult.data else False 
+			itemlist = item.objects(id__in=slist)
+			orders = slist
 			wd = request.GET['wd']
 			t = get_template('rs_itemlist.html')
 			c = Context(locals())

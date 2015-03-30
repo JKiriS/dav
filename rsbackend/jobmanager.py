@@ -6,7 +6,8 @@ import json
 import feeds
 import sys, os
 
-PARAMS_DIR = os.path.join(os.path.abspath(os.curdir),'self.cfg')
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+PARAMS_DIR = os.path.join(BASE_DIR,'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 
@@ -32,22 +33,20 @@ db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password
 
 class Job:
 	def __init__(self, stime, jid, status='waiting'):
-		self._name = self.__class__.__name__
+		self.name = self.__class__.__name__
 		if isinstance(stime, timedelta):
-			self._starttime = now() + stime
+			self.starttime = now() + stime
 		elif isinstance(stime, float):
-			self._starttime = datetime.fromtimestamp(stime)
-		self._status = status
-		self._id = jid
-	def run(self):
-		pass
+			self.starttime = datetime.fromtimestamp(stime)
+		self.status = status
+		self.id = jid
 	def save(self):
-		db.job.save({'_id':self._id,'name':self._name,'runable':self._cmd(),
-			'starttime':self._starttime,'status':self._status})
+		db.job.save({'_id':self.id,'name':self.name,'runable':self._cmd(),
+			'starttime':self.starttime,'status':self.status})
 	def _cmd(self):
-		t = time.mktime(self._starttime.timetuple())
+		t = time.mktime(self.starttime.timetuple())
 		return '{}({},ObjectId("{}")).run()'\
-				.format(self._name,t,self._id)
+				.format(self.name,t,self.id)
 
 class Feed(Job):
 	def __init__(self, stime, jid=ObjectId()):
@@ -55,9 +54,9 @@ class Feed(Job):
 	def run(self):
 		reload(feeds)
 		Feed(timedelta(hours=12)).save()
-		db.job.update({'_id':self._id},{'$set':{'status':'running'}})
+		db.job.update({'_id':self.id},{'$set':{'status':'running'}})
 		feeds.run()
-		db.job.update({'_id':self._id},{'$set':{'status':'comleted'}})
+		db.job.update({'_id':self.id},{'$set':{'status':'comleted'}})
 		UpdateLsiIndex(timedelta(minutes=17)).save()
 		UpdateSearchIndex(timedelta(minutes=37)).save()
 		Classify(timedelta(minutes=52)).save()
@@ -66,12 +65,12 @@ def rundeco(func):
     def _deco(self, *args, **argv):
     	self._connect()
         try:
-        	db.job.update({'_id':self._id},{'$set':{'status':'running'}})
+        	db.job.update({'_id':self.id},{'$set':{'status':'running'}})
         	func(self, *args, **argv)
-        	db.job.update({'_id':self._id},{'$set':{'status':'comleted'}})
+        	db.job.update({'_id':self.id},{'$set':{'status':'comleted'}})
         except Exception, e:
         	print e
-        	db.job.update({'_id':self._id},{'$set':{'status':'failed'}})
+        	db.job.update({'_id':self.id},{'$set':{'status':'failed'}})
         self._transport.close()
     return _deco
 

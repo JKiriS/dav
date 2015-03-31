@@ -1,7 +1,7 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from django.shortcuts import render
-from console.models import site, job
+from console.models import site, job, source
 import json
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import Template, Context
@@ -159,6 +159,9 @@ def addrssite(request):
 	if request.method == 'POST':
 		response = PostResponse()
 		try:
+			if not source.objects(name=request.POST['source']).first():
+				s = source(name=request.POST['source'])
+				s.save()
 			s = site(url=request.POST['url'],parser=request.POST['parser'],\
 				source=request.POST['source'],category=request.POST['category'])
 			s.save()

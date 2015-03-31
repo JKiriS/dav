@@ -20,3 +20,10 @@ class job(Document):
 	status = StringField(default='waiting')
 
 	meta = {'db_alias':'default'}
+
+class source(Document):
+	name = StringField()
+	visit_num = IntField(default=0)
+	meta = {
+		"db_alias": "default",
+    }

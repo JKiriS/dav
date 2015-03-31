@@ -38,6 +38,8 @@ class Job:
 			self.timestamp = time.mktime((now() + stime).timetuple())
 		elif isinstance(stime, float):
 			self.timestamp = stime
+		if not jid:
+			jid = ObjectId()
 		self.starttime = datetime.fromtimestamp(self.timestamp)
 		self.status = status
 		self.id = jid
@@ -49,14 +51,14 @@ class Job:
 				.format(self.name,self.timestamp,self.id)
 
 class Feed(Job):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		Job.__init__(self, stime, jid)
 	def run(self):
 		reload(feeds)
 		Feed(timedelta(hours=12)).save()
 		db.job.update({'_id':self.id},{'$set':{'status':'running'}})
 		feeds.run()
-		db.job.update({'_id':self.id},{'$set':{'status':'comleted'}})
+		db.job.update({'_id':self.id},{'$set':{'status':'completed'}})
 		UpdateLsiIndex(timedelta(minutes=17)).save()
 		UpdateSearchIndex(timedelta(minutes=37)).save()
 		Classify(timedelta(minutes=52)).save()
@@ -91,7 +93,7 @@ class ThriftJob(Job):
 		self._transport.open()
 
 class UpdateUPre(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'recommend', stime, jid)
 	@rundeco
 	def run(self):
@@ -103,7 +105,7 @@ class UpdateUPre(ThriftJob):
 				print e
 
 class UpdateRList(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'recommend', stime, jid)
 	@rundeco
 	def run(self):
@@ -115,7 +117,7 @@ class UpdateRList(ThriftJob):
 				print e
 
 class UpdateLsiIndex(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'recommend', stime, jid)
 	@rundeco
 	def run(self):
@@ -126,7 +128,7 @@ class UpdateLsiIndex(ThriftJob):
 				print e
 
 class UpdateLsiDic(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'recommend', stime, jid)
 	@rundeco
 	def run(self):
@@ -138,7 +140,7 @@ class UpdateLsiDic(ThriftJob):
 				print e
 
 class UpdateClassifyDic(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'classify', stime, jid)
 	@rundeco
 	def run(self):
@@ -147,21 +149,21 @@ class UpdateClassifyDic(ThriftJob):
 		TrainClassifyModel(timedelta(minutes=13))
 
 class TrainClassifyModel(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'classify', stime, jid)
 	@rundeco
 	def run(self):
 		self._client.trainClassify()
 
 class Classify(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'classify', stime, jid)
 	@rundeco
 	def run(self):	 
 		self._client.classify('综合')
 
 class UpdateSearchIndex(ThriftJob):
-	def __init__(self, stime, jid=ObjectId()):
+	def __init__(self, stime, jid=None):
 		ThriftJob.__init__(self, 'search', stime, jid)
 	@rundeco
 	def run(self):	
@@ -175,5 +177,5 @@ if __name__ == '__main__':
 				exec( j['runable'] )
 			except Exception, e:
 				print j['name'] + str(e)
-		time.sleep(60 * 5)
+		time.sleep(60 * 1)
 	

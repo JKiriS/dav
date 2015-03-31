@@ -20,7 +20,7 @@ elif [ $service = "DBSync" ] ; then
 		echo "startDBSync"
 		exit 0
 	else
-		kill -9 $(ps -ax|awk '/mongosync/{print $1}')
+		kill -9 $(ps aux|awk '/mongosync/{print $1}')
 		echo "stopDBSync"
 		exit 0
 	fi
@@ -30,7 +30,7 @@ elif [ $service = "JobManager" ] ; then
 		echo "startJobManager"
 		exit 0
 	else
-		kill -9 $(ps -ax|awk '/jobmanager/{print $1}')
+		kill -9 $(ps aux|awk '/jobmanager/{print $1}')
 		echo "stopJobManager"
 		exit 0
 	fi

@@ -174,7 +174,7 @@ def search(request):
 			orders = slist
 			wd = request.GET['wd']
 			response.render(get_template('rs_itemlist.html'), locals())
-			response.setparams('start', repr(skipnum + len(itemlist)))
+			response.setparams('start', repr(start + len(itemlist)))
 		except Exception, e:
 			response.seterror(str(e))
 		return response.get()

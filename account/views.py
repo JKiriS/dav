@@ -51,7 +51,7 @@ def login(request):
 					if user.is_active:
 						auth.login(request, user) 
 						request.session.set_expiry(60 * 60 * 24 * 7)
-						res['redirecturl'] = request.GET.get('redirecturl')
+						response.setparams('redirecturl', request.GET.get('redirecturl'))
 					else :
 						response.seterror([{'target':'email','reason':'该用户已被禁用，请联系管理员'},])
 				else :

@@ -145,7 +145,7 @@ $(document).ready(function(){
 			$.post("", {"email":email,"pwd":pwd}, function(res){
 				if(!res.error){
 					if(res.redirecturl != null)
-						window.location.href = res.redirecturl;
+						window.location.href = res.params.redirecturl;
 					else
 						window.location.href = "/rs/";
 				}

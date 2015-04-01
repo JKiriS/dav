@@ -8,19 +8,56 @@
 
     <!-- jQuery -->
     <script type="text/javascript" language='javascript' src='./js/jquery-1.11.1.min.js' ></script>
+    <script type="text/javascript" language='javascript' src='./js/jquery-ui.js' ></script>
+
+    <!-- markdown editor-->
+    <script type="text/javascript" src="./js/marked.js"></script>
+    <script type="text/javascript" src="./js/editor.js"></script>
+    <link rel="stylesheet" href="./css/editor.css" />
 
     <!-- Bootstrap -->
     <link href="./css/bootstrap.min.css" rel="stylesheet">
     <script src="./js/bootstrap.min.js"></script>
 
     <!-- self -->
-    <link href="index.css" rel="stylesheet">
-    <script type="text/javascript" language='javascript' src='index.js' ></script>
+    <link href="./css/test.css" rel="stylesheet">
+    <script type="text/javascript" src='./js/test.js' ></script>
 </head>
 <body>
-	<iframe src="http://www.pmtoo.com/opinion/2015/0330/7622.html"></iframe>
+<div class="panel panel-success editor-wrapper">
+    <div class="panel-heading">
+        Markdown编辑器
+        <div class="action">
+            <a href="javascript:void(0)" id="submiteditor"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a>
+            <a href="javascript:void(0)" id="closeeditor"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+        </div>
+    </div>
+    <div class="panel-body">  
+        <input class="title" type="text" placeholder="Title" />
+        <textarea id="editor" placeholder="Content here ...."></textarea>
+    </div>
+</div>
+    <div class="container-fluid main-container">
+        <div class="row">
+            <div class="material-list">
+                <a href="http://blog.csdn.net/qll125596718/article/details/7296450" class="material">全文检索原理</a>
+                <a href="http://www.infoq.com/cn/articles/weibo-platform-archieture" class="material">亿级用户下的新浪微博平台架构</a>
+                <a href="http://www.cad.zju.edu.cn/home/gfzhang/training/Matting/GrabCut%20(sig04).pdf" class="material">GraphCut</a>
+            </div>
+            <div class="dialogue">
+                
+            </div>
+            <form class="msg-input">
+              <textarea class="form-control" rows="3" placeholder="请输入信息"></textarea>
+              <button type="submit" class="btn btn-primary">发送</button>
+              <button type="button" id="showeditor" class="btn btn-primary">高级</button>
+            </form>
+        </div>
+    </div>
 
-	<p>一些老的浏览器不支持 iframe。</p>
-	<p>如果得不到支持，iframe 是不可见的。</p>
+    <div class="embed-responsive material-container">
+      <iframe id="m-iframe" class="embed-responsive-item" src=""></iframe>
+    </div>
+
 </body>
 </html>

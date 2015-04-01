@@ -14,6 +14,8 @@ class PostResponse:
 	def render(self, t, c):
 		self.result['data'] = t.render(Context(c))
 	def setparams(self, pn, value):
+		if not self.result.get('params'):
+			self.result['params'] = {}
 		self.result['params'][pn] = value
 	def get(self):
 		self.response.write( json.dumps(self.result, ensure_ascii=False) )

@@ -38,7 +38,7 @@ def register(request):
 @csrf_protect
 def login(request):
 	if request.method == 'POST':
-		response = PostResponse(request.GET)
+		response = PostResponse()
 		form = UserLoginForm(request.POST)
 		if form.is_valid():
 			email = form.cleaned_data['email']
@@ -51,6 +51,7 @@ def login(request):
 					if user.is_active:
 						auth.login(request, user) 
 						request.session.set_expiry(60 * 60 * 24 * 7)
+						response.setparams('redirecturl', request.GET.get('redirecturl', '/rs'))
 					else :
 						response.seterror([{'target':'email','reason':'该用户已被禁用，请联系管理员'},])
 				else :

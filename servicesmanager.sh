@@ -16,7 +16,7 @@ if [ -z $service ] ; then
 	exit 1
 elif [ $service = "DBSync" ] ; then
 	if [ $quit -eq 0 ] ; then
-		setsid ~/mongosync -h 54.187.240.68:27017 -u root -p 910813gyb --to 115.156.196.215:27017 -tu root -tp 910813gyb --oplog -s 1369406664,1 >~/dav/sync.log 2>&1 &
+		setsid ~/mongosync -h 54.187.240.68:27017 -u root -p 910813gyb --to 115.156.197.87:27017 -tu root -tp 910813gyb --oplog -s 1369406664,1 >~/dav/sync.log 2>&1 &
 		echo "startDBSync"
 		exit 0
 	else

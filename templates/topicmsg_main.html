@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>dav develop html</title>
+
+    <!-- jQuery -->
+    <script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/jquery-1.11.1.min.js' ></script>
+    <script type="text/javascript" language='javascript' src='{{STATIC_URL}}js/jquery-ui.min.js' ></script>
+
+    <!-- markdown editor
+    <script type="text/javascript" src="{{STATIC_URL}}js/marked.js"></script>-->
+    <script type="text/javascript" src="{{STATIC_URL}}js/editor.js"></script>
+    <link rel="stylesheet" href="{{STATIC_URL}}css/editor.css" />
+
+    <!-- Bootstrap -->
+    <link href="{{STATIC_URL}}css/bootstrap.min.css" rel="stylesheet">
+    <script src="{{STATIC_URL}}js/bootstrap.min.js"></script>
+    <!-- csrf -->
+    <script type="text/javascript" language='javascript'src='{{STATIC_URL}}js/csrf.js' ></script>
+    <!-- self -->
+    <link href="{{STATIC_URL}}css/topicmsg.css" rel="stylesheet">
+    <script type="text/javascript" src='{{STATIC_URL}}js/topicmsg.js' ></script>
+</head>
+<body>
+<div class="panel panel-success editor-wrapper">
+    <div class="panel-heading">
+        Markdown编辑器
+        <div class="action">
+            <a href="javascript:void(0)" id="submiteditor"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a>
+            <a href="javascript:void(0)" class="closepanel"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+        </div>
+    </div>
+    <div class="panel-body">  
+        <input class="title" type="text" placeholder="Title" />
+        <textarea id="editor" placeholder="Content here ...."></textarea>
+    </div>
+</div>
+
+<div class="panel panel-success new-material">
+    <div class="panel-heading">
+        添加新资料
+        <div class="action">
+            <a href="javascript:void(0)" id="submitmaterial"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a>
+            <a href="javascript:void(0)" class="closepanel"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+        </div>
+    </div>
+    <div class="panel-body">  
+         <form class="form-horizontal">
+                <!-- {% csrf_token %} -->
+                <div class="form-group has-feedback" id="newmaterial-topic">
+                    <label class="control-label col-sm-2">题目</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">            
+                    </div>
+                </div>
+                <div class="form-group has-feedback" id="newmaterial-link">
+                    <label class="control-label col-sm-2">链接</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+
+    <div class="main-container">
+        <div class="dialogue">
+                <div class="msg">
+                    <div class="msg-header">
+                        <a href="javascript:void(0)" class="user"><img class="img-rounded" src="./img/icon.png" height="25"/>
+                        <span>Anony.</span></a>
+                        <span>2015-04-01 00:24:15</span>
+                    </div>
+                    <div class="msg-content">
+                        dbsjafbdsolabfdsabfdsabd
+                    </div>
+                </div>
+            </div>
+            <form class="msg-input">
+              <textarea class="form-control" rows="3" placeholder="请输入信息"></textarea>
+              <button type="submit" class="btn btn-primary">发送</button>
+              <button type="button" id="showeditor" class="btn btn-primary">高级</button>
+            </form>
+    </div>
+
+    <div class="material-container">
+        <div class="material-list">
+            <div class="material-list-header">
+                <span class="material-list-title">相关资料</span>
+                <a href="javascript:void(0)" class="togglemateriallist"><span class="glyphicon glyphicon-triangle-left"></span></a>
+                <a href="javascript:void(0)" class="addmaterial"><span class="glyphicon glyphicon-plus"></span></a>
+            </div>
+            <div class="material-list-content">
+            </div>
+        </div>
+        <iframe id="m-iframe" class="src=""></iframe>
+    </div>
+
+</body>
+</html>

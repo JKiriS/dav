@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     url(r'^account/', include('account.urls')),
     url(r'^verificate/', include('verificate.urls')),
     url(r'^console/', include('console.urls')),
+    url(r'^topicmsg/', include('topicmsg.urls')),
 )

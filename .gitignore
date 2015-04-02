@@ -88,3 +88,5 @@ clsindex/
 # logging info
 *.log
 *.log.*
+
+.sh

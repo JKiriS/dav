@@ -142,3 +142,4 @@ cs = json.load(file('cs.json'))
 # if len(rawtext.enclosures) > 0 and \
 # 	rawtext.enclosures[0]['type'] == 'image/jpeg' :
 # 	print rawtext.enclosures[0]['href']
+

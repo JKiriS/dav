@@ -10,26 +10,57 @@ body, html {
 	overflow-y: auto;
 	height: 100%;
 	padding-right: 0px;
-}
-
-.main-container .row {
-	height: 100%;
-	width: 100%;
+	-moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .material-list {
-	height: 15%;
-	padding-top: 5px; 
-	padding-left: 5px;
+	display: inline-block;
+	width: 60%;
+	position: fixed;
+}
+
+.material-list-header {
+    height: 25px;
+    background-color: #dff0d8;
+    text-align: left;
+    -moz-border-radius: 3px 3px 0px 0px;
+    -webkit-border-radius: 3px 3px 0px 0px;
+    border-radius: 3px 3px 0px 0px;
+}
+
+.material-list-title {
+    margin-top: 5px;
+    font-size: 10px;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.material-list-content {
+	max-height: 100px;
 	overflow-x: hidden; 
 	overflow-y: auto;
+	display: none;
+	-moz-border-radius: 0px 0px 5px 5px;
+    -webkit-border-radius: 0px 0px 5px 5px;
+    border-radius: 0px 0px 5px 5px;
+}
+
+.material-list-header .glyphicon {
+    float: right;
+    margin-right: 10px;
+    margin-top: 4px;
+    font-size: 15px;
 }
 
 a.material {
 	display: block;
+	margin: 0px;
+	padding: 2px;
 	background-color: white;
 	border-bottom: 1px solid silver;
-	height: 30px;
+	height: 25px;
 	width: inherit;
 }
 
@@ -42,13 +73,46 @@ a.material {
 }
 
 .material-container iframe{	
+	height: 95%;
+	width: 100%;
+	border: 0px;
+	border-left: 1px solid silver;
+	border-top: 1px solid silver;
 	overflow-x: auto; 
 	overflow-y: auto;
 }
 
 .dialogue {
-	height: 70%;
-	background-color: pink;
+	height: 85%;
+	width: 98%;
+	overflow-y: auto; 
+	background-color: #dff0d8;
+	padding: 10px;
+	margin: 5px;
+}
+
+.dialogue .msg {
+	margin-bottom: 10px;
+	width: 80%;
+	display: inline-block;
+	background-color: white;
+	-moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    padding: 5px;
+}
+
+.dialogue .msg.self {
+	float: right;
+}
+
+.dialogue .msg a.details {
+	color: green;
+	font-size: 15px;
+}
+
+.dialogue img {
+	max-width: 70%;
 }
 
 .msg-input textarea {
@@ -66,18 +130,32 @@ a.material {
 .editor-wrapper {
 	max-width: 700px;
 	width: 350px;
+	height: 80%;
 	display: none;
 	position: fixed;
-	left: 100px;
-	top: 100px;
+	left: 10%;
+	top: 10%;
 	background-color: white;
+	overflow-y: auto;
 }
 
-.editor-wrapper .panel-heading .action {
+.panel-heading .action {
 	float: right;
 }
 
-.editor-wrapper .panel-heading .action .glyphicon-remove{
+.panel-heading .action .glyphicon-remove{
 	color: gray;
 	margin-left: 10px;
+}
+
+.new-material {
+	max-width: 700px;
+	width: 500px;
+	height: 40%;
+	display: none;
+	position: fixed;
+	left: 3%;
+	top: 10%;
+	background-color: white;
+	overflow-y: auto;
 }

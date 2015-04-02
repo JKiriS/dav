@@ -9,6 +9,7 @@
     <!-- jQuery -->
     <script type="text/javascript" language='javascript' src='./js/jquery-1.11.1.min.js' ></script>
     <script type="text/javascript" language='javascript' src='./js/jquery-ui.js' ></script>
+    <link rel="stylesheet" href="./jquery-ui.css">
 
     <!-- markdown editor-->
     <script type="text/javascript" src="./js/marked.js"></script>
@@ -29,7 +30,7 @@
         Markdown编辑器
         <div class="action">
             <a href="javascript:void(0)" id="submiteditor"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a>
-            <a href="javascript:void(0)" id="closeeditor"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+            <a href="javascript:void(0)" class="closepanel"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
         </div>
     </div>
     <div class="panel-body">  
@@ -37,26 +38,78 @@
         <textarea id="editor" placeholder="Content here ...."></textarea>
     </div>
 </div>
-    <div class="container-fluid main-container">
-        <div class="row">
-            <div class="material-list">
-                <a href="http://blog.csdn.net/qll125596718/article/details/7296450" class="material">全文检索原理</a>
-                <a href="http://www.infoq.com/cn/articles/weibo-platform-archieture" class="material">亿级用户下的新浪微博平台架构</a>
-                <a href="http://www.cad.zju.edu.cn/home/gfzhang/training/Matting/GrabCut%20(sig04).pdf" class="material">GraphCut</a>
-            </div>
-            <div class="dialogue">
-                
+
+<div class="panel panel-success new-material">
+    <div class="panel-heading">
+        添加新资料
+        <div class="action">
+            <a href="javascript:void(0)" id="submitmaterial"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></a>
+            <a href="javascript:void(0)" class="closepanel"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+        </div>
+    </div>
+    <div class="panel-body">  
+         <form class="form-horizontal">
+                <!-- {% csrf_token %} -->
+                <div class="form-group has-feedback" id="newmaterial-topic">
+                    <label class="control-label col-sm-2">题目</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">            
+                    </div>
+                </div>
+                <div class="form-group has-feedback" id="newmaterial-link">
+                    <label class="control-label col-sm-2">链接</label>
+                    <div class="col-sm-9">
+                      <input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+
+    <div class="main-container">
+        <div class="dialogue">
+                <div class="msg">
+                    <div class="msg-header">
+                        <a href="javascript:void(0)" class="user"><img class="img-rounded" src="./img/icon.png" height="25"/>
+                        <span>Anony.</span></a>
+                        <span>2015-04-01 00:24:15</span>
+                    </div>
+                    <div class="msg-content">
+                        dbsjafbdsolabfdsabfdsabd
+                    </div>
+                </div>
+                <div class="msg self">
+                    <div class="msg-header">
+                        <a href="javascript:void(0)" class="user"><img class="img-rounded" src="./img/icon.png" height="25"/>
+                        <span>Anony.</span></a>
+                        <span>2015-04-01 00:24:15</span>
+                    </div>
+                    <div class="msg-content">
+                        dbsjafbdsolabfdsabfdsabd
+                    </div>
+                </div>
             </div>
             <form class="msg-input">
               <textarea class="form-control" rows="3" placeholder="请输入信息"></textarea>
               <button type="submit" class="btn btn-primary">发送</button>
               <button type="button" id="showeditor" class="btn btn-primary">高级</button>
             </form>
-        </div>
     </div>
 
-    <div class="embed-responsive material-container">
-      <iframe id="m-iframe" class="embed-responsive-item" src=""></iframe>
+    <div class="material-container ui-widget-content">
+        <div class="material-list">
+            <div class="material-list-header">
+                <span class="material-list-title">相关资料</span>
+                <a href="javascript:void(0)" class="togglemateriallist"><span class="glyphicon glyphicon-triangle-left"></span></a>
+                <a href="javascript:void(0)" class="addmaterial"><span class="glyphicon glyphicon-plus"></span></a>
+            </div>
+            <div class="material-list-content">
+                <a href="http://blog.csdn.net/qll125596718/article/details/7296450" class="material">全文检索原理</a>
+                <a href="http://www.infoq.com/cn/articles/weibo-platform-archieture" class="material">亿级用户下的新浪微博平台架构</a>
+                <a href="http://www.cad.zju.edu.cn/home/gfzhang/training/Matting/GrabCut%20(sig04).pdf" class="material">GraphCut</a>
+            </div>
+        </div>
+        <iframe id="m-iframe" class="src=""></iframe>
     </div>
 
 </body>

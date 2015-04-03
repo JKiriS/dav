@@ -23,12 +23,33 @@ $(document).ready(function(){
 			alert(res.errors);
 	});
 
-	$.post("/topicmsg/getmsglist", {'topic':GET['id']}, function(res){
-		if(! res.errors)
-			$(".dialogue").append(res.data);
-		else
-			alert(res.errors);
-	});
+	var lastmsgid = ($(".dialogue .msg:last").attr("id"))?$(".dialogue .msg:last").attr("id"):"";
+	function pollmsg(){	
+		$.ajax({
+			type:"POST",
+			dataType:"json",
+			timeout:80000,
+			url:"/topicmsg/getmsglist", 
+			data:{topic:GET['id'],lastmsgid:lastmsgid,time:60}, 
+			success:function(res){
+				if(! res.errors){
+					$(".dialogue").append(res.data);
+					lastmsgid = ($(".dialogue .msg:last").attr("id"))?$(".dialogue .msg:last").attr("id"):"";
+					pollmsg();
+				}
+				else{
+					alert(res.errors);
+					pollmsg();
+				}
+			},
+			error:function(XMLHttpRequest,textStatus,errorThrown){      
+	            if(textStatus=="timeout"){ 
+	                setTimeout(pollmsg(), 1000); 
+	            }      
+	        }
+		});
+	};
+	pollmsg();
 
 	var editor = new Editor({
 		  element: document.getElementById('editor')

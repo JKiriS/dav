@@ -63,7 +63,7 @@ import os
 # db.behavior.update({'action':'search','ttype':'source'},{'$set':{'action':'visitsource'}},multi=True)
 # db.behavior.update({'action':'search','ttype':'category'},{'$set':{'action':'visitcategory'}},multi=True)
 # db.behavior.update({'action':'search','ttype':'wd'},{'$set':{'action':'search'}},multi=True)
-cs = json.load(file('cs.json'))
+# cs = json.load(file('cs.json'))
 # t = datetime.datetime.now() - datetime.timedelta(days=60)
 # print db.item.find({'pubdate':{'$gt':t}}).count()
 # for c in cs:
@@ -143,3 +143,34 @@ cs = json.load(file('cs.json'))
 # 	rawtext.enclosures[0]['type'] == 'image/jpeg' :
 # 	print rawtext.enclosures[0]['href']
 
+import threading, time
+class Timer(threading.Thread):
+    def __init__(self, func, sleep=80):
+        threading.Thread.__init__(self)
+        self.sleep = sleep
+        self.func = func
+        self.setDaemon(True)
+
+        self.running = True
+     
+    def run(self):
+        while self.running:
+            time.sleep(self.sleep)
+            self.running = False
+            self.func()
+     
+    def stop(self):
+        self.running = False
+def raiseTimeoutEx():
+	raise Exception('timeout')
+t = Timer(raiseTimeoutEx, int(8))
+t.start()
+i = 1
+while t.running:
+	time.sleep(1)
+	if i == 10:
+		t.stop()
+		print 'aa'
+		break
+	print i
+	i += 1

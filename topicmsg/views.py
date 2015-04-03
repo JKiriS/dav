@@ -103,51 +103,79 @@ def addmsg(request):
 		target = request.POST['topic']
 		content = request.POST['content']
 		title = request.POST['title']
-		msg = message(topic=ObjectId(target),title=title,timestamp=now(),content=markdown(content),
+		msg = message(topic=ObjectId(target),title=title,timestamp=now(),content=markdown(content), \
 			user={'id':request.user.id,'name':request.user.username})
 		msg.save()		
-		tem =  Template('''
-			<div class="msg {% if request.user.id %}{%ifequal msg.user.id request.user.id %}
-				self{% endifequal %}{% endif %}" id="{{ msg.id }}">
-                <div class="msg-header">
-                    <a href="javascript:void(0)" class="user">
-                    <img class="img-rounded" src="/static/img/icon.png" height="25"/>
-                    <span>{{ msg.user.name }}</span></a>
-                    <span>{{ msg.timestamp|date:"Y-m-d H:i:s" }}</span>
-                </div>
-                <div class="msg-content">
-                    {{ msg.title }}
-                    {% ifequal msg.content '' %}{% else %}
-                    	<a href="javascript:void(0)" class="viewmsgdetail">查看详细</a>
-                    {% endifequal %}
-                </div>
-            </div>
-			''')
-		response.render(tem, locals())
+		# tem =  Template('''
+		# 	<div class="msg {% if request.user.id %}{%ifequal msg.user.id request.user.id %}
+		# 		self{% endifequal %}{% endif %}" id="{{ msg.id }}">
+  #               <div class="msg-header">
+  #                   <a href="javascript:void(0)" class="user">
+  #                   <img class="img-rounded" src="/static/img/icon.png" height="25"/>
+  #                   <span>{{ msg.user.name }}</span></a>
+  #                   <span>{{ msg.timestamp|date:"Y-m-d H:i:s" }}</span>
+  #               </div>
+  #               <div class="msg-content">
+  #                   {{ msg.title }}
+  #                   {% ifequal msg.content '' %}{% else %}
+  #                   	<a href="javascript:void(0)" class="viewmsgdetail">查看详细</a>
+  #                   {% endifequal %}
+  #               </div>
+  #           </div>
+		# 	''')
+		# response.render(tem, locals())
 		return response.get()
+
+import threading, time
+class Timer(threading.Thread):
+	def __init__(self, sleep=80):
+		threading.Thread.__init__(self)
+		self.sleep = sleep
+		self.setDaemon(True)
+		self.status = 'running'     
+	def run(self):
+		while self.status == 'running':
+			time.sleep(self.sleep)
+			self.status = 'timeout'   
+	def stop(self):
+		self.status = 'stoped'
+
 def getmsglist(request):
 	if request.method == 'POST':
 		response = PostResponse()
 		target = request.POST['topic']
-		msglist = message.objects(topic=ObjectId(target))	
-		tem =  Template('''
+		lastmsgid = request.POST['lastmsgid']
+		t = Timer(int(request.POST['time']))
+		if lastmsgid == '':
+			msglist = message.objects(topic=ObjectId(target))	
+		else:
+			t.start()
+			while t.status == 'running':
+				msglist = message.objects(topic=ObjectId(target),id__gt=ObjectId(lastmsgid))
+				if len(msglist) > 0:
+					t.stop()
+					break
+		if lastmsgid == '' or t.status == 'stoped':
+			tem =  Template('''
 			{% for msg in msglist %}
 			<div class="msg{% if request.user.id %}{%ifequal msg.user.id request.user.id %}
 				 self{% endifequal %}{% endif %}" id="{{ msg.id }}">
-                <div class="msg-header">
-                    <a href="javascript:void(0)" class="user">
-                    <img class="img-rounded" src="/static/img/icon.png" height="25"/>
-                    <span>{{ msg.user.name }}</span></a>
-                    <span>{{ msg.timestamp|date:"Y-m-d H:i:s" }}</span>
-                </div>
-                <div class="msg-content">
-                    {{ msg.title }}
-                    {% ifequal msg.content '' %}{% else %}
-                    	<a href="javascript:void(0)" class="viewmsgdetail">查看详细</a>
-                    {% endifequal %}
-                </div>
-            </div>
-            {% endfor %}
+	            <div class="msg-header">
+	                <a href="javascript:void(0)" class="user">
+	                <img class="img-rounded" src="/static/img/icon.png" height="25"/>
+	                <span>{{ msg.user.name }}</span></a>
+	                <span>{{ msg.timestamp|date:"Y-m-d H:i:s" }}</span>
+	            </div>
+	            <div class="msg-content">
+	                {{ msg.title }}
+	                {% ifequal msg.content '' %}{% else %}
+	                	<a href="javascript:void(0)" class="viewmsgdetail">查看详细</a>
+	                {% endifequal %}
+	            </div>
+	        </div>
+	        {% endfor %}
 			''')
-		response.render(tem, locals())
+			response.render(tem, locals())
+		elif t.status == 'timeout':
+			response.seterror('timeout')
 		return response.get()

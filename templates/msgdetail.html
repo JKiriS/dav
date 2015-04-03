@@ -1,0 +1,22 @@
+<div class="panel panel-success msg-detail" id="d{{ msg.id }}">
+    <div class="panel-heading">
+        消息详情
+        <div class="action">
+            <a href="javascript:void(0)" class="closepanel"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="msg-header">
+            <a href="javascript:void(0)" class="user">
+            <img class="img-rounded" src="/static/img/icon.png" height="25"/>
+            <span>{{ msg.user.name }}</span></a>
+            <span>发表于：{{ msg.timestamp }}</span>
+        </div>  
+        <div class="msg-title">
+            <strong>{{ msg.title }}</strong>
+        </div>
+        <div class="msg-content">
+            {{ msg.content|safe }}
+        </div>
+    </div>
+</div>

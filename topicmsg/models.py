@@ -3,7 +3,7 @@ from mongoengine import *
 
 # Create your models here.
 class topic(Document):
-	name = StringField()
+	title = StringField()
 	materials = ListField( ObjectIdField() )
 
 	meta = {

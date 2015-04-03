@@ -1,28 +1,38 @@
 
 $(document).ready(function(){
+	function parseGET(){
+		var aQuery = window.location.href.split("?");//取得Get参数 
+		var res = {}; 
+		if(aQuery.length > 1){ 
+			var aBuf = aQuery[1].split("&"); 
+			for(var i=0, iLoop = aBuf.length; i<iLoop; i++) { 
+				var aTmp = aBuf[i].split("=");//分离key与Value 
+				if(aTmp[0] != ""){
+					res[aTmp[0]] = aTmp[1];
+				}
+			} 
+		} 
+		return res;
+	}
+	var GET = parseGET();
 
-	Date.prototype.Format = function(fmt)   
-	{ //author: meizz   
-	  var o = {   
-	    "M+" : this.getMonth()+1,                 //月份   
-	    "d+" : this.getDate(),                    //日   
-	    "h+" : this.getHours(),                   //小时   
-	    "m+" : this.getMinutes(),                 //分   
-	    "s+" : this.getSeconds(),                 //秒   
-	    "q+" : Math.floor((this.getMonth()+3)/3), //季度   
-	    "S"  : this.getMilliseconds()             //毫秒   
-	  };   
-	  if(/(y+)/.test(fmt))   
-	    fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));   
-	  for(var k in o)   
-	    if(new RegExp("("+ k +")").test(fmt))   
-	  fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));   
-	  return fmt;   
-	} 
+	$.post("/topicmsg/materiallist", {'topic':GET['id']}, function(res){
+		if(! res.errors)
+			$(".material-list-content").append(res.data);
+		else
+			alert(res.errors);
+	});
 
-	// init markdown editor
-	// editor.codemirror.getValue();
-	var editor = new Editor();
+	$.post("/topicmsg/getmsglist", {'topic':GET['id']}, function(res){
+		if(! res.errors)
+			$(".dialogue").append(res.data);
+		else
+			alert(res.errors);
+	});
+
+	var editor = new Editor({
+		  element: document.getElementById('editor')
+		});
 	editor.render();
 
 	$(".material-list").on("click", "a.material", function(){
@@ -30,8 +40,52 @@ $(document).ready(function(){
 		$(this).addClass("active");
 		return false;
 	});
+	$(".addmaterial").on("click", function(){
+		$(".new-material").show();
+		return false;
+	});
+	$("#submitmaterial").on("click", function(){
+		var title = $("#newmaterial-topic input").val();
+		var url = $("#newmaterial-link input").val();
+		$.post("/topicmsg/addmaterial",{'topic':GET['id'],'title':title,'url':url}
+			,function(res){
+			if(! res.errors){
+				$(".material-list-content .material:first").before(res.data);
+				$("#newmaterial-topic input").val("");
+				$("#newmaterial-link input").val("");
+			}
+			else
+				alert(res.errors);
+		});
+		$(".new-material").hide();
+	});
+	$(".material-list-header").on("click", function(){
+		$(".material-list-content").toggle("fast");
+		$(".togglemateriallist .glyphicon").toggleClass("glyphicon-triangle-left");
+		$(".togglemateriallist .glyphicon").toggleClass("glyphicon-triangle-bottom");
+	});
 
-	$(".dialogue").on("click", "a", function(){
+	$(".dialogue").on("click", ".viewmsgdetail", function(){
+		var msgid = $(this).parents(".msg").attr("id");
+		if($("#d"+msgid).length > 0)
+			$("#d"+msgid).show("fast");
+		else{
+			$.post("/topicmsg/msgdetail",{'id':msgid},function(res){
+				if(! res.errors){
+					$("body").append(res.data);
+					$("#d"+msgid).draggable({cancel:".panel-body"});
+					$("#d"+msgid).css("top", $("#"+msgid).offset().top+10);
+					$("#d"+msgid).css("left", $("#"+msgid).offset().left+150);
+					$("#d"+msgid).show();
+				}
+				else
+					alert(res.errors);
+			});
+		}
+		return false;
+	});
+
+	$("body").on("click", ".msg-detail a", function(){
 		$(".material-container iframe").attr("src", $(this).attr("href"));
 		return false;
 	});
@@ -42,68 +96,39 @@ $(document).ready(function(){
 		$(".editor-wrapper").show();
 	});
 
-	$(".closepanel").on("click", function(){
+	$("body").on("click", ".closepanel", function(){
 		$(this).parents(".panel").hide();
 	});
 
 	$("#submiteditor").on("click", function(){
 		var title = $(".editor-wrapper .panel-body .title").val();
-		// var content = editor.codemirror.getValue();
-		// $(".dialogue").append(marked(content));
-		var now = new Date()
-		// alert(now.getTime());
-		var nowstr = now.Format("yyyy-MM-dd hh:mm:ss");
-		var nm = '<div class="msg self">'+
-                    '<div class="msg-header">'+
-                        '<a href="javascript:void(0)" class="user"><img class="img-rounded" src="./img/icon.png" height="25"/>'+
-                        '<span>Anony.</span></a><span>'+nowstr+'</span>'+
-                    '</div><div class="msg-content">'+title+
-                    '<a href="javascript:void(0) class="details"><span>查看详细</span></a></div></div>';
-		$(".dialogue").append(nm);
-		$(".editor-wrapper").hide();
+		var content = editor.codemirror.getValue();
+		$.post("/topicmsg/addmsg",{'topic':GET['id'],'content':content,'title':title}
+			,function(res){
+			if(! res.errors){
+				$(".dialogue").append(res.data);
+				editor.codemirror.setValue("");
+				$(".editor-wrapper .panel-body .title").val("");
+				$(".editor-wrapper").hide();
+			}
+			else
+				alert(res.errors);
+		});
 	});
-
-	$()
 
 	$(".msg-input").submit(function(){
-		var msg = $(".msg-input textarea").val();
-		var now = new Date()
+		var title = $(".msg-input textarea").val();
 		// alert(now.getTime());
-		var nowstr = now.Format("yyyy-MM-dd hh:mm:ss");
-		var nm = '<div class="msg self">'+
-                    '<div class="msg-header">'+
-                        '<a href="javascript:void(0)" class="user"><img class="img-rounded" src="./img/icon.png" height="25"/>'+
-                        '<span>Anony.</span></a><span>'+nowstr+'</span>'+
-                    '</div><div class="msg-content">'+msg+'</div></div>';
-		$(".dialogue").append(nm);
-		$(".msg-input textarea").val("");
+		$.post("/topicmsg/addmsg",{'topic':GET['id'],'content':'','title':title}
+			,function(res){
+			if(! res.errors){
+				$(".dialogue").append(res.data);
+				$(".msg-input textarea").val("");
+			}
+			else
+				alert(res.errors);
+		});
 		return false;
-	});
-
-	$(".addmaterial").on("click", function(){
-		$(".new-material").show();
-		return false;
-	});
-
-	$("#submitmaterial").on("click", function(){
-		var topic = $("#newmaterial-topic input").val();
-		var link = $("#newmaterial-link input").val();
-		var na = '<a href="'+link+'" class="material">'+topic+'</a>';
-		$(".material-list-content .material:first").before(na);
-		$(".new-material").hide();
-		$("#newmaterial-topic input").val("");
-		$("#newmaterial-link input").val("");
-	});
-
-	// $( ".main-container" ).resizable({
-	// 	alsoResize: '.material-container',
-	// 	iframeFix: true
-	// });
-
-	$(".material-list-header").on("click", function(){
-		$(".material-list-content").toggle("fast");
-		$(".togglemateriallist .glyphicon").toggleClass("glyphicon-triangle-left");
-		$(".togglemateriallist .glyphicon").toggleClass("glyphicon-triangle-bottom");
 	});
 	
 });

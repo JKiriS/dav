@@ -166,13 +166,14 @@ def addrssite(request):
 			s = site(url=request.POST['url'],parser=request.POST['parser'],\
 				source=request.POST['source'],category=request.POST['category'])
 			s.save()
+			dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 			tem =  Template('''
 				<tr class="active" id="{{ s.id }}">
 					<td><span title="{{ s.url }}">{{ s.url |slice:"30" }}</span></td>
 			  		<td>{{ s.parser }}</td>
 			  		<td>{{ s.category }}</td>
 			  		<td>{{ s.source }}</td>
-			  		<td>{{ s.latest|date:"Y-m-d H:i" }}</td>
+			  		<td>{% dtformat s.latest offset dtoffset %}</td>
 			  		<td class="status">
 			  			<span class="status-label">{{ s.status }}</span>
 			  			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'disabled' %}启用{% else %}禁用{% endifequal %}</button>
@@ -189,6 +190,7 @@ def setrssites(request):
 		response = PostResponse()
 		target = request.POST['target']
 		cmd = request.POST['cmd']
+		dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 		try:
 			s = site.objects(id=ObjectId(target)).first()
 			if cmd == u'禁用':
@@ -201,7 +203,7 @@ def setrssites(request):
 		  		<td>{{ s.parser }}</td>
 		  		<td>{{ s.category }}</td>
 		  		<td>{{ s.source }}</td>
-		  		<td>{{ s.latest|date:"Y-m-d H:i:s" }}</td>
+		  		<td>{% dtformat s.latest offset dtoffset %}</td>
 		  		<td class="status">
 		  			<span class="status-label">{{ s.status }}</span>
 		  			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'enabled' %}禁用{% else %}启用{% endifequal %}</button>
@@ -226,11 +228,12 @@ def addjob(request):
 		try:
 			j = eval('jobmanager.'+request.POST['name']+'('+request.POST['stime']+')')
 			j.save()
+			dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 			tem =  Template('''
 				<tr class="active" id="{{ j.id }}">
 					<td>{{ j.name }}</td>
 	      			<td>{{ j.status }}</td>
-			      	<td>{{ j.starttime|date:"Y-m-d H:i:s" }}</td>
+			      	<td>{% dtformat j.starttime offset dtoffset %}</td>
 			      	<td>
 			        	{% ifequal j.status 'waiting' %}
 				        <button class="btn btn-primary btn-sm" disabled="disabled">修改</button>
@@ -254,6 +257,7 @@ def setjobs(request):
 		try:
 			target = request.POST['target']
 			cmd = request.POST['cmd']
+			dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 			j = job.objects(id=ObjectId(target)).first()
 			if cmd == u'取消':
 				j['status'] = 'canceled'
@@ -265,7 +269,7 @@ def setjobs(request):
 			tem =  Template('''
 				<td>{{ j.name }}</td>
       			<td>{{ j.status }}</td>
-		      	<td>{{ j.starttime|date:"Y-m-d H:i:s" }}</td>
+		      	<td>{% dtformat j.starttime offset dtoffset %}</td>
 		      	<td>
 		        	{% ifequal j.status 'waiting' %}
 			        <button class="btn btn-primary btn-sm" disabled="disabled">修改</button>

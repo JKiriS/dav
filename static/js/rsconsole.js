@@ -30,7 +30,8 @@ $(document).ready(function(){
 		var type = $(this).parents(".console-group").attr("id");
 		var target = $(this).parents("tr").attr("id");
 		var cmd = $(this).html();
-		$.post("/console/set"+type,{target:target,cmd:cmd},function(res){
+		$.post("/console/set"+type,{target:target,cmd:cmd,
+			dtoffset:-(new Date().getTimezoneOffset())},function(res){
 			if(res.data){
 				$("tr#"+target).html(res.data);
 			}

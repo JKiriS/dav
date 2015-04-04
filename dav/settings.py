@@ -43,7 +43,7 @@ INSTALLED_APPS = (
     'account',
     'templatelib',
     'console',
-    # 'topicmsg',
+    'topicmsg',
 )
 
 MIDDLEWARE_CLASSES = (

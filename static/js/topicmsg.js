@@ -30,21 +30,21 @@ $(document).ready(function(){
 			dataType:"json",
 			timeout:80000,
 			url:"/topicmsg/getmsglist", 
-			data:{topic:GET['id'],lastmsgid:lastmsgid,time:60}, 
+			data:{topic:GET['id'],lastmsgid:lastmsgid,time:60,dtoffset:-(new Date().getTimezoneOffset())}, 
 			success:function(res){
 				if(! res.errors){
 					$(".dialogue").append(res.data);
 					lastmsgid = ($(".dialogue .msg:last").attr("id"))?$(".dialogue .msg:last").attr("id"):"";
-					pollmsg();
+					// pollmsg();
 				}
 				else{
 					alert(res.errors);
-					pollmsg();
+					// pollmsg();
 				}
 			},
 			error:function(XMLHttpRequest,textStatus,errorThrown){      
 	            if(textStatus=="timeout"){ 
-	                setTimeout(pollmsg(), 1000); 
+	                // setTimeout(pollmsg(), 1000); 
 	            }      
 	        }
 		});

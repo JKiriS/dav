@@ -106,24 +106,6 @@ def addmsg(request):
 		msg = message(topic=ObjectId(target),title=title,timestamp=now(),content=markdown(content), \
 			user={'id':request.user.id,'name':request.user.username})
 		msg.save()		
-		# tem =  Template('''
-		# 	<div class="msg {% if request.user.id %}{%ifequal msg.user.id request.user.id %}
-		# 		self{% endifequal %}{% endif %}" id="{{ msg.id }}">
-  #               <div class="msg-header">
-  #                   <a href="javascript:void(0)" class="user">
-  #                   <img class="img-rounded" src="/static/img/icon.png" height="25"/>
-  #                   <span>{{ msg.user.name }}</span></a>
-  #                   <span>{{ msg.timestamp|date:"Y-m-d H:i:s" }}</span>
-  #               </div>
-  #               <div class="msg-content">
-  #                   {{ msg.title }}
-  #                   {% ifequal msg.content '' %}{% else %}
-  #                   	<a href="javascript:void(0)" class="viewmsgdetail">查看详细</a>
-  #                   {% endifequal %}
-  #               </div>
-  #           </div>
-		# 	''')
-		# response.render(tem, locals())
 		return response.get()
 
 import threading, time
@@ -146,6 +128,7 @@ def getmsglist(request):
 		target = request.POST['topic']
 		lastmsgid = request.POST['lastmsgid']
 		t = Timer(int(request.POST['time']))
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		if lastmsgid == '':
 			msglist = message.objects(topic=ObjectId(target))	
 		else:
@@ -157,26 +140,7 @@ def getmsglist(request):
 					break
 				time.sleep(0.5)
 		if lastmsgid == '' or t.status == 'stoped':
-			tem =  Template('''
-			{% for msg in msglist %}
-			<div class="msg{% if request.user.id %}{%ifequal msg.user.id request.user.id %}
-				 self{% endifequal %}{% endif %}" id="{{ msg.id }}">
-	            <div class="msg-header">
-	                <a href="javascript:void(0)" class="user">
-	                <img class="img-rounded" src="/static/img/icon.png" height="25"/>
-	                <span>{{ msg.user.name }}</span></a>
-	                <span>{{ msg.timestamp|date:"Y-m-d H:i:s" }}</span>
-	            </div>
-	            <div class="msg-content">
-	                {{ msg.title }}
-	                {% ifequal msg.content '' %}{% else %}
-	                	<a href="javascript:void(0)" class="viewmsgdetail">查看详细</a>
-	                {% endifequal %}
-	            </div>
-	        </div>
-	        {% endfor %}
-			''')
-			response.render(tem, locals())
+			response.render(get_template('msglist.html'), locals())
 		elif t.status == 'timeout':
 			response.seterror('timeout')
 		return response.get()

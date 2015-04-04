@@ -1,3 +1,4 @@
+{% load newlibrary %}
 <table class="table table-hover">
 	<tr class="info">
 		<th>URL</th>
@@ -13,7 +14,7 @@
   		<td>{{ s.parser }}</td>
   		<td>{{ s.category }}</td>
   		<td>{{ s.source }}</td>
-  		<td>{{ s.latest|date:"Y-m-d H:i" }}</td>
+  		<td>{% dtformat s.latest offset dtoffset %}</td>
   		<td class="status">
   			<span class="status-label">{{ s.status }}</span>
   			<button type="button" class="btn btn-primary btn-sm">{% ifequal s.status 'disabled' %}启用{% else %}禁用{% endifequal %}</button>

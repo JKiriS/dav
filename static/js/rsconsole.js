@@ -1,7 +1,8 @@
 $(document).ready(function(){
 
 	function load(type){
-		$.post("/console/get"+type,function(res){
+		$.post("/console/get"+type,{dtoffset:-(new Date().getTimezoneOffset())},
+			function(res){
 			if(res.data){
 				$("#"+type+" .console-group-content").html(res.data);
 			}
@@ -29,7 +30,7 @@ $(document).ready(function(){
 		var type = $(this).parents(".console-group").attr("id");
 		var target = $(this).parents("tr").attr("id");
 		var cmd = $(this).html();
-		$.post("/console/set"+type,{'target':target,'cmd':cmd},function(res){
+		$.post("/console/set"+type,{target:target,cmd:cmd},function(res){
 			if(res.data){
 				$("tr#"+target).html(res.data);
 			}
@@ -44,8 +45,9 @@ $(document).ready(function(){
 		var source = $.trim($("#newsite-source input").val());
 		var category = $.trim($("#newsite-category .categories").val());
 		var parser = $.trim($("#newsite-parser .parsers").val());
-		$.post("/console/addrssite",{"url":url,"source":source,
-			"category":category,"parser":parser},function(res){
+		$.post("/console/addrssite",{url:url,source:source,category:category,
+			parser:parser,dtoffset:-(new Date().getTimezoneOffset())},
+			function(res){
 			$("#newsite .form-group").removeClass("has-error");
 			if(res.error){
 				alert(res.error);
@@ -63,8 +65,9 @@ $(document).ready(function(){
 		if(stime == "")
 			stime = "minutes=1";
 		stime = "timedelta(" + stime + ")"
-		$.post("/console/addjob",{"name":name,
-			"stime":stime},function(res){
+		$.post("/console/addjob",{name:name,stime:stime,
+			dtoffset:-(new Date().getTimezoneOffset())},
+			function(res){
 			$("#newjob .form-group").removeClass("has-error");
 			if(res.error){
 				alert(res.error);

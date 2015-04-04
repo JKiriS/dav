@@ -1,3 +1,4 @@
+{% load newlibrary %}
 <table class="table table-hover">
     <tr class="info">
       <th>任务名</th>
@@ -9,7 +10,7 @@
     <tr class="active" id="{{ j.id }}">
       <td>{{ j.name }}</td>
       <td>{{ j.status }}</td>
-      <td>{{ j.starttime|date:"Y-m-d H:i:s" }}</td>
+      <td>{% dtformat j.starttime offset dtoffset %}</td>
       <td>
         {% ifequal j.status 'waiting' %}
         <button class="btn btn-primary btn-sm" disabled="disabled">修改</button>

@@ -1,4 +1,4 @@
-var _params = {"start":0};
+var _params = {start:0,dtoffset:-(new Date().getTimezoneOffset())};
 
 $(document).ready(function(){
 	function addColor(){
@@ -16,7 +16,7 @@ $(document).ready(function(){
 			if (res.data){
 				$("div.itemlist").empty();
 				$("div.itemlist").append(res.data);
-				_params = res.params;
+				_params.start = res.params.start;
 				addColor();
 			}
 		});
@@ -58,7 +58,7 @@ $(document).ready(function(){
 		var itemid = $(".activeitem").attr("id");
 		$(".activeitem .tagadd, .activeitem .newtag").toggle('fast');
 		if( name!="" ){
-			$.post("/rs/additemtag", {"name":name,"itemid":itemid}, function(res){
+			$.post("/rs/additemtag", {name:name,itemid:itemid}, function(res){
 				if (res.data)
 					$(".activeitem .itemtag:last").after(res.data);
 			});
@@ -69,7 +69,7 @@ $(document).ready(function(){
 	//click item, tag or source
 	$(".itemlist").on("click", "a.itemtitle", function(){
 		var target = $(this).parents(".item").attr("id");
-		var behaviordata = {"target":target, "fromurl":window.location.href};
+		var behaviordata = {target:target, fromurl:window.location.href};
 		if( "searchid" in _params ){
 			behaviordata.searchid = _params.searchid;
 		}
@@ -82,7 +82,7 @@ $(document).ready(function(){
 		$.post("", _params, function (res){
 			$("a.load-sm").remove();
 			$("a.viewmore").replaceWith(res.data);
-			_params = res.params;
+			_params.start = res.params.start;
 			addColor();
 		});
 	});

@@ -42,6 +42,7 @@ def lookaround(request):
 		response = PostResponse(request.POST)
 		itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5), \
 			rand__near=[random.random(), 0]).limit(15)
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		hasmore = True if len(itemlist) >= 15 else False
 		response.render(get_template('rs_itemlist.html'), locals())
 		response.setparams('start', 0)
@@ -58,6 +59,7 @@ def recommend(request):
 		skipnum = int(request.POST['start'])
 		urlist = rlist.objects(id=request.user.id).first()
 		itemlist = item.objects(id__in=urlist.rlist[skipnum:skipnum+15])
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		orders = urlist.rlist[skipnum:skipnum+15]
 		hasmore = True if len(orders) >= 15 else False
 		response.render(get_template('rs_itemlist.html'), locals())
@@ -74,6 +76,7 @@ def lookclassify(request):
 		response = PostResponse(request.POST)
 		skipnum = int(request.POST['start'])
 		orderby = request.GET.get('orderby', 'time')
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		if orderby == 'time':
 			itemlist = item.objects( Q(source__in=param_s) | Q(category__in=param_c) )\
 				.order_by("-pubdate").skip(skipnum).limit(15)
@@ -154,6 +157,7 @@ def search(request):
 		b.save()
 		response = PostResponse(request.POST)
 		start = int(request.POST['start'])
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		if start == 0:
 			sid = ObjectId()
 			response.setparams('searchid', str(sid))
@@ -191,6 +195,7 @@ def selffavorites(request):
 	if request.method == 'POST' and request.user.is_authenticated():
 		response = PostResponse(request.POST)
 		skipnum = int(request.POST['start'])
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		if skipnum == 0:
 			itemlist = item.objects(id__in=request.user.favorites[-15-skipnum:])
 			orders = request.user.favorites[-15-skipnum:][::-1]

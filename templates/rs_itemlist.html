@@ -48,7 +48,7 @@
 		<span>&nbsp;&nbsp;</span>
 		<span class="glyphicon glyphicon-time" aria-hidden="true"></span>
 		<span class="itemtime">
-			{{ i.pubdate|date:"Y-m-d H:i:s" }}
+			{% dtformat i.pubdate offset dtoffset %}
 		</span>
 	</div>
 	{% if i.imgurl %}

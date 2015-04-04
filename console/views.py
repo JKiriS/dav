@@ -152,6 +152,7 @@ def getrssites(request):
 	if request.method == 'POST':
 		response = PostResponse()
 		sites = site.objects()
+		dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 		response.render(get_template('sites.html'), locals())
 		return response.get()
 
@@ -215,6 +216,7 @@ def getjobs(request):
 	if request.method == 'POST':
 		response = PostResponse()
 		jobs = job.objects().order_by("-starttime").limit(30)
+		dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 		response.render(get_template('jobs.html'), locals())
 		return response.get()
 

@@ -2,6 +2,7 @@
 from django import template
 register = template.Library()
 from django.template.base import TemplateSyntaxError, NodeList
+from datetime import datetime, timedelta
 
 class IfInNode(template.Node):
     child_nodelists = ('nodelist_true', 'nodelist_false')
@@ -109,3 +110,38 @@ def reorder(parser, token):
 
     return ReorderNode(target, orders, var_name)
 
+class DTFormatNode(template.Node):
+    def __init__(self, target, dtoffset, dtfmt=None):
+        self.target = target
+        self.dtfmt = dtfmt
+        self.dtoffset = dtoffset
+
+    def render(self, context):
+        dt = self.target.resolve(context, True)
+        if not dt:
+            return ''
+        dtfmt = self.dtfmt.resolve(context, True) if self.dtfmt else None
+        if self.dtoffset:
+            dtoffset = self.dtoffset.resolve(context, True)
+            if isinstance(dtoffset, timedelta):
+                dt = dt + dtoffset
+        if not dtfmt:
+            dtfmt = '%Y-%m-%d %H:%M:%S'
+        return dt.strftime(dtfmt)
+
+@register.tag
+def dtformat(parser, token):
+    """
+    The following snippet of template code would accomplish this dubious task::
+
+        {% dtformat timestamp offset dtoffset dtfmt %}
+    """
+    bits = token.split_contents()
+    if bits[2] != 'offset':
+        raise TemplateSyntaxError("third argument to 'dtformat' tag must be 'offset'")
+    target = parser.compile_filter(bits[1])
+    dtoffset = parser.compile_filter(bits[3])
+    if len(bits) == 5:
+        dtfmt = parser.compile_filter(bits[4])
+        return DTFormatNode(target, dtoffset, dtfmt)
+    return DTFormatNode(target, dtoffset)

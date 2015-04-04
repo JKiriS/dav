@@ -155,6 +155,7 @@ def getmsglist(request):
 				if len(msglist) > 0:
 					t.stop()
 					break
+				time.sleep(0.5)
 		if lastmsgid == '' or t.status == 'stoped':
 			tem =  Template('''
 			{% for msg in msglist %}

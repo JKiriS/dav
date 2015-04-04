@@ -168,6 +168,7 @@ def addrssite(request):
 			s.save()
 			dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 			tem =  Template('''
+				{% load newlibrary %}
 				<tr class="active" id="{{ s.id }}">
 					<td><span title="{{ s.url }}">{{ s.url |slice:"30" }}</span></td>
 			  		<td>{{ s.parser }}</td>
@@ -199,6 +200,7 @@ def setrssites(request):
 				s['status'] = 'enabled'
 			s.save()
 			tem =  Template('''
+				{% load newlibrary %}
 				<td><span title="{{ s.url }}">{{ s.url |slice:"30" }}</span></td>
 		  		<td>{{ s.parser }}</td>
 		  		<td>{{ s.category }}</td>
@@ -211,7 +213,7 @@ def setrssites(request):
 			''')
 			response.render(tem, locals())
 		except Exception, e:
-			response.seterror(e)
+			response.seterror(str(e))
 		return response.get()
 
 def getjobs(request):
@@ -230,6 +232,7 @@ def addjob(request):
 			j.save()
 			dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 			tem =  Template('''
+				{% load newlibrary %}
 				<tr class="active" id="{{ j.id }}">
 					<td>{{ j.name }}</td>
 	      			<td>{{ j.status }}</td>
@@ -267,6 +270,7 @@ def setjobs(request):
 				j['status'] = 'waiting'
 			j.save()
 			tem =  Template('''
+				{% load newlibrary %}
 				<td>{{ j.name }}</td>
       			<td>{{ j.status }}</td>
 		      	<td>{% dtformat j.starttime offset dtoffset %}</td>

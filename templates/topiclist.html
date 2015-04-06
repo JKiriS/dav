@@ -24,7 +24,17 @@
     <!--<script type="text/javascript" src='{{STATIC_URL}}js/topicmsg.js' ></script>-->
 </head>
 <body>
-    <button type="button" class="btn btn-primary" id="createtopic">创建话题</button>
+<table class="table table-hover" id="topics">
+    <tr class="info">
+        <th>标题</th>
+    </tr>
+    {% for t in topiclist %}
+    <tr class="active" id="{{ t.id }}">
+      <td><a href="javascript:void(0)">{{ t.title }}</a></td>
+    </tr>
+    {% endfor %}
+</table>
+<button type="button" class="btn btn-primary" id="createtopic">创建话题</button>
 </body>
 <script type="text/javascript">
 $(document).ready(function(){
@@ -38,16 +48,10 @@ $(document).ready(function(){
                 alert(res.errors);
         });
     });
-    $("body").on("submit", "#newtopicmodal form", function(){
-        var title = $("#newtopic-title input").val();
-        $.post("/topicmsg/createtopic", {"title":title}, function(res){
-            if(!res.errors){
-                $("#newtopicmodal").modal("hide");
-                window.open(res.params.redirecturl);
-            }
-            else
-                alert(res.errors);
-        });
+    $("table#topics a").on("click", function(){
+        var id = $(this).parents("tr").attr("id");
+        var title = $(this).html();
+        window.open('/topicmsg/topic?id='+id,title,'height='+ $(window).height()+',width=600,top=0,left=0,toolbar=no,menubar=no,scrollbars=no, resizable=yes,location=no,status=no,alwaysRaised=yes');
         return false;
     });
 });

@@ -66,6 +66,7 @@ ul.dropdown-menu li {
 .item img {
     float: right;
     margin-bottom: 15px;
+    max-height: 200px;
 }
 
 .item .favorite{
@@ -86,6 +87,10 @@ ul.dropdown-menu li {
     margin-top: 15px;
     margin-bottom: 5px;
     padding: 5px 0px;
+}
+
+.itemtop .msg {
+    display: none;
 }
 
 .itemtitle {

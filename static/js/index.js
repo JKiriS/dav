@@ -163,4 +163,21 @@ $(document).ready(function(){
 		return false;
 	});
 
+	$(".content").on("mouseover", ".itemtop", function(){
+		$(this).children(".msg").show();
+	});
+	$(".content").on("mouseout", ".itemtop", function(){
+		$(this).children(".msg").hide();
+	});
+	$(".content").on("click", "a.msg", function(){
+		$.post("/topicmsg/newtopicmodal", function(res){
+            if(!res.errors){
+                $("body").append(res.data);
+                $("#newtopicmodal").modal("show");
+            }
+            else
+                alert(res.errors);
+        });
+	});
+
 });

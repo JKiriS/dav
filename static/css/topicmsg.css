@@ -1,23 +1,13 @@
 body, html {
-	height:100%;
-	padding: 0px;
-}
-
-.main-container {
-	display: inline-block;
-	width: 40%;
-	overflow-x: auto; 
-	overflow-y: auto;
 	height: 100%;
-	padding-right: 0px;
-	-moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
+	padding: 0px;
 }
 
 .material-list {
 	display: inline-block;
-	width: 60%;
+	width: 100%;
+	left: 5px;
+	top: 0px;
 	position: fixed;
 }
 
@@ -64,32 +54,14 @@ a.material {
 	width: inherit;
 }
 
-.material-container {
-	width: 59%;
-	height: 100%;
-	float: right;
-	display: inline-block;
-	border-left: 1px solid silver;
-}
-
-.material-container iframe{	
-	height: 95%;
-	margin-top: 27px;
-	width: 100%;
-	border: 0px;
-	border-left: 1px solid silver;
-	border-top: 1px solid silver;
-	overflow-x: auto; 
-	overflow-y: auto;
-}
-
 .dialogue {
-	height: 85%;
-	width: 98%;
+	height: 80%;
+	width: 100%;
+	margin: 5px;
+	margin-top: 27px;
 	overflow-y: auto; 
 	background-color: #dff0d8;
 	padding: 10px;
-	margin: 5px;
 }
 
 .dialogue .msg {
@@ -129,12 +101,12 @@ a.material {
 }
 
 .msg-detail {
-	width: 50%;
+	width: 95%;
 	height: 40%;
 	display: none;
 	position: fixed;
-	left: 30%;
-	top: 20%;
+	/*left: 5%;
+	top: 20%;*/
 	background-color: white;
 }
 
@@ -159,6 +131,11 @@ a.material {
 	left: 10%;
 	top: 10%;
 	background-color: white;
+	/*overflow-y: auto;*/
+}
+
+.editor-wrapper .panel-body {
+	height: 90%;
 	overflow-y: auto;
 }
 
@@ -177,7 +154,7 @@ a.material {
 	height: 40%;
 	display: none;
 	position: fixed;
-	left: 3%;
+	left: 1%;
 	top: 10%;
 	background-color: white;
 	overflow-y: auto;

@@ -26,7 +26,7 @@
     <script type="text/javascript" src="{{STATIC_URL}}js/topicmsg.js" ></script>
 </head>
 <body>
-<div class="panel panel-success editor-wrapper">
+<div class="panel panel-primary editor-wrapper">
     <div class="panel-heading">
         Markdown编辑器
         <div class="action">
@@ -40,7 +40,7 @@
     </div>
 </div>
 
-<div class="panel panel-success new-material">
+<div class="panel panel-primary new-material">
     <div class="panel-heading">
         添加新资料
         <div class="action">
@@ -67,18 +67,7 @@
     </div>
 </div>
 
-    <div class="main-container">
-        <div class="dialogue">
-                
-            </div>
-            <form class="msg-input">
-              <textarea class="form-control" rows="3" placeholder="请输入信息"></textarea>
-              <button type="submit" class="btn btn-primary">发送</button>
-              <button type="button" id="showeditor" class="btn btn-primary">高级</button>
-            </form>
-    </div>
-
-    <div class="material-container">
+    <!-- <div class="main-container"> -->
         <div class="material-list">
             <div class="material-list-header">
                 <span class="material-list-title">相关资料</span>
@@ -88,8 +77,15 @@
             <div class="material-list-content">
             </div>
         </div>
-        <iframe id="m-iframe" src=""></iframe>
-    </div>
+        <div class="dialogue">
+                
+        </div>
+        <form class="msg-input">
+          <textarea class="form-control" rows="3" placeholder="请输入信息"></textarea>
+          <button type="submit" class="btn btn-primary">发送</button>
+          <button type="button" id="showeditor" class="btn btn-primary">高级</button>
+        </form>
+    <!-- </div> -->
 
 </body>
 </html>

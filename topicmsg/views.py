@@ -35,6 +35,7 @@ def getmsgdetail(request):
 		return response.get()
 
 def topiclist(request):
+	topiclist = topic.objects()
 	return render(request, 'topiclist.html', locals())
 
 def newtopicmodal(request):

@@ -58,10 +58,15 @@ def recommend(request):
 		response = PostResponse(request.POST)
 		skipnum = int(request.POST['start'])
 		urlist = rlist.objects(id=request.user.id).first()
-		itemlist = item.objects(id__in=urlist.rlist[skipnum:skipnum+15])
-		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
-		orders = urlist.rlist[skipnum:skipnum+15]
-		hasmore = True if len(orders) >= 15 else False
+		if urlist:
+			itemlist = item.objects(id__in=urlist.rlist[skipnum:skipnum+15])
+			orders = urlist.rlist[skipnum:skipnum+15]
+			hasmore = True if len(orders) >= 15 else False
+		else:
+			itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5))\
+				.orderby('-click_num').limit(15)
+			hasmore = True if len(itemlist) >= 15 else False
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))		
 		response.render(get_template('rs_itemlist.html'), locals())
 		response.setparams('start', repr(skipnum + len(itemlist)))
 		return response.get()

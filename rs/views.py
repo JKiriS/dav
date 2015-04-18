@@ -64,7 +64,7 @@ def recommend(request):
 			hasmore = True if len(orders) >= 15 else False
 		else:
 			itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5))\
-				.order_by('-click_num').limit(15)
+				.order_by('-click_num').skip(skipnum).limit(15)
 			hasmore = True if len(itemlist) >= 15 else False
 		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))		
 		response.render(get_template('rs_itemlist.html'), locals())

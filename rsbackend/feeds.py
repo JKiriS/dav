@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from gevent import monkey; monkey.patch_socket()
 import gevent
 from gevent import queue
+from gevent import socket
 import urllib2
 from bs4 import BeautifulSoup
 import feedparser
@@ -11,7 +11,6 @@ import re
 import json
 import urlparse
 import random
-import socket
 from xml.etree import ElementTree as ET
 import os, sys
 

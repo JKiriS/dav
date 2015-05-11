@@ -235,6 +235,8 @@ def worker(q, db):
 		except Exception, e:
 			db.site.update({'_id':i['_id']}, {'$set':{'status':'error'}})
 			print i['url'] + str(e)
+		finally:
+			q.task_done()
 
 def run():
 	q = queue.JoinableQueue()

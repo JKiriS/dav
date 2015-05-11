@@ -171,8 +171,10 @@ class UpdateSearchIndex(ThriftJob):
 
 if __name__ == '__main__':
 	while True:
+		print '1111'
 		for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'}\
 			, timeout=False).sort('starttime',pymongo.ASCENDING):
+			print j
 			try:
 				exec( j['runable'] )
 			except Exception, e:

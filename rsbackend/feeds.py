@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from gevent import monkey; monkey.patch_all()
+import gevent
+from gevent import queue
 import urllib2
 from bs4 import BeautifulSoup
 import feedparser
@@ -13,6 +15,7 @@ import socket
 from xml.etree import ElementTree as ET
 import os, sys
 
+WORK_N = 5
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PARAMS_DIR = os.path.join(BASE_DIR,'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
@@ -222,8 +225,9 @@ class pento(Parser):
 '''
 site status: enabled running error disabled
 '''
-def run():
-	for i in db.site.find({'status':{'$ne':'disabled'}}, timeout=False):
+def worker(q, db):
+	while True:
+		i = q.get()
 		try:
 			db.site.update({'_id':i['_id']}, {'$set':{'status':'running'}})
 			exec( i['parser']+'(i).parse()' )
@@ -232,5 +236,13 @@ def run():
 			db.site.update({'_id':i['_id']}, {'$set':{'status':'error'}})
 			print i['url'] + str(e)
 
+def run():
+	q = queue.JoinableQueue()
+	for i in range(WORK_N):
+		gevent.spawn(worker, q, db)
+	for i in db.site.find({'status':{'$ne':'disabled'}}, timeout=False):
+		q.put(i)
+	q.join()
+
 if __name__ == '__main__':
-	pass
+	run()

@@ -21,8 +21,10 @@ PARAMS_DIR = os.path.join(BASE_DIR,'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
 
 import pymongo
-conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
-db = conn_primary['feed']
+# conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
+# db = conn_primary['feed']
+client = MongoClient(PARAMS['db_primary']['ip'])
+db = client.feed
 db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 
 socket.setdefaulttimeout(PARAMS['feed']['timeout'])

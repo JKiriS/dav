@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from gevent import monkey; monkey.patch_all()
 import time
 from datetime import datetime, timedelta
 import json
@@ -26,8 +27,10 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 import pymongo
-conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
-db = conn_primary['feed']
+# conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
+# db = conn_primary['feed']
+client = MongoClient(PARAMS['db_primary']['ip'])
+db = client.feed
 db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 
 class Job:

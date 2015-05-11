@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from gevent import monkey; monkey.patch_all()
 import time
 from datetime import datetime, timedelta
 import json
@@ -171,7 +170,6 @@ class UpdateSearchIndex(ThriftJob):
 
 if __name__ == '__main__':
 	while True:
-		print '1111'
 		for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'}\
 			, timeout=False).sort('starttime',pymongo.ASCENDING):
 			print j

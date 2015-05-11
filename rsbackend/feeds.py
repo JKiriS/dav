@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey; monkey.patch_socket()
 import gevent
 from gevent import queue
 import urllib2

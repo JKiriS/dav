@@ -66,6 +66,8 @@ ul.dropdown-menu li {
 .item img {
     float: right;
     margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: hidden; 
 }
 
 .item .favorite{

@@ -59,12 +59,12 @@ class Feed(Job):
             db.job.update({'_id':self.id},{'$set':{'status':'running'}})
             feeds.run()
             db.job.update({'_id':self.id},{'$set':{'status':'completed'}})
+            UpdateLsiIndex(timedelta(minutes=17)).save()
+            UpdateSearchIndex(timedelta(minutes=37)).save()
+            Classify(timedelta(minutes=52)).save()
         except Exception, e:
             db.job.update({'_id':self.id},{'$set':{'status':'failed'}})
             print e
-        UpdateLsiIndex(timedelta(minutes=17)).save()
-        UpdateSearchIndex(timedelta(minutes=37)).save()
-        Classify(timedelta(minutes=52)).save()
 
 def rundeco(func):
     def _deco(self, *args, **argv):

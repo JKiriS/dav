@@ -237,7 +237,7 @@ def worker(q, db):
             q.task_done()
 
 def run():
-    q = Queue.JoinableQueue()
+    q = Queue.Queue()
     for i in db.site.find({'status':{'$ne':'disabled'}}, timeout=False):
         q.put(i)
     for i in range(WORK_N):

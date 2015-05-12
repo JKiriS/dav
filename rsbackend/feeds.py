@@ -238,12 +238,12 @@ def worker(q, db):
 
 def run():
     q = Queue.JoinableQueue()
+    for i in db.site.find({'status':{'$ne':'disabled'}}, timeout=False):
+        q.put(i)
     for i in range(WORK_N):
         t = threading.Thread(target=worker, args=(q, db))
         t.daemon = True
         t.start()
-    for i in db.site.find({'status':{'$ne':'disabled'}}, timeout=False):
-        q.put(i)
     q.join()
 
 if __name__ == '__main__':

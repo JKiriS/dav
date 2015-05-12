@@ -55,9 +55,13 @@ class Feed(Job):
     def run(self):
         reload(feeds)
         Feed(timedelta(hours=12)).save()
-        db.job.update({'_id':self.id},{'$set':{'status':'running'}})
-        feeds.run()
-        db.job.update({'_id':self.id},{'$set':{'status':'completed'}})
+        try:
+            db.job.update({'_id':self.id},{'$set':{'status':'running'}})
+            feeds.run()
+            db.job.update({'_id':self.id},{'$set':{'status':'completed'}})
+        except Exception, e:
+            db.job.update({'_id':self.id},{'$set':{'status':'failed'}})
+            print e
         UpdateLsiIndex(timedelta(minutes=17)).save()
         UpdateSearchIndex(timedelta(minutes=37)).save()
         Classify(timedelta(minutes=52)).save()
@@ -172,10 +176,6 @@ if __name__ == '__main__':
     while True:
         for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'} \
                 , timeout=False).sort('starttime',pymongo.ASCENDING):
-            print j
-            try:
-                exec( j['runable'] )
-            except Exception, e:
-                print j['name'] + str(e)
+            exec( j['runable'] )
         time.sleep(60 * 1)
 	

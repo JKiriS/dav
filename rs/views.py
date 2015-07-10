@@ -41,8 +41,9 @@ def lookaround(request):
 	if request.method == 'POST':
 		response = PostResponse(request.POST)
 		#itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5)).limit(3000)
-		itemlist = item.objects().order_by('-pubdate').limit(1500)
-		itemlist = random.sample(itemlist, 15)
+		idlist = [i.id for i in item.objects().only('id').order_by('-pubdate').limit(1500)]
+		itemidlist = random.sample(idlist, 15)
+		itemlist = item.objects(id__in=itemidlist)
 		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		hasmore = True # if len(itemlist) >= 15 else False
 		response.render(get_template('rs_itemlist.html'), locals())

@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import socket
-import os, sys, getopt
+import os, sys
+import optparse
 
-# opts, args = getopt.getopt(sys.argv[1:], "f:")
-# if len(opts) == 0:
-# 	exit()
-# PARAMS_DIR = opts[0][1]
-# sys.argv.remove(opts[0][0])
-# sys.argv.remove(opts[0][1])
-# if not os.path.isfile(PARAMS_DIR):
-# 	PARAMS_DIR = "e:/dav/self.cfg"
-PARAMS_DIR = "e:/dav/self.cfg"
+parser = optparse.OptionParser()
+parser.add_option('-f', dest="PARAMS_DIR")
+parser.set_defaults(PARAMS_DIR="/home/jkiris/dav/self.cfg")
+
+opt, args = parser.parse_args()
+
+PARAMS_DIR = opt.PARAMS_DIR
 import json
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
@@ -37,7 +36,6 @@ stopwords[' '] = 1
 stopwords['.'] = 1
 logger.info('jieba and stopwords load success')
 
-cs = json.load(file(PARAMS['category']))
 CLS_DIR = PARAMS['classify']['dir']
 LSI_DIR = PARAMS['recommend']['dir']
 now = lambda:datetime.datetime.utcnow()
@@ -66,6 +64,8 @@ class DBManager:
 
 dbm = DBManager()
 
+cs = [c['name'] for c in dbm.getprimary().category.find()]
+
 from bson import ObjectId
 import datetime, time
 import math
@@ -74,67 +74,57 @@ import pickle
 import numpy as np
 from gensim import corpora, models
 
+from threading import Lock
+
 class ClsFileManager:
 	def __init__(self):
 		self._dic = None
 		self._model = None
 		self._ids = None
-	def _wait(self):
-		for i in range(10):
-			if os.path.isfile(os.path.join(CLS_DIR, 'write.lock')):
-				time.sleep(10)
-			if i == 9:
-				ex = FileError()
-				ex.who = os.path.join(CLS_DIR, 'write.lock')
-				raise ex
-			else:
-				break
-	def _lock(self):
-		if os.path.isfile(os.path.join(CLS_DIR, 'write.lock')):
-			return False
-		else:
-			flock = open(os.path.join(CLS_DIR, 'write.lock'),'w+')
-			flock.close()
-			return True
-	def _clearlock(self):
-		if os.path.isfile(os.path.join(CLS_DIR, 'write.lock')):
-			os.remove(os.path.join(CLS_DIR, 'write.lock'))
+		self.writeLock = Lock()
+
 	def getdic(self):
-		if self._dic is None:
-			self._wait()
-			self._dic = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
+		if not self._dic:
+			with self.writeLock:
+				self._dic = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
 		return self._dic
+
 	def getmodel(self):
-		if self._model is None:
-			self._wait()
-			self._model = pickle.load(open(os.path.join(CLS_DIR, 'cls.pkl'), 'rb'))
+		if not self._model:
+			with self.writeLock:
+				self._model = pickle.load(open(os.path.join(CLS_DIR, 'cls.pkl'), 'rb'))
 		return self._model
+
 	def getid(self):
-		if self._ids is None:
-			self._wait()
-			self._ids = pickle.load(open(os.path.join(CLS_DIR,'ids.pkl'), 'rb'))
+		if not self._ids:
+			with self.writeLock:
+				self._ids = pickle.load(open(os.path.join(CLS_DIR,'ids.pkl'), 'rb'))
 		return self._ids
+
 	def setdic(self, newdic):
 		self._dic = newdic
-		self._wait()
-		self._lock()
-		self._dic.save(os.path.join(CLS_DIR, 'cls.dic'))
-		self._clearlock()	
+		if not os.path.exists(CLS_DIR):
+			os.makedirs(CLS_DIR)
+		with self.writeLock:
+			self._dic.save(os.path.join(CLS_DIR, 'cls.dic'))	
 		return True
+
 	def setmodel(self, newmodel):
 		self._model = newmodel
-		self._wait()
-		self._lock()
-		pickle.dump(self._model, open(os.path.join(CLS_DIR, 'cls.pkl'), 'wb'))
-		self._clearlock()
+		if not os.path.exists(CLS_DIR):
+			os.makedirs(CLS_DIR)
+		with self.writeLock:
+			pickle.dump(self._model, open(os.path.join(CLS_DIR, 'cls.pkl'), 'wb'))
 		return True
+		
 	def setid(self, newid):
 		self._ids = newid
-		self._wait()
-		self._lock()
-		pickle.dump(self._ids, open(os.path.join(CLS_DIR,'ids.pkl'), 'wb'))
-		self._clearlock()
+		if not os.path.exists(CLS_DIR):
+			os.makedirs(CLS_DIR)
+		with self.writeLock:
+			pickle.dump(self._ids, open(os.path.join(CLS_DIR,'ids.pkl'), 'wb'))
 		return True
+
 cfm = ClsFileManager()
 
 class ClsHandler:
@@ -143,7 +133,7 @@ class ClsHandler:
 		dic = None
 		for c in cs:
 			cpath = os.path.join(LSI_DIR, c)
-			if dic is None:
+			if not dic:
 				dic = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
 			else:
 				dic.merge_with(corpora.Dictionary.load(os.path.join(cpath,'gs.dic')))
@@ -155,8 +145,9 @@ class ClsHandler:
 	def trainClassify(self):
 		logger.info('train Classify model')
 		dictionary = cfm.getdic()
+		db = dbm.getprimary()
+
 		t = now() - datetime.timedelta(days=180)
-		db = dbm.getlocal()
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
 		texts_origin = []
 		train_target = np.array([])
@@ -173,6 +164,7 @@ class ClsHandler:
 			ex = DataError()
 			ex.who = 'texts_origin'
 			raise ex
+
 		all_tokens = sum(texts_origin, [])
 		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 		texts = [[word for word in text if word not in token_once] for text in texts_origin]
@@ -192,12 +184,14 @@ class ClsHandler:
 		return res
 
 	def classify(self, category):
-		category = category.decode('utf-8') # chinese decode
+		if not isinstance(category, unicode):
+			category = category.decode('utf-8')
 		logger.info('classify items of category ' + category)
+		db = dbm.getprimary()
+
 		dictionary = cfm.getdic()
 		texts_origin = []
 		ids = []
-		db = dbm.getlocal()
 		for i in db.item.find({'category':category, 'category_origin':None}).limit(200):
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
@@ -207,6 +201,7 @@ class ClsHandler:
 			ex = DataError()
 			ex.who = 'texts_origin'
 			raise ex
+
 		all_tokens = sum(texts_origin, [])
 		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 		texts = [[word for word in text if word not in token_once] for text in texts_origin]
@@ -217,22 +212,24 @@ class ClsHandler:
 		for ix, doc in enumerate(corpus_tfidf):
 			for jx, d in doc:
 				test_data[ix, jx] = d
+
+		# classify items and split to clear classification and unclears
 		clf = cfm.getmodel()
 		cfm.setid(ids)
-		clears = {}
-		unclears = {}
+		clears, unclears = {}, {}
 		for i, d in enumerate(clf.predict_proba(test_data)):
 			res = sorted(enumerate(d), key=lambda a:a[1], reverse=True)
-			if res[0][1] - res[1][1] < 0.15:
+			if res[0][1] - res[1][1] < 0.15: # if most probability one close to second most then it's unclear
 				top_prob = res[:3]
 				random.shuffle(top_prob)
 				unclears[ ids[i] ] = top_prob
 			else:
 				clears[res[0][0]] = clears.get(res[0][0], []) + [ ids[i] ]
-		db_primary = dbm.getprimary()
-		db_primary.item.update({"_id":{"$in":unclears.keys()}}, {"$set":{'category_origin':category}}, multi=True)
+		db.item.update({"_id":{"$in":unclears.keys()}}, {"$set":{'category_origin':category}}, multi=True)
 		for nc in clears:
-			db_primary.item.update({"_id":{"$in":clears[nc]}}, {"$set":{'category':cs[nc], 'category_origin':category}}, multi=True)
+			db.item.update({"_id":{"$in":clears[nc]}}, {"$set":{'category':cs[nc], 'category_origin':category}}, multi=True)
+		
+		# generate verify question from unclear items
 		veris = []
 		for uci in db.item.find({"_id":{"$in":unclears.keys()}}):
 			question = u'''请问下面的内容最可能属于哪一类？<br/>
@@ -242,44 +239,35 @@ class ClsHandler:
 			option = [ cs[o[0]] for o in unclears[uci['_id']] ] + [u'其他']
 			veris.append({ '_id':uci['_id'], 'rand':[random.random(), 0], \
 				'question':question, 'option':option, 'data_origin':{'id':uci['_id'], 'prob':uci['_id']} })
-		db_primary.verification.insert(veris, continue_on_error=True)
+		db.verification.insert(veris, continue_on_error=True)
 		res = Result()
 		res.success = True
 		return res
 
-import win32serviceutil
-import win32service
-import win32event
+def initClassify():
+	handler = ClsHandler()
+	handler.updateClassifyDic()
+	handler.trainClassify()
 
-class clsserver(win32serviceutil.ServiceFramework):
-	_svc_name_ = "ClsService"
-	_svc_display_name_ = "classify service"
-	def __init__(self, args):
-		win32serviceutil.ServiceFramework.__init__(self, args)
-		# Create an event which we will use to wait on.
-		# The "service stop" request will set this event.
-		self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+def main():
+	handler = ClsHandler()
+	processor = Cls.Processor(handler)
+	transport = TSocket.TServerSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
+	tfactory = TTransport.TBufferedTransportFactory()
+	pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+	 
+	server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+	 
+	logger.info("Starting classify service at port " + repr(PARAMS['classify']['port']) + " ...")
+	server.serve()
 
-	def SvcStop(self):
-		# Before we do anything, tell the SCM we are starting the stop process.
-		self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-		# And set my event.
-		win32event.SetEvent(self.hWaitStop)
-
-	def SvcDoRun(self):
-		# We do nothing other than wait to be stopped!
-		handler = ClsHandler()
-		processor = Cls.Processor(handler)
-		transport = TSocket.TServerSocket(PARAMS['classify']['ip'], PARAMS['classify']['port'])
-		tfactory = TTransport.TBufferedTransportFactory()
-		pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-		 
-		server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
-		 
-		logger.info("Starting classify service at port " + repr(PARAMS['classify']['port']) + " ...")
-		server.serve()
-		win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
+def test():
+	handler = ClsHandler()
+	# handler.updateClassifyDic()
+	# handler.trainClassify()
+	# handler.classify('综合')
 
 if __name__ == '__main__':
-	win32serviceutil.HandleCommandLine(clsserver)
+	main()
+	# test()
 

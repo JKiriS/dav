@@ -11,7 +11,6 @@ PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
 
 now = lambda : datetime.utcnow()
-cs = json.load(file(PARAMS['category']))
 
 from rec import Rec
 from cls import Cls
@@ -29,6 +28,8 @@ import pymongo
 conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
 db = conn_primary['feed']
 db.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
+
+cs = [c['name'] for c in db.category.find()]
 
 class Job:
     def __init__(self, stime, jid, status='waiting'):
@@ -172,10 +173,13 @@ class UpdateSearchIndex(ThriftJob):
     def run(self):
         self._client.updateSearchIndex()
 
-if __name__ == '__main__':
-    while True:
+def run():
+     while True:
         for j in db.job.find({'starttime':{'$lt':now()}, 'status':'waiting'} \
                 , timeout=False).sort('starttime',pymongo.ASCENDING):
             exec( j['runable'] )
         time.sleep(60 * 1)
+
+if __name__ == '__main__':
+   run()
 	

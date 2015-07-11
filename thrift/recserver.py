@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import socket
-import os, sys, getopt
+import os, sys
+import optparse
 
-# opts, args = getopt.getopt(sys.argv[1:], "f:")
-# # if len(opts) == 0:
-# # 	exit()
-# PARAMS_DIR = opts[0][1]
-# sys.argv.remove(opts[0][0])
-# sys.argv.remove(opts[0][1])
-# if not os.path.isfile(PARAMS_DIR):
-# 	PARAMS_DIR = "e:/dav/self.cfg"
-PARAMS_DIR = "e:/dav/self.cfg"
+parser = optparse.OptionParser()
+parser.add_option('-f', dest="PARAMS_DIR")
+parser.set_defaults(PARAMS_DIR="/home/jkiris/dav/self.cfg")
+
+opt, args = parser.parse_args()
+
+PARAMS_DIR = opt.PARAMS_DIR
 import json
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
@@ -37,7 +36,6 @@ stopwords[' '] = 1
 stopwords['.'] = 1
 logger.info('jieba and stopwords load success')
 
-cs = json.load(file(PARAMS['category']))
 LSI_DIR = PARAMS['recommend']['dir']
 now = lambda:datetime.datetime.utcnow()
 
@@ -64,6 +62,8 @@ class DBManager:
 		return self._db_primary
 dbm = DBManager()
 
+cs = [c['name'] for c in dbm.getprimary().category.find()]
+
 from bson import ObjectId
 import datetime, time
 import math
@@ -72,87 +72,78 @@ import pickle
 import numpy as np
 from gensim import corpora, models, similarities
 
+from threading import Lock
+
 class LsiFileManager:
 	def __init__(self):
 		self._lsis = {}
 		self._dics = {}
 		self._indexes = {}
 		self._ids = {}
-	def _wait(self, cpath):
-		for i in range(10):
-			if os.path.isfile(os.path.join(cpath, 'write.lock')):
-				time.sleep(10)
-			if i == 9:
-				ex = FileError()
-				ex.who = os.path.join(cpath, 'write.lock')
-				raise ex
-			else:
-				break
-	def _lock(self, cpath):
-		if os.path.isfile(os.path.join(cpath, 'write.lock')):
-			return False
-		else:
-			flock = open(os.path.join(cpath, 'write.lock'),'w+')
-			flock.close()
-			return True
-	def _clearlock(self, cpath):
-		if os.path.isfile(os.path.join(cpath, 'write.lock')):
-			os.remove(os.path.join(cpath, 'write.lock'))
+		self.writeLock = Lock()
+
 	def getlsi(self, category):
-		if self._lsis.get(category, None) is None:
+		if not self._lsis.get(category):
 			cpath = os.path.join(LSI_DIR, category)
-			self._wait(cpath)
-			self._lsis[category] = models.LsiModel.load(os.path.join(cpath,'gs.lsi'))
-		return self._lsis[category]
+			with self.writeLock:
+				self._lsis[category] = models.LsiModel.load(os.path.join(cpath,'gs.lsi'))
+		return self._lsis.get(category)
+
 	def getdic(self, category):
-		if self._dics.get(category, None) is None:
+		if not self._dics.get(category):
 			cpath = os.path.join(LSI_DIR, category)
-			self._wait(cpath)
-			self._dics[category] = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
-		return self._dics[category]
+			with self.writeLock:
+				self._dics[category] = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
+		return self._dics.get(category)
+
 	def getindex(self, category):
-		if self._indexes.get(category, None) is None:
+		if not self._indexes.get(category):
 			cpath = os.path.join(LSI_DIR, category)
-			self._wait(cpath)
-			self._indexes[category] = similarities.MatrixSimilarity.load(os.path.join(cpath,'gs.index'))
-		return self._indexes[category]
+			with self.writeLock:
+				self._indexes[category] = similarities.MatrixSimilarity.load(os.path.join(cpath,'gs.index'))
+		return self._indexes.get(category)
+
 	def getid(self, category):
-		if self._ids.get(category, None) is None:
+		if not self._ids.get(category):
 			cpath = os.path.join(LSI_DIR, category)
-			self._wait(cpath)
-			self._ids[category] = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
-		return self._ids[category]
+			with self.writeLock:
+				self._ids[category] = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
+		return self._ids.get(category)
+
 	def setlsi(self, category, newclsi):
 		self._lsis[category] = newclsi
 		cpath = os.path.join(LSI_DIR, category)
-		self._wait(cpath)
-		self._lock(cpath)
-		self._lsis[category].save(os.path.join(cpath,'gs.lsi'))
-		self._clearlock(cpath)
+		if not os.path.exists(cpath):
+			os.makedirs(cpath)
+		with self.writeLock:
+			self._lsis[category].save(os.path.join(cpath,'gs.lsi'))
 		return True
+
 	def setdic(self, category, newcdic):
 		self._dics[category] = newcdic
 		cpath = os.path.join(LSI_DIR, category)
-		self._wait(cpath)
-		self._lock(cpath)
-		self._dics[category].save(os.path.join(cpath,'gs.dic'))
-		self._clearlock(cpath)	
+		if not os.path.exists(cpath):
+			os.makedirs(cpath)
+		with self.writeLock:
+			self._dics[category].save(os.path.join(cpath,'gs.dic'))
 		return True
+
 	def setindex(self, category, newcindex):
 		self._indexes[category] = newcindex
 		cpath = os.path.join(LSI_DIR, category)
-		self._wait(cpath)
-		self._lock(cpath)
-		self._indexes[category].save(os.path.join(cpath,'gs.index'))
-		self._clearlock(cpath)
+		if not os.path.exists(cpath):
+			os.makedirs(cpath)
+		with self.writeLock:
+			self._indexes[category].save(os.path.join(cpath,'gs.index'))
 		return True
+
 	def setid(self, category, newcid):
 		self._ids[category] = newcid
 		cpath = os.path.join(LSI_DIR, category)
-		self._wait(cpath)
-		self._lock(cpath)
-		pickle.dump(self._ids[category], open(os.path.join(cpath,'ids.pkl'), 'wb'))
-		self._clearlock(cpath)
+		if not os.path.exists(cpath):
+			os.makedirs(cpath)
+		with self.writeLock:
+			pickle.dump(self._ids[category], open(os.path.join(cpath,'ids.pkl'), 'wb'))
 		return True
 
 lfm = LsiFileManager()
@@ -160,80 +151,92 @@ lfm = LsiFileManager()
 class RecHandler:
 	def updateRList(self, uid):
 		logger.info('update recommend list of user ' + uid)
-		db = dbm.getlocal()
+		db = dbm.getprimary()
+
+		# get user prefernce
 		upre = db.upre.find_one({'_id':ObjectId(uid)})
-		if upre is None:
+		if not upre:
 			ex = DataError()
 			ex.who = 'upre(_id=' + uid + ')'
 			raise ex
 		oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
 		oldrlist = [] if not oldrlist else oldrlist.get('rlist')
+
 		score = np.array([])
-		ids = []
-		clicks = []
-		favos = []
+		# ids, click_count, favo_count(count of item's click, favo times)
+		itemdata = []
 		for c in cs:
-			score_c = None
 			ids_c = lfm.getid(c)
-			if len(ids_c) == 0:
+			if not ids_c:
 				continue
 			for i in db.item.find({'_id':{'$in':ids_c}},{'click_num':1,'favo_num':1}).sort('pubdate',pymongo.DESCENDING):
-				clicks.append(i['click_num'])
-				favos.append(i['favo_num'])
-			ids += ids_c
+				itemdata.append({'id': i['_id'], 'clicks':i['click_num'], 'favos':i['favo_num']})
+			
+			# load dictionary, lsi and index
 			lsi = lfm.getlsi(c)
 			dic = lfm.getdic(c)
 			index = lfm.getindex(c)
+			# calcule item simrarity score according to each item user has visited			
+			score_c = np.zeros(len(ids_c)) # simrarity score of items of the category(init with zeros)
 			for i in db.item.find({'_id':{'$in':upre['visits']},'category':c}):
 				segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
 				segs *= 2
 				segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
 				test_bow = dic.doc2bow(segs)
 				test_lsi = lsi[test_bow]
-				score_c = index[test_lsi] if score_c is None else score_c + index[test_lsi]
-			if score_c is not None:
-				score = np.hstack(( score, score_c * math.sqrt(upre['category'].get(c, 1)) ))
-			else :
-				score = np.hstack(( score, np.zeros(len(ids_c)) ))
-		if not len(ids) == len(score) == len(clicks) == len(favos):
+				score_c = score_c + index[test_lsi]
+			score = np.hstack(( score, score_c ))
+		if len(itemdata) != len(score):
 			ex = DataError()
 			ex.who = 'ids'
 			raise ex 
-		clicks = np.array(clicks)
-		favos = np.array(favos)
-		maxs = max(score)
-		if maxs > 0:
-			score = .3* score / maxs
-		maxs = max(clicks)
-		if maxs > 0:
-			score += .2 * clicks / maxs
-		maxs = max(favos)
-		if maxs > 0:
-			score += .3 * favos / maxs
+
+		# calculate fianl score
+		clicks = np.array([i['clicks'] for i in itemdata])
+		favos = np.array([i['favos'] for i in itemdata])
+		ids = [i['id'] for i in itemdata]
+		if max(score) > 0:
+			score = .3* score / max(score)
+		if max(clicks) > 0:
+			score += .2 * clicks / max(clicks)
+		if max(favos) > 0:
+			score += .3 * favos / max(favos)
 		score += .2 * np.random.random(len(score))
-		res = [[ids[i], score[i]] for i in range(len(ids))]
+
+		res = map(list, zip(ids, score))
 		for r in res:
 			if r[0] in oldrlist: 
-				r[1] *= .9
+				r[1] *= .8
 			if r[0] in upre['visits']: 
-				r[1] *= 0
+				r[1] = 0
 		rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
-		db_primary = dbm.getprimary()
-		db_primary.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':now()})
+
+		db = dbm.getprimary()
+		db.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':now()})
 		res = Result()
 		res.success = True
 		return res		
 
 	def updateLsiIndex(self, category):
-		category = category.decode('utf-8')
+		if not isinstance(category, unicode):
+			category = category.decode('utf-8')
 		logger.info('update lsi index of category ' + category)
-		t = now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
+
+		# calculate read item num based on total ratio of the category
+		t = now() - datetime.timedelta(days=180)		
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
-		texts_origin = []
 		itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
 		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
-		cpath = os.path.join(LSI_DIR, category)
+
+		# load dictionary
+		dictionary = lfm.getdic(category)
+		if not dictionary:
+			self.updateLsiDic(category)
+			dictionary = lfm.getdic(category)
+
+		# collect text and cordnate item id(used for recommend)
+		texts_origin = []
 		itemIds = []
 		for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
 			itemIds.append(i['_id'])
@@ -241,38 +244,41 @@ class RecHandler:
 			segs *= 2
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
 			texts_origin.append(segs)
-		lfm.setid(category, itemIds)
 		if len(texts_origin) == 0:
 			ex = DataError()
 			ex.who = 'texts_origin'
 			raise ex
+
+		# calculate text tfidf
 		all_tokens = sum(texts_origin, [])
 		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 		texts = [[word for word in text if word not in token_once] for text in texts_origin]
-		dictionary = lfm.getdic(category)
-		if len(dictionary) == 0:
-			ex = FileError()
-			ex.who = 'lsidic'
-			raise ex
 		corpus = [dictionary.doc2bow(text) for text in texts]
 		tfidf = models.TfidfModel(corpus)
 		corpus_tfidf = tfidf[corpus]
+
+		#train lsi model and save lsi and index data
 		lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=30)
 		lfm.setlsi(category, lsi)
-		lfm.setindex(category, similarities.MatrixSimilarity(lsi[corpus]))		
+		lfm.setindex(category, similarities.MatrixSimilarity(lsi[corpus]))	
+		lfm.setid(category, itemIds)	
 		res = Result()
 		res.success = True
 		return res
 
 	def updateLsiDic(self, category):
-		category = category.decode('utf-8')
+		if not isinstance(category, unicode):
+			category = category.decode('utf-8')
 		logger.info('update lsi dictionary of category ' + category)
-		t = now() - datetime.timedelta(days=180)
 		db = dbm.getlocal()
+
+		# calculate read item num based on total ratio of the category
+		t = now() - datetime.timedelta(days=180)
 		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()	
 		itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
 		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
-		cpath = os.path.join(LSI_DIR, category)
+
+		# collect text data
 		texts_origin = []
 		for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
@@ -283,6 +289,8 @@ class RecHandler:
 			ex = DataError()
 			ex.who = 'texts_origin'
 			raise ex
+
+		# generate and save(set) new dictionary 
 		all_tokens = sum(texts_origin, [])
 		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 		texts = [[word for word in text if word not in token_once] for text in texts_origin]
@@ -293,115 +301,116 @@ class RecHandler:
 
 	def updateUPre(self, uid):
 		logger.info('update preferences of user ' + uid)
-		pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[]}
-		pre['timestamp'] = now()
 		db = dbm.getlocal()
-		for s in db.source.find():
-			pre['source'][s['name']] = 0
-		for c in db.category.find():
-			pre['category'][c['name']] = 0
-		# get the latesttime 
-		latest = db.behavior.find({'uid':ObjectId(uid)})\
-			.sort('timestamp', pymongo.DESCENDING).limit(1)
-		if latest.count() > 0:
-			latesttime = latest[0]['timestamp']
-		else :
-			res = Result()
-			res.success = True
-			res.msg = 'user' + uid + 'has no behavior history'
-			return res
-		# search
+		now_time = now()
+
+		# create and init user pre data
+		pre = {'_id':ObjectId(uid),'source':{},'category':{},'wd':{},'visits':[],'timestamp':now_time}
+		source_count = db.source.count()
+		category_count = db.category.count()
+		pre['source'] = dict.fromkeys([s['name'] for s in db.source.find()], 1 / source_count)
+		pre['category'] = dict.fromkeys([c['name'] for c in db.category.find()], 1 / category_count)
+		
+		# collect search history
 		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'search'})\
-			.sort('timestamp', pymongo.DESCENDING).limit(500):
-			deltaT = latesttime - i['timestamp']
+				.sort('timestamp', pymongo.DESCENDING).limit(500):
+			deltaT = now_time - i['timestamp']
 			timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i['target'], cut_all=False))
 			for s in segs:
 				pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
-		# visit source
+
+		# collect 500 latest source visit history
 		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitsource'})\
-			.sort('timestamp', pymongo.DESCENDING).limit(500):
-			deltaT = latesttime - i['timestamp']
+				.sort('timestamp', pymongo.DESCENDING).limit(500):
+			deltaT = now_time - i['timestamp']
 			timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
 			pre['source'][i['target']] = pre['source'].get(i['target'], 0) + 1.2 * timefactor
-		# visit category
+
+		# collect 500 latest category visit history
 		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'visitcategory'})\
-			.sort('timestamp', pymongo.DESCENDING).limit(500):
-			deltaT = latesttime - i['timestamp']
+				.sort('timestamp', pymongo.DESCENDING).limit(500):
+			deltaT = now_time - i['timestamp']
 			timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
 			pre['category'][i['target']] = pre['category'].get(i['target'], 0) + 1.2 * timefactor
-		#clickitem
+		
+		# collect item click history
 		visits = {}
 		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'clickitem'})\
 				.sort('timestamp', pymongo.DESCENDING).limit(300):
 			visits[ObjectId(i['target'])] = i['timestamp']
 		if len(visits) > 0:
-			latest = max(visits.values())
 			for i in db.item.find({'_id':{'$in':visits.keys()}}):
-				deltaT = latest - visits[i['_id']]
+				deltaT = now_time - visits[i['_id']]
 				timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 30.))
 				pre['source'][i['source']] = pre['source'].get(i['source'], 0) + 1.2 * timefactor
 				pre['category'][i['category']] = pre['category'].get(i['category'], 0) + 1.2 * timefactor
 				segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
 				for s in segs:
 					pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
-		#favo item
+		
+		# collect favo item history
 		favos = {}
 		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'addfavorite'})\
 				.sort('timestamp', pymongo.DESCENDING).limit(200):
 			favos[ObjectId(i['target'])] = i['timestamp']
 		if len(favos) > 0:
-			latest = max(favos.values())
 			for i in db.item.find({'_id':{'$in':favos.keys()}}):
-				deltaT = latest - favos[i['_id']]
+				deltaT = now_time - favos[i['_id']]
 				timefactor = 1 / (1 + math.exp((deltaT.total_seconds()/24/3600.) - 60.))
 				pre['source'][i['source']] = pre['source'].get(i['source'], 0) + 1.5 * timefactor
 				pre['category'][i['category']] = pre['category'].get(i['category'], 0) + 1.5 * timefactor
 				segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
 				for s in segs:
 					pre['wd'][s] = pre['wd'].get(s, 0) + 1 * timefactor
+
+		# data uniform and cut
 		pre['wd'] = dict(sorted(pre['wd'].items(), key = lambda y:y[1], reverse=True)[:100])
 		pre['visits'] = visits.keys()
+		source_sum = sum(pre['source'].values())
+		if source_sum <= 0: source_sum = 1
+		for key in pre['source']:
+			pre['source'][key] /= source_sum
+		category_sum = sum(pre['category'].values())
+		if category_sum <= 0: category_sum = 1
+		for key in pre['category']:
+			pre['category'][key] /= category_sum
+
+		# save upre data to database
 		db_primary = dbm.getprimary()
 		db_primary.upre.save(pre)
 		res = Result()
 		res.success = True
 		return res
 
-import win32serviceutil
-import win32service
-import win32event
+def initRecommend():
+	db = dbm.getprimary()
+	handler = RecHandler()
+	for c in db.category.find():
+		handler.updateLsiDic(c['name'])
+		handler.updateLsiIndex(c['name'])
 
-class recserver(win32serviceutil.ServiceFramework):
-	_svc_name_ = "RecService"
-	_svc_display_name_ = "recommend service"
-	def __init__(self, args):
-		win32serviceutil.ServiceFramework.__init__(self, args)
-		# Create an event which we will use to wait on.
-		# The "service stop" request will set this event.
-		self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+def test():
+	handler = RecHandler()
+	# handler.updateUPre('5459d5ee7c46d50ae022b901')
+	# handler.updateLsiDic('文化')
+	# handler.updateLsiIndex(u'文化')
+	# handler.updateRList('5459d5ee7c46d50ae022b901')
 
-	def SvcStop(self):
-		# Before we do anything, tell the SCM we are starting the stop process.
-		self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-		# And set my event.
-		win32event.SetEvent(self.hWaitStop)
-
-	def SvcDoRun(self):
-		# We do nothing other than wait to be stopped!
-		logger.info("run recommend service")
-		handler = RecHandler()
-		processor = Rec.Processor(handler)
-		transport = TSocket.TServerSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
-		tfactory = TTransport.TBufferedTransportFactory()
-		pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-		 
-		server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
-		 
-		logger.info("Starting recommend service at port "+ repr(PARAMS['recommend']['port']) + " ...")
-		server.serve()
-		win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
+def main():
+	logger.info("run recommend service")
+	handler = RecHandler()
+	processor = Rec.Processor(handler)
+	transport = TSocket.TServerSocket(PARAMS['recommend']['ip'], PARAMS['recommend']['port'])
+	tfactory = TTransport.TBufferedTransportFactory()
+	pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+	 
+	server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+	 
+	logger.info("Starting recommend service at port "+ repr(PARAMS['recommend']['port']) + " ...")
+	server.serve()
 
 if __name__=='__main__':
-	win32serviceutil.HandleCommandLine(recserver)
+	main()
+	
 		

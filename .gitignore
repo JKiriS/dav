@@ -72,6 +72,7 @@ nohup.out
 
 # self configuration
 self.cfg
+*.conf
 
 # lucene index file
 index/

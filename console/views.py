@@ -17,7 +17,7 @@ import commands
 import types
 
 sys.path.append(os.path.join(settings.BASE_DIR, 'rsbackend'))
-import jobmanager, feeds
+import rsjm, feeds
 
 PARAMS_DIR = os.path.join(settings.BASE_DIR, 'self.cfg')
 PARAMS = json.load(file(PARAMS_DIR))
@@ -32,7 +32,6 @@ class ServiceManager:
 			{'id':'ClsService','name':'classify','domain':'rs','status':'running'},
 			{'id':'RecService','name':'recommend','domain':'rs','status':'running'},
 			{'id':'SearchService','name':'search','domain':'rs','status':'running'},
-			{'id':'DBSync','name':'DBSync','domain':'main','status':'running'},
 			{'id':'JobManager','name':'JobManager','domain':'main','status':'running'},
 		]
 		for i, s in enumerate(self._data):
@@ -88,12 +87,8 @@ sm = ServiceManager()
 
 def getJobTypes():
 	jobtypes = []
-	reload(jobmanager)
-	for i in dir(jobmanager):
-		attr = getattr(jobmanager, i)
-		if type(attr) == types.ClassType and issubclass(attr, jobmanager.Job) \
-			and hasattr(attr, 'run'):
-			jobtypes.append(i)
+	reload(rsjm)
+	jobtypes = jobm._funcs.keys()
 	return jobtypes
 
 def getParsers():
@@ -136,7 +131,7 @@ def setservices(request):
 				sm.open(target)
 			s = sm.getservice(target)
 			tem =  Template('''
-				<td>{{ s.name }}</td>
+				<td>{{ s.func }}</td>
 				<td>{{ s.domain }}</td>
 	  			<td class="status">
 					<span class="status-label">{{ s.status }}</span>
@@ -228,8 +223,8 @@ def addjob(request):
 	if request.method == 'POST':
 		response = PostResponse()
 		try:
-			j = eval('jobmanager.'+request.POST['name']+'('+request.POST['stime']+')')
-			j.save()
+			# j = eval('jobmanager.'+request.POST['name']+'('+request.POST['stime']+')')
+			# j.save()
 			dtoffset = timedelta(minutes=int(request.POST['dtoffset']))
 			tem =  Template('''
 				{% load newlibrary %}

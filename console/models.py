@@ -15,7 +15,7 @@ class site(Document):
 	meta = {'db_alias':'default'}
 
 class job(Document):
-	name = StringField()
+	func = StringField()
 	starttime = DateTimeField()
 	status = StringField(default='waiting')
 

@@ -11,8 +11,7 @@ parser.set_defaults(PARAMS_DIR="/home/jkiris/dav/self.cfg")
 
 opt, args = parser.parse_args()
 
-# PARAMS_DIR = opt.PARAMS_DIR
-PARAMS_DIR = 'e:/dav/self.cfg'
+PARAMS_DIR = opt.PARAMS_DIR
 import json
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])

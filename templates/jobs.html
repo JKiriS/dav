@@ -8,7 +8,7 @@
     </tr>
     {% for j in jobs %}
     <tr class="active" id="{{ j.id }}">
-      <td>{{ j.name }}</td>
+      <td>{{ j.func }}</td>
       <td>{{ j.status }}</td>
       <td>{% dtformat j.starttime offset dtoffset %}</td>
       <td>

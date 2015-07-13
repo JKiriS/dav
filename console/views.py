@@ -88,7 +88,7 @@ sm = ServiceManager()
 def getJobTypes():
 	jobtypes = []
 	reload(rsjm)
-	jobtypes = jobm._funcs.keys()
+	jobtypes = rsjm.jobm._funcs.keys()
 	return jobtypes
 
 def getParsers():

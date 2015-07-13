@@ -11,7 +11,8 @@ parser.set_defaults(PARAMS_DIR="/home/jkiris/dav/self.cfg")
 
 opt, args = parser.parse_args()
 
-PARAMS_DIR = opt.PARAMS_DIR
+# PARAMS_DIR = opt.PARAMS_DIR
+PARAMS_DIR = 'e:/dav/self.cfg'
 import json
 PARAMS = json.load(file(PARAMS_DIR))
 sys.path.append(PARAMS['thrift']['gen-py'])
@@ -294,9 +295,117 @@ class RecHandler:
 		all_tokens = sum(texts_origin, [])
 		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
 		texts = [[word for word in text if word not in token_once] for text in texts_origin]
-		lfm.setdic(category, corpora.Dictionary(texts))		
+		lfm.setdic(category, corpora.Dictionary(texts))
 		res = Result()
 		res.success = True
+		return res
+
+	def updateLsiSearchDic(self):
+		db = dbm.getlocal()
+
+		texts_origin = []
+		for i in db.item.find().limit(3000):
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
+			segs *= 2
+			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
+			texts_origin.append(segs)
+		if len(texts_origin) == 0:
+			ex = DataError()
+			ex.who = 'texts_origin'
+			raise ex
+
+		# generate and save(set) new dictionary 
+		all_tokens = sum(texts_origin, [])
+		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
+		texts = [[word for word in text if word not in token_once] for text in texts_origin]
+		lfm.setdic('search', corpora.Dictionary(texts))
+		res = Result()
+		res.success = True
+		return res
+
+	def updateLsiSearchIndex(self):
+		db = dbm.getlocal()
+
+		# load dictionary
+		dictionary = lfm.getdic('search')
+		if not dictionary:
+			self.updateLsiDic('search')
+			dictionary = lfm.getdic('search')
+
+		# collect text and cordnate item id(used for recommend)
+		texts_origin = []
+		itemIds = []
+		APPENDMODE = False
+		try:
+			itemIds = lfm.getid('search')
+		except Exception, e:
+			print e
+		if itemIds:
+			items = db.item.find({'_id':{'$gt':itemIds[-1]}}).limit(3000)
+			APPENDMODE = True
+		else:
+			items = db.item.find().limit(3000)
+		for i in items:
+			itemIds.append(i['_id'])
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
+			segs *= 2
+			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
+			texts_origin.append(segs)
+		if len(texts_origin) == 0:
+			ex = DataError()
+			ex.who = 'texts_origin'
+			raise ex
+
+		# calculate text tfidf
+		all_tokens = sum(texts_origin, [])
+		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
+		texts = [[word for word in text if word not in token_once] for text in texts_origin]
+		corpus = [dictionary.doc2bow(text) for text in texts]
+		tfidf = models.TfidfModel(corpus)
+		corpus_tfidf = tfidf[corpus]
+
+		#train lsi model and save lsi and index data
+		if not APPENDMODE:
+			lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=200)
+			index = similarities.Similarity('/home/jkiris/dav/tmp/', lsi[corpus], num_features=200)
+		else:
+			lsi = lfm.getlsi('search')
+			lsi.add_documents(corpus_tfidf)
+			index = lfm.getindex('search')
+			index.add_documents(lsi[corpus])
+		lfm.setlsi('search', lsi)
+		lfm.setindex('search', index)
+		lfm.setid('search', itemIds)	
+		res = Result()
+		res.success = True
+		return res
+
+	def lsiSearch(self, query, start=0, length=15):
+		if not isinstance(query, unicode):
+			query = query.decode('utf-8')
+		lsi = lfm.getlsi('search')
+		dic = lfm.getdic('search')
+		index = lfm.getindex('search')
+		itemIds = lfm.getid('search')
+		if len(itemIds) < start:
+			ex = DataError()
+			ex.who = 'start'
+			raise ex
+		# calcule item simrarity score according to each item user has visited			
+		segs = filter(lambda s:s not in stopwords, jieba.cut(query, cut_all=False))
+		test_bow = dic.doc2bow(segs)
+		test_lsi = lsi[test_bow]
+		score = index[test_lsi]
+		print len(score), len(itemIds)
+		searchresult =  sorted(zip(itemIds, score), key=lambda a:a[1], reverse=True)[start:start+length]
+		res = Result()
+		res.success = True
+		res.data = {}
+		res.data["searchresult"] = str( map(lambda i:i[0], searchresult) )
+		if searchresult[-1][1] < 0.01:
+			res.data["hasmore"] = str(False)
+		else:
+			res.data["hasmore"] = str(True)
 		return res
 
 	def updateUPre(self, uid):
@@ -396,6 +505,9 @@ def test():
 	# handler.updateLsiDic('文化')
 	# handler.updateLsiIndex(u'文化')
 	# handler.updateRList('5459d5ee7c46d50ae022b901')
+	# handler.updateLsiSearchDic()
+	handler.updateLsiSearchIndex()
+	# print handler.lsiSearch('机器学习')
 
 def main():
 	logger.info("run recommend service")
@@ -411,6 +523,10 @@ def main():
 	server.serve()
 
 if __name__=='__main__':
-	main()
-	
-		
+	for i in range(40):
+		print i
+		test()
+	# main()
+	# for i in range(30):
+	# 	test()
+	# print len(pickle.load(file('e:/dav/rsbackend/lsiindex/search/ids.pkl')))

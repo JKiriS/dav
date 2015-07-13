@@ -195,6 +195,45 @@ def search(request):
 	else :
 		return HttpResponseRedirect('/rs/lookaround')
 
+def lsisearch(request):
+	col = 'search'
+	if request.method == 'POST':
+		b = behavior(uid=request.user.id, action='search', \
+			target=request.GET['wd'], timestamp=now())
+		b.save()
+		response = PostResponse(request.POST)
+		start = int(request.POST['start'])
+		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
+		if start == 0:
+			sid = ObjectId()
+			response.setparams('searchid', str(sid))
+			s = searchresult(id=sid, wd=request.GET['wd'], timestamp=now())
+			s.save()
+		try:
+			transport = TSocket.TSocket(PARAMS['recommend']['ip'],PARAMS['recommend']['port'])
+			transport = TTransport.TBufferedTransport(transport)
+			protocol = TBinaryProtocol.TBinaryProtocol(transport)
+			client = Search.Client(protocol)
+			transport.open()
+			sresult = client.lsiSearch(request.GET['wd'].encode('utf-8'), start, 15)
+			transport.close()
+			
+			slist = eval(sresult.data['searchresult']) if sresult.data else []
+			hasmore = eval(sresult.data['hasmore']) if sresult.data else False 
+			itemlist = item.objects(id__in=slist)
+			orders = slist
+			wd = request.GET['wd']
+			response.render(get_template('rs_itemlist.html'), locals())
+			response.setparams('start', repr(start + len(itemlist)))
+		except Exception, e:
+			response.seterror(str(e))
+		return response.get()
+	if 'wd' in request.GET:
+		wd = request.GET['wd']
+		return render(request, 'rs_main.html', locals())
+	else :
+		return HttpResponseRedirect('/rs/lookaround')
+
 def selffavorites(request):
 	col = 'selffavorites'
 	if not request.user.is_authenticated():

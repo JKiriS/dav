@@ -5,4 +5,7 @@ service Rec {
     common.Result updateLsiIndex(1:string category) throws (1:common.DataError de, 2:common.FileError fe),
     common.Result updateLsiDic(1:string category) throws (1:common.DataError de),
     common.Result updateUPre(1:string uid),
+    common.Result lsiSearch(1:string wd, 2:i32 start, 3:i32 length),
+    common.Result updateLsiSearchIndex(),
+    common.Result updateLsiSearchDic(),
 }

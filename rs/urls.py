@@ -7,6 +7,7 @@ urlpatterns = patterns('',
     url(r'^recommend', 'rs.views.recommend', name='recommend'),
     url(r'^lookclassify', 'rs.views.lookclassify', name='lookclassify'),
     url(r'^search', 'rs.views.search', name='search'),
+    url(r'^lsisearch', 'rs.views.lsisearch', name='lsisearch'),
     url(r'^selffavorites', 'rs.views.selffavorites', name='selffavorites'),
     url(r'^selfpre', 'rs.views.selfpre', name='selfpre'),
 

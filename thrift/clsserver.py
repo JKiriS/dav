@@ -220,7 +220,7 @@ class ClsHandler:
 		for i, d in enumerate(clf.predict_proba(test_data)):
 			res = sorted(enumerate(d), key=lambda a:a[1], reverse=True)
 			if res[0][1] - res[1][1] < 0.15: # if most probability one close to second most then it's unclear
-				top_prob = res[:3]
+				top_prob = res[:4]
 				random.shuffle(top_prob)
 				unclears[ ids[i] ] = top_prob
 			else:
@@ -237,8 +237,8 @@ class ClsHandler:
 						正文: {1}
 					'''.format(uci['title'], uci['des'])
 			option = [ cs[o[0]] for o in unclears[uci['_id']] ] + [u'其他']
-			veris.append({ '_id':uci['_id'], 'rand':[random.random(), 0], \
-				'question':question, 'option':option, 'data_origin':{'id':uci['_id'], 'prob':uci['_id']} })
+			veris.append({ '_id':uci['_id'], 'rand':[random.random(), 0], 'question':question, \
+				'option':option, 'prob': dict([ (cs[o[0]], o[1]) for o in unclears[uci['_id']] ]) })
 		db.verification.insert(veris, continue_on_error=True)
 		res = Result()
 		res.success = True

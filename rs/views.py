@@ -26,6 +26,7 @@ PARAMS = json.load(file(PARAMS_DIR))
 
 sys.path.append(PARAMS['thrift']['gen-py'])
 from search import Search
+from rec import Rec
 from common import *
 
 now = lambda : datetime.datetime.utcnow()
@@ -213,7 +214,7 @@ def lsisearch(request):
 			transport = TSocket.TSocket(PARAMS['recommend']['ip'],PARAMS['recommend']['port'])
 			transport = TTransport.TBufferedTransport(transport)
 			protocol = TBinaryProtocol.TBinaryProtocol(transport)
-			client = Search.Client(protocol)
+			client = Rec.Client(protocol)
 			transport.open()
 			sresult = client.lsiSearch(request.GET['wd'].encode('utf-8'), start, 15)
 			transport.close()

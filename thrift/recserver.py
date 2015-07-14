@@ -390,12 +390,12 @@ class RecHandler:
 			ex = DataError()
 			ex.who = 'start'
 			raise ex
-		# calcule item simrarity score according to each item user has visited			
+				
 		segs = filter(lambda s:s not in stopwords, jieba.cut(query, cut_all=False))
 		test_bow = dic.doc2bow(segs)
 		test_lsi = lsi[test_bow]
 		score = index[test_lsi]
-		print len(score), len(itemIds)
+		
 		searchresult =  sorted(zip(itemIds, score), key=lambda a:a[1], reverse=True)[start:start+length]
 		res = Result()
 		res.success = True
@@ -506,7 +506,7 @@ def test():
 	# handler.updateRList('5459d5ee7c46d50ae022b901')
 	# handler.updateLsiSearchDic()
 	# handler.updateLsiSearchIndex()
-	print handler.lsiSearch('机器学习')
+	# print handler.lsiSearch('机器学习')
 
 def main():
 	logger.info("run recommend service")
@@ -522,11 +522,5 @@ def main():
 	server.serve()
 
 if __name__=='__main__':
-	test()
-	# for i in range(3):
-		# print i
-		# test()
-	# main()
-	# for i in range(30):
-	# 	test()
-	# print len(pickle.load(file('e:/dav/rsbackend/lsiindex/search/ids.pkl')))
+	main()
+	

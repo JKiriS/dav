@@ -101,6 +101,16 @@ def updateRList():
             client.updateRList(str(u['_id']))
 
 @jobm.task
+def updateLsiSearchDic():
+    with RecConn() as client:
+        client.updateLsiSearchDic()
+
+@jobm.task
+def updateLsiSearchIndex():
+    with RecConn() as client:
+        client.updateLsiSearchIndex()
+
+@jobm.task
 def updateLsiIndex():
     with RecConn() as client:
         for c in cs:

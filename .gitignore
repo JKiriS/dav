@@ -92,4 +92,7 @@ clsindex/
 
 *.sh
 
+tmp/
+
+
 .idea/

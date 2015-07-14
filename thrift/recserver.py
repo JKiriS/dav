@@ -505,8 +505,8 @@ def test():
 	# handler.updateLsiIndex(u'文化')
 	# handler.updateRList('5459d5ee7c46d50ae022b901')
 	# handler.updateLsiSearchDic()
-	handler.updateLsiSearchIndex()
-	# print handler.lsiSearch('机器学习')
+	# handler.updateLsiSearchIndex()
+	print handler.lsiSearch('机器学习')
 
 def main():
 	logger.info("run recommend service")
@@ -522,9 +522,10 @@ def main():
 	server.serve()
 
 if __name__=='__main__':
-	for i in range(40):
-		print i
-		test()
+	test()
+	# for i in range(3):
+		# print i
+		# test()
 	# main()
 	# for i in range(30):
 	# 	test()

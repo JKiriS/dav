@@ -263,11 +263,11 @@ def main():
 
 def test():
 	handler = ClsHandler()
-	# handler.updateClassifyDic()
-	# handler.trainClassify()
-	# handler.classify('综合')
+	handler.updateClassifyDic()
+	handler.trainClassify()
+	handler.classify('综合')
 
 if __name__ == '__main__':
 	main()
-	# test()
+	#test()
 

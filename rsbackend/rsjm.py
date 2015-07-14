@@ -85,6 +85,7 @@ class RecConn(ThriftConn):
 def feed():
     feeds.run()
     updateLsiIndex(delay=17*60)
+    updateLsiSearchIndex(delay=29*60)
     updateSearchIndex(delay=37*60)
     classify(delay=52*60)
 

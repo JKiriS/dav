@@ -11,6 +11,8 @@ urlpatterns = patterns('',
     url(r'^selffavorites', 'rs.views.selffavorites', name='selffavorites'),
     url(r'^selfpre', 'rs.views.selfpre', name='selfpre'),
 
+    url(r'^updaterecentitemlist', 'rs.views.updaterecentitemlist')
+
     url(r'^behaviorrecorder$', 'rs.views.behaviorrecorder'),
     url(r'^additemtag', 'rs.views.additemtag'),
     url(r'^getupre', 'rs.views.getupre'),

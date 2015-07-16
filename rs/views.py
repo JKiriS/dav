@@ -30,6 +30,7 @@ from rec import Rec
 from common import *
 
 now = lambda : datetime.datetime.utcnow()
+recent_item_id_list = [i.id for i in item.objects().only('id').order_by('-pubdate').limit(3000)]
 
 def index(request):
 	if request.user.is_authenticated():
@@ -37,13 +38,15 @@ def index(request):
 	else :
 		return HttpResponseRedirect('/rs/lookaround')
 
+def updaterecentitemlist(request):
+	recent_item_id_list = [i.id for i in item.objects().only('id').order_by('-pubdate').limit(3000)]
+	return HttpResponse()
+
 def lookaround(request):
 	col = 'lookaround'
 	if request.method == 'POST':
 		response = PostResponse(request.POST)
-		#itemlist = item.objects(pubdate__gte=now()-datetime.timedelta(days=5)).limit(3000)
-		idlist = [i.id for i in item.objects().only('id').order_by('-pubdate').limit(1500)]
-		itemidlist = random.sample(idlist, 15)
+		itemidlist = random.sample(recent_item_id_list, 15)
 		itemlist = item.objects(id__in=itemidlist)
 		dtoffset = datetime.timedelta(minutes=int(request.POST['dtoffset']))
 		hasmore = True # if len(itemlist) >= 15 else False

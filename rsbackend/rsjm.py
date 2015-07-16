@@ -5,6 +5,7 @@ import json
 import feeds
 import sys, os
 from JobManager import JobManager
+import urllib2
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PARAMS_DIR = os.path.join(BASE_DIR,'self.cfg')
@@ -81,9 +82,16 @@ class RecConn(ThriftConn):
     def _client(self):
         return Rec.Client(self.protocol)
 
+def updaterecentitemlist():
+    try:
+        urllib2.urlopen('http://localhost/rs/updaterecentitemlist').read()
+    except Exception, e:
+        pass
+        
 @jobm.task
 def feed():
     feeds.run()
+    updaterecentitemlist()
     updateLsiIndex(delay=17*60)
     updateLsiSearchIndex(delay=29*60)
     updateSearchIndex(delay=37*60)

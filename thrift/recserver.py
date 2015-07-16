@@ -400,8 +400,8 @@ class RecHandler:
 		res = Result()
 		res.success = True
 		res.data = {}
-		res.data["searchresult"] = str( map(lambda i:i[0], searchresult) )
-		if searchresult[-1][1] < 0.01:
+		res.data["searchresult"] = str( map(lambda i:i[0], filter(lambda i: i[1]>=.05, searchresult)) )
+		if searchresult[-1][1] < 0.05:
 			res.data["hasmore"] = str(False)
 		else:
 			res.data["hasmore"] = str(True)

@@ -63,7 +63,11 @@ def updateRList(uid):
 			continue
 		center = list(enumerate(np.mean(data[label==i], axis=0)))
 		center_score = index[center]  * label_count.get(i) / len(label)
-		score = center_score if score is None else score + center_score
+		# score = center_score if score is None else score + center_score
+		score = center_score if score is None else np.vstack((score, center_score))
+
+	score = np.max(score, axis=0)
+	print score.shape
 
 	latestitemIds, latestitemScores = itemIds[-2000:], score[-2000:]
 

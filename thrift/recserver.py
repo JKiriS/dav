@@ -217,7 +217,7 @@ class RecHandler:
 
 		latestitemIds, latestitemScores = itemIds[-2000:], score[-2000:]
 
-		latestitemScores += .2 * np.random.random(len(latestitemScores))
+		# latestitemScores += .2 * np.random.random(len(latestitemScores))
 
 		res = map(list, zip(latestitemIds, latestitemScores))
 		for r in res:

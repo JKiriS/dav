@@ -59,8 +59,6 @@ def updateRList(uid):
 
 	score = None
 	for i in range(K):
-		if i != max_label:
-			continue
 		center = list(enumerate(np.mean(data[label==i], axis=0)))
 		center_score = index[center]  * label_count.get(i) / len(label)
 		# score = center_score if score is None else score + center_score

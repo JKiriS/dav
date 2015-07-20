@@ -209,15 +209,16 @@ class RecHandler:
 
 		score = None
 		for i in range(K):
-			if i != max_label:
-				continue
 			center = list(enumerate(np.mean(data[label==i], axis=0)))
 			center_score = index[center]  * label_count.get(i) / len(label)
-			score = center_score if score is None else score + center_score
+			# score = center_score if score is None else score + center_score
+			score = center_score if score is None else np.vstack((score, center_score))
 
-		latestitemIds, latestitemScores = itemIds[-2000:], score[-2000:]
+		score = np.amax(score, axis=0)
 
-		# latestitemScores += .2 * np.random.random(len(latestitemScores))
+		latestitemIds, latestitemScores = itemIds[-1000:], score[-1000:]
+
+		latestitemScores += .2 * np.max(score) * np.random.random(len(latestitemScores))
 
 		res = map(list, zip(latestitemIds, latestitemScores))
 		for r in res:

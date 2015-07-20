@@ -44,7 +44,7 @@ def updateRList(uid):
 
 	# data = preprocessing.scale(data)  #  Z-Score
 	# data = preprocessing.MinMaxScaler().fit_transform(data)  #  range
-	data = preprocessing.normalize(data, norm='l2')  #  l2 Normalization
+	# data = preprocessing.normalize(data, norm='l2')  #  l2 Normalization
 
 	k_means = cluster.KMeans(K)
 	k_means.fit(data)

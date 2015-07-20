@@ -70,6 +70,7 @@ import math
 import random
 import pickle
 import numpy as np
+from sklearn import cluster, preprocessing
 from gensim import corpora, models, similarities
 
 from threading import Lock
@@ -153,73 +154,84 @@ class LsiFileManager:
 lfm = LsiFileManager(LSI_DIR)
 
 class RecHandler:
-	def updateRList(self, uid):
-		logger.info('update recommend list of user ' + uid)
+	
+	def updateRList(uid):
 		db = dbm.getprimary()
-
-		# get user prefernce
 		upre = db.upre.find_one({'_id':ObjectId(uid)})
-		if not upre:
-			ex = DataError()
-			ex.who = 'upre(_id=' + uid + ')'
-			raise ex
+		lsi = lfm.getlsi('search')
+		dic = lfm.getdic('search')
+		index = lfm.getindex('search')
+		itemIds = lfm.getid('search')
+
 		oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
 		oldrlist = [] if not oldrlist else oldrlist.get('rlist')
 
-		score = np.array([])
-		# ids, click_count, favo_count(count of item's click, favo times)
-		itemdata = []
-		for c in cs:
-			ids_c = lfm.getid(c)
-			if not ids_c:
-				continue
-			for i in db.item.find({'_id':{'$in':ids_c}},{'click_num':1,'favo_num':1}).sort('pubdate',pymongo.DESCENDING):
-				itemdata.append({'id': i['_id'], 'clicks':i['click_num'], 'favos':i['favo_num']})
+		visits = {}
+		for i in db.behavior.find({'uid':ObjectId(uid), 'action':'clickitem'})\
+				.sort('timestamp', pymongo.DESCENDING).limit(1000):
+			visits[ObjectId(i['target'])] = 1
+		upre['visits'] = visits.keys()
+		db.upre.save(upre)
+
+		data = []
+		visits_ids = []
+		for i in db.item.find({'_id':{'$in':visits.keys()}}):
+			visits_ids.append(i['_id'])
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
+			segs *= 2
+			segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
+			test_bow = dic.doc2bow(segs)
+			test_lsi = lsi[test_bow]
+			data.append(map(lambda a:a[1], test_lsi))
+		if not visits_ids:
+			res = Result()
+			res.success = True
+			return res
 			
-			# load dictionary, lsi and index
-			lsi = lfm.getlsi(c)
-			dic = lfm.getdic(c)
-			index = lfm.getindex(c)
-			# calcule item simrarity score according to each item user has visited			
-			score_c = np.zeros(len(ids_c)) # simrarity score of items of the category(init with zeros)
-			for i in db.item.find({'_id':{'$in':upre['visits']},'category':c}):
-				segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
-				segs *= 2
-				segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
-				test_bow = dic.doc2bow(segs)
-				test_lsi = lsi[test_bow]
-				score_c = score_c + index[test_lsi]
-			score = np.hstack(( score, score_c ))
-		if len(itemdata) != len(score):
-			ex = DataError()
-			ex.who = 'ids'
-			raise ex 
+		data = np.array(data)
 
-		# calculate fianl score
-		clicks = np.array([i['clicks'] for i in itemdata])
-		favos = np.array([i['favos'] for i in itemdata])
-		ids = [i['id'] for i in itemdata]
-		if max(score) > 0:
-			score = .3* score / max(score)
-		if max(clicks) > 0:
-			score += .2 * clicks / max(clicks)
-		if max(favos) > 0:
-			score += .3 * favos / max(favos)
-		score += .2 * np.random.random(len(score))
+		K = 5
 
-		res = map(list, zip(ids, score))
+		# data = preprocessing.scale(data)  #  Z-Score
+		# data = preprocessing.MinMaxScaler().fit_transform(data)  #  range
+		data = preprocessing.normalize(data, norm='l2')  #  l2 Normalization
+
+		k_means = cluster.KMeans(K)
+		k_means.fit(data)
+
+		label = k_means.labels_
+
+		label_count = {}
+		for i in label:
+			label_count[i] = label_count.get(i, 0) + 1
+
+		max_label = sorted(label_count.items(), key=lambda a:a[1])[-1][0]
+
+		score = None
+		for i in range(K):
+			if i != max_label:
+				continue
+			center = list(enumerate(np.mean(data[label==i], axis=0)))
+			center_score = index[center]  * label_count.get(i) / len(label)
+			score = center_score if score is None else score + center_score
+
+		latestitemIds, latestitemScores = itemIds[-2000:], score[-2000:]
+
+		latestitemScores += .2 * np.random.random(len(latestitemScores))
+
+		res = map(list, zip(latestitemIds, latestitemScores))
 		for r in res:
 			if r[0] in oldrlist: 
 				r[1] *= .8
-			if r[0] in upre['visits']: 
+			if r[0] in visits: 
 				r[1] = 0
-		rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True)[:1000])
+		rlist = map(lambda y:y[0], sorted(res, key=lambda y:y[1], reverse=True))
 
-		db = dbm.getprimary()
 		db.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':now()})
+
 		res = Result()
 		res.success = True
-		return res		
+		return res
 
 	def updateLsiIndex(self, category):
 		if not isinstance(category, unicode):

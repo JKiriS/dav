@@ -154,8 +154,8 @@ class LsiFileManager:
 lfm = LsiFileManager(LSI_DIR)
 
 class RecHandler:
-	
-	def updateRList(uid):
+
+	def updateRList(self, uid):
 		db = dbm.getprimary()
 		upre = db.upre.find_one({'_id':ObjectId(uid)})
 		lsi = lfm.getlsi('search')

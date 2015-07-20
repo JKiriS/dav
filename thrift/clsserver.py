@@ -77,7 +77,10 @@ from gensim import corpora, models
 from threading import Lock
 
 class ClsFileManager:
-	def __init__(self):
+
+	def __init__(self, CLS_DIR):
+		self.CLS_DIR = CLS_DIR
+
 		self._dic = None
 		self._model = None
 		self._ids = None
@@ -86,46 +89,46 @@ class ClsFileManager:
 	def getdic(self):
 		if not self._dic:
 			with self.writeLock:
-				self._dic = corpora.Dictionary.load(os.path.join(CLS_DIR, 'cls.dic'))
+				self._dic = corpora.Dictionary.load(os.path.join(self.CLS_DIR, 'cls.dic'))
 		return self._dic
 
 	def getmodel(self):
 		if not self._model:
 			with self.writeLock:
-				self._model = pickle.load(open(os.path.join(CLS_DIR, 'cls.pkl'), 'rb'))
+				self._model = pickle.load(open(os.path.join(self.CLS_DIR, 'cls.pkl'), 'rb'))
 		return self._model
 
 	def getid(self):
 		if not self._ids:
 			with self.writeLock:
-				self._ids = pickle.load(open(os.path.join(CLS_DIR,'ids.pkl'), 'rb'))
+				self._ids = pickle.load(open(os.path.join(self.CLS_DIR,'ids.pkl'), 'rb'))
 		return self._ids
 
 	def setdic(self, newdic):
 		self._dic = newdic
-		if not os.path.exists(CLS_DIR):
-			os.makedirs(CLS_DIR)
+		if not os.path.exists(self.CLS_DIR):
+			os.makedirs(self.CLS_DIR)
 		with self.writeLock:
-			self._dic.save(os.path.join(CLS_DIR, 'cls.dic'))	
+			self._dic.save(os.path.join(self.CLS_DIR, 'cls.dic'))	
 		return True
 
 	def setmodel(self, newmodel):
 		self._model = newmodel
-		if not os.path.exists(CLS_DIR):
-			os.makedirs(CLS_DIR)
+		if not os.path.exists(self.CLS_DIR):
+			os.makedirs(self.CLS_DIR)
 		with self.writeLock:
-			pickle.dump(self._model, open(os.path.join(CLS_DIR, 'cls.pkl'), 'wb'))
+			pickle.dump(self._model, open(os.path.join(self.CLS_DIR, 'cls.pkl'), 'wb'))
 		return True
 		
 	def setid(self, newid):
 		self._ids = newid
-		if not os.path.exists(CLS_DIR):
-			os.makedirs(CLS_DIR)
+		if not os.path.exists(self.CLS_DIR):
+			os.makedirs(self.CLS_DIR)
 		with self.writeLock:
-			pickle.dump(self._ids, open(os.path.join(CLS_DIR,'ids.pkl'), 'wb'))
+			pickle.dump(self._ids, open(os.path.join(self.CLS_DIR,'ids.pkl'), 'wb'))
 		return True
 
-cfm = ClsFileManager()
+cfm = ClsFileManager(CLS_DIR)
 
 class ClsHandler:
 	def updateClassifyDic(self):

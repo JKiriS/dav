@@ -75,44 +75,48 @@ from gensim import corpora, models, similarities
 from threading import Lock
 
 class LsiFileManager:
-	def __init__(self):
+
+	def __init__(self, LSI_DIR):
+		self.LSI_DIR = LSI_DIR
+
 		self._lsis = {}
 		self._dics = {}
 		self._indexes = {}
 		self._ids = {}
+
 		self.writeLock = Lock()
 
 	def getlsi(self, category):
 		if not self._lsis.get(category):
-			cpath = os.path.join(LSI_DIR, category)
+			cpath = os.path.join(self.LSI_DIR, category)
 			with self.writeLock:
 				self._lsis[category] = models.LsiModel.load(os.path.join(cpath,'gs.lsi'))
 		return self._lsis.get(category)
 
 	def getdic(self, category):
 		if not self._dics.get(category):
-			cpath = os.path.join(LSI_DIR, category)
+			cpath = os.path.join(self.LSI_DIR, category)
 			with self.writeLock:
 				self._dics[category] = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
 		return self._dics.get(category)
 
 	def getindex(self, category):
 		if not self._indexes.get(category):
-			cpath = os.path.join(LSI_DIR, category)
+			cpath = os.path.join(self.LSI_DIR, category)
 			with self.writeLock:
-				self._indexes[category] = similarities.MatrixSimilarity.load(os.path.join(cpath,'gs.index'))
+				self._indexes[category] = similarities.Similarity.load(os.path.join(cpath,'gs.index'))
 		return self._indexes.get(category)
 
 	def getid(self, category):
 		if not self._ids.get(category):
-			cpath = os.path.join(LSI_DIR, category)
+			cpath = os.path.join(self.LSI_DIR, category)
 			with self.writeLock:
 				self._ids[category] = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
 		return self._ids.get(category)
 
 	def setlsi(self, category, newclsi):
 		self._lsis[category] = newclsi
-		cpath = os.path.join(LSI_DIR, category)
+		cpath = os.path.join(self.LSI_DIR, category)
 		if not os.path.exists(cpath):
 			os.makedirs(cpath)
 		with self.writeLock:
@@ -121,7 +125,7 @@ class LsiFileManager:
 
 	def setdic(self, category, newcdic):
 		self._dics[category] = newcdic
-		cpath = os.path.join(LSI_DIR, category)
+		cpath = os.path.join(self.LSI_DIR, category)
 		if not os.path.exists(cpath):
 			os.makedirs(cpath)
 		with self.writeLock:
@@ -130,7 +134,7 @@ class LsiFileManager:
 
 	def setindex(self, category, newcindex):
 		self._indexes[category] = newcindex
-		cpath = os.path.join(LSI_DIR, category)
+		cpath = os.path.join(self.LSI_DIR, category)
 		if not os.path.exists(cpath):
 			os.makedirs(cpath)
 		with self.writeLock:
@@ -139,14 +143,14 @@ class LsiFileManager:
 
 	def setid(self, category, newcid):
 		self._ids[category] = newcid
-		cpath = os.path.join(LSI_DIR, category)
+		cpath = os.path.join(self.LSI_DIR, category)
 		if not os.path.exists(cpath):
 			os.makedirs(cpath)
 		with self.writeLock:
 			pickle.dump(self._ids[category], open(os.path.join(cpath,'ids.pkl'), 'wb'))
 		return True
 
-lfm = LsiFileManager()
+lfm = LsiFileManager(LSI_DIR)
 
 class RecHandler:
 	def updateRList(self, uid):

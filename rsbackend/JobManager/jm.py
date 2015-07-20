@@ -112,6 +112,8 @@ class JobManager(object):
         while True:
             if self._tasks and self._tasks[-1]['starttime'] <= now():
                 task = self._tasks.pop()
+                if self._db and self._db.job.find_one({'id':task['id'], 'status':{'$ne':'waiting'}}):
+                	continue
                 try:
                     task['status'] = 'running'
                     self._saveTask(task)

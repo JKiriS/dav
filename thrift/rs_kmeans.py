@@ -69,7 +69,8 @@ def updateRList(uid):
 		else:
 			np.vstack((score, center_score))
 
-	score = np.max(score, axis=0)
+	print score.shape
+	score = np.amax(score, axis=0)
 	print score.shape
 
 	latestitemIds, latestitemScores = itemIds[-2000:], score[-2000:]

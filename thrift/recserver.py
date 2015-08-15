@@ -190,7 +190,6 @@ class RecHandler:
 		for i in db.item.find({'_id':{'$in':visits.keys()}}):
 			visits_ids.append(i['_id'])
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
-			segs *= 2
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
 			text_bow = dic.doc2bow(segs)
 			text_sim = model[text_bow]
@@ -226,7 +225,7 @@ class RecHandler:
 
 		score = np.amax(score, axis=0)
 
-		latestitemIds, latestitemScores = itemIds[-1000:], score[-1000:]
+		latestitemIds, latestitemScores = itemIds[-3000:], score[-3000:]
 
 		# latestitemScores += .2 * np.max(score) * np.random.random(len(latestitemScores))
 

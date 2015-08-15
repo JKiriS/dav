@@ -24,9 +24,12 @@ def test_rec(host='115.156.197.96', port=9090):
 	transport.open()
 
 	print 'start'
-	# print client.updateModel(1000, 100)
+	# print client.updateTfIdf(30000)
+	# for i in range(40):
+	# 	print i
+	# 	print client.updateModel(3000, 100)
 	# print client.lsiSearch('微信', 0, 15)
-	# print client.updateRList('5459d5ee7c46d50ae022b901')
+	print client.updateRList('5459d5ee7c46d50ae022b901')
 
 	transport.close()
 

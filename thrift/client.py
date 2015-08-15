@@ -17,7 +17,7 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
  
 
-transport = TSocket.TSocket('115.156.197.96', 9090)
+transport = TSocket.TSocket('115.156.197.96', 9092)
 transport = TTransport.TBufferedTransport(transport)
 protocol = TBinaryProtocol.TBinaryProtocol(transport)
 # client = Cls.Client(protocol)
@@ -31,12 +31,12 @@ print 'start'
 # print client.updateLsiDic('文化')
 # print client.trainClassify()
 # print client.classify('综合')
-sid = ObjectId()
-print sid
-sresult = client.search(u"java", 0, 15)
-searchresult = eval(sresult.data['searchresult'])
-hasmore = eval(sresult.data['hasmore'])
-print hasmore, searchresult
-# print client.updateSearchIndex()
+# sid = ObjectId()
+# print sid
+# sresult = client.search(u"java", 0, 15)
+# searchresult = eval(sresult.data['searchresult'])
+# hasmore = eval(sresult.data['hasmore'])
+# print hasmore, searchresult
+print client.updateSearchIndex()
 
 transport.close()

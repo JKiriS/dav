@@ -47,7 +47,7 @@ class DBManager:
 
 	def getlocal(self):
 		if self._db_local is None:
-			self._conn_local = pymongo.Connection(PARAMS['db_local']['ip'])
+			self._conn_local = pymongo.MongoClient(PARAMS['db_local']['ip'])
 			self._db_local = self._conn_local['feed']
 			self._db_local.authenticate(PARAMS['db_local']['username'], PARAMS['db_local']['password'])
 			logger.info('local mongodb connection success')
@@ -55,7 +55,7 @@ class DBManager:
 
 	def getprimary(self):
 		if self._db_primary is None:
-			self._conn_primary = pymongo.Connection(PARAMS['db_primary']['ip'])
+			self._conn_primary = pymongo.MongoClient(PARAMS['db_primary']['ip'])
 			self._db_primary = self._conn_primary['feed']
 			self._db_primary.authenticate(PARAMS['db_primary']['username'], PARAMS['db_primary']['password'])
 			logger.info('primary connection success')
@@ -80,75 +80,87 @@ class LsiFileManager:
 	def __init__(self, LSI_DIR):
 		self.LSI_DIR = LSI_DIR
 
-		self._lsis = {}
-		self._dics = {}
-		self._indexes = {}
-		self._ids = {}
+		self._model = None
+		self._dic = None
+		self._tfidf = None
+		self._sim = None
+		self._ids = None
 
 		self.writeLock = Lock()
 
-	def getlsi(self, category):
-		if not self._lsis.get(category):
-			cpath = os.path.join(self.LSI_DIR, category)
+	def getmodel(self):
+		if not self._model:
 			with self.writeLock:
-				self._lsis[category] = models.LsiModel.load(os.path.join(cpath,'gs.lsi'))
-		return self._lsis.get(category)
+				try:
+					self._model = models.LsiModel.load(os.path.join(self.LSI_DIR,'all.model'))
+				except:
+					pass
+		return self._model
 
-	def getdic(self, category):
-		if not self._dics.get(category):
-			cpath = os.path.join(self.LSI_DIR, category)
-			with self.writeLock:
-				self._dics[category] = corpora.Dictionary.load(os.path.join(cpath,'gs.dic'))
-		return self._dics.get(category)
-
-	def getindex(self, category):
-		if not self._indexes.get(category):
-			cpath = os.path.join(self.LSI_DIR, category)
-			with self.writeLock:
-				self._indexes[category] = similarities.Similarity.load(os.path.join(cpath,'gs.index'))
-		return self._indexes.get(category)
-
-	def getid(self, category):
-		if not self._ids.get(category):
-			cpath = os.path.join(self.LSI_DIR, category)
-			with self.writeLock:
-				self._ids[category] = pickle.load(open(os.path.join(cpath,'ids.pkl'), 'rb'))
-		return self._ids.get(category)
-
-	def setlsi(self, category, newclsi):
-		self._lsis[category] = newclsi
-		cpath = os.path.join(self.LSI_DIR, category)
-		if not os.path.exists(cpath):
-			os.makedirs(cpath)
+	def setmodel(self, newclsi):
+		self._model = newclsi
 		with self.writeLock:
-			self._lsis[category].save(os.path.join(cpath,'gs.lsi'))
+			self._model.save(os.path.join(self.LSI_DIR,'all.model'))
 		return True
 
-	def setdic(self, category, newcdic):
-		self._dics[category] = newcdic
-		cpath = os.path.join(self.LSI_DIR, category)
-		if not os.path.exists(cpath):
-			os.makedirs(cpath)
+	def getdic(self):
+		if not self._dic:
+			with self.writeLock:
+				try:
+					self._dic = corpora.Dictionary.load(os.path.join(self.LSI_DIR,'all.dic'))
+				except:
+					pass
+		return self._dic
+
+	def setdic(self, newcdic):
+		self._dic = newcdic
 		with self.writeLock:
-			self._dics[category].save(os.path.join(cpath,'gs.dic'))
+			self._dic.save(os.path.join(self.LSI_DIR,'all.dic'))
 		return True
 
-	def setindex(self, category, newcindex):
-		self._indexes[category] = newcindex
-		cpath = os.path.join(self.LSI_DIR, category)
-		if not os.path.exists(cpath):
-			os.makedirs(cpath)
+	def getsim(self):
+		if not self._sim:
+			with self.writeLock:
+				try:
+					self._sim = similarities.Similarity.load(os.path.join(self.LSI_DIR,'all.sim'))
+				except:
+					pass
+		return self._sim
+
+	def setsim(self, newsim):
+		self._sim = newsim
 		with self.writeLock:
-			self._indexes[category].save(os.path.join(cpath,'gs.index'))
+			self._sim.save(os.path.join(self.LSI_DIR,'all.sim'))
 		return True
 
-	def setid(self, category, newcid):
-		self._ids[category] = newcid
-		cpath = os.path.join(self.LSI_DIR, category)
-		if not os.path.exists(cpath):
-			os.makedirs(cpath)
+	def gettfidf(self):
+		if not self._tfidf:
+			with self.writeLock:
+				try:
+					self._tfidf = models.TfidfModel.load(os.path.join(self.LSI_DIR,'all.tfidf'))
+				except:
+					pass
+		return self._tfidf
+
+	def settfidf(self, newtfidf):
+		self._tfidf = newtfidf
 		with self.writeLock:
-			pickle.dump(self._ids[category], open(os.path.join(cpath,'ids.pkl'), 'wb'))
+			self._tfidf.save(os.path.join(self.LSI_DIR,'all.tfidf'))
+		return True
+
+	def getids(self):
+		if not self._ids:
+			with self.writeLock:
+				try:
+					self._ids = pickle.load(open(os.path.join(self.LSI_DIR,'all.ids'), 'rb'))
+				except:
+					pass
+		return self._ids
+
+	def setids(self, newid):
+		self._ids = newid
+		with self.writeLock:
+			pickle.dump(self._ids, open(os.path.join(self.LSI_DIR,'all.ids'), 'wb'))
 		return True
 
 lfm = LsiFileManager(LSI_DIR)
@@ -158,10 +170,10 @@ class RecHandler:
 	def updateRList(self, uid):
 		db = dbm.getprimary()
 		upre = db.upre.find_one({'_id':ObjectId(uid)})
-		lsi = lfm.getlsi('search')
-		dic = lfm.getdic('search')
-		index = lfm.getindex('search')
-		itemIds = lfm.getid('search')
+		model = lfm.getmodel()
+		dic = lfm.getdic()
+		sim = lfm.getsim()
+		itemIds = lfm.getids()
 
 		oldrlist = db.rlist.find_one({'_id':ObjectId(uid)})
 		oldrlist = [] if not oldrlist else oldrlist.get('rlist')
@@ -180,13 +192,11 @@ class RecHandler:
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i['title'], cut_all=False))
 			segs *= 2
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i['des'], cut_all=False))
-			test_bow = dic.doc2bow(segs)
-			test_lsi = lsi[test_bow]
-			data.append(map(lambda a:a[1], test_lsi))
+			text_bow = dic.doc2bow(segs)
+			text_sim = model[text_bow]
+			data.append(map(lambda a:a[1], text_sim))
 		if not visits_ids:
-			res = Result()
-			res.success = True
-			return res
+			return Result(success=True)
 			
 		data = np.array(data)
 
@@ -210,7 +220,7 @@ class RecHandler:
 		score = None
 		for i in range(K):
 			center = list(enumerate(np.mean(data[label==i], axis=0)))
-			center_score = index[center]  * label_count.get(i) / len(label)
+			center_score = sim[center]  * label_count.get(i) / len(label)
 			# score = center_score if score is None else score + center_score
 			score = center_score if score is None else np.vstack((score, center_score))
 
@@ -230,193 +240,126 @@ class RecHandler:
 
 		db.rlist.save({'_id':ObjectId(uid),'rlist':rlist,'timestamp':now()})
 
-		res = Result()
-		res.success = True
-		return res
+		return Result(success=True)
 
-	def updateLsiIndex(self, category):
-		if not isinstance(category, unicode):
-			category = category.decode('utf-8')
-		logger.info('update lsi index of category ' + category)
+	def updateDic(self, batch_size=3000, skip=0):
 		db = dbm.getlocal()
+		dictionary = lfm.getdic()
 
-		# calculate read item num based on total ratio of the category
-		t = now() - datetime.timedelta(days=180)		
-		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()
-		itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
-		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
-
-		# load dictionary
-		dictionary = lfm.getdic(category)
-		if not dictionary:
-			self.updateLsiDic(category)
-			dictionary = lfm.getdic(category)
-
-		# collect text and cordnate item id(used for recommend)
 		texts_origin = []
-		itemIds = []
-		for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
-			itemIds.append(i['_id'])
+		for i in db.item.find().skip(skip).limit(batch_size):
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
-			segs *= 2
+			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
+			texts_origin.append(segs)
+		if not texts_origin:
+			return Result(success=True)
+
+		# generate and save(set) new dictionary
+		if dictionary:
+			dictionary.add_documents(texts_origin)
+		else:
+			dictionary = corpora.Dictionary(texts_origin)
+
+		lfm.setdic(dictionary)
+
+		return Result(success=True)
+
+	def updateTfIdf(self, batch_size=3000):
+		db = dbm.getlocal()
+		dictionary = lfm.getdic()
+
+		if not dictionary:
+			ex = DataError()
+			ex.who = 'dictionary'
+			raise ex
+
+		texts_origin = []
+		for i in db.item.find().sort('pubdate', pymongo.DESCENDING).limit(batch_size):
+			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
 			texts_origin.append(segs)
 		if len(texts_origin) == 0:
-			ex = DataError()
-			ex.who = 'texts_origin'
-			raise ex
+			return Result(success=True)
 
-		# calculate text tfidf
-		all_tokens = sum(texts_origin, [])
-		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
-		texts = [[word for word in text if word not in token_once] for text in texts_origin]
-		corpus = [dictionary.doc2bow(text) for text in texts]
+		corpus = [dictionary.doc2bow(text) for text in texts_origin]
 		tfidf = models.TfidfModel(corpus)
-		corpus_tfidf = tfidf[corpus]
 
-		#train lsi model and save lsi and index data
-		lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=30)
-		lfm.setlsi(category, lsi)
-		lfm.setindex(category, similarities.MatrixSimilarity(lsi[corpus]))	
-		lfm.setid(category, itemIds)	
-		res = Result()
-		res.success = True
-		return res
+		lfm.settfidf(tfidf)
 
-	def updateLsiDic(self, category):
-		if not isinstance(category, unicode):
-			category = category.decode('utf-8')
-		logger.info('update lsi dictionary of category ' + category)
-		db = dbm.getlocal()
+		return Result(success=True)
 
-		# calculate read item num based on total ratio of the category
-		t = now() - datetime.timedelta(days=180)
-		itemnum_all = db.item.find({'pubdate':{'$gt':t}}).count()	
-		itemnum_c = db.item.find({'category':category,'pubdate':{'$gt':t}}).count()
-		readnum = int(500 * math.sqrt(itemnum_c / float(itemnum_all)))
 
-		# collect text data
-		texts_origin = []
-		for i in db.item.find({'category':category}).sort('pubdate',pymongo.DESCENDING).limit(readnum):
-			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
-			segs *= 2
-			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
-			texts_origin.append(segs)
-		if len(texts_origin) == 0:
-			ex = DataError()
-			ex.who = 'texts_origin'
-			raise ex
-
-		# generate and save(set) new dictionary 
-		all_tokens = sum(texts_origin, [])
-		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
-		texts = [[word for word in text if word not in token_once] for text in texts_origin]
-		lfm.setdic(category, corpora.Dictionary(texts))
-		res = Result()
-		res.success = True
-		return res
-
-	def updateLsiSearchDic(self):
-		db = dbm.getlocal()
-
-		texts_origin = []
-		for i in db.item.find().limit(3000):
-			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
-			segs *= 2
-			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
-			texts_origin.append(segs)
-		if len(texts_origin) == 0:
-			ex = DataError()
-			ex.who = 'texts_origin'
-			raise ex
-
-		# generate and save(set) new dictionary 
-		all_tokens = sum(texts_origin, [])
-		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
-		texts = [[word for word in text if word not in token_once] for text in texts_origin]
-		lfm.setdic('search', corpora.Dictionary(texts))
-		res = Result()
-		res.success = True
-		return res
-
-	def updateLsiSearchIndex(self):
+	def updateModel(self, batch_size=2000, num_topics=100):
 		db = dbm.getlocal()
 
 		# load dictionary
-		dictionary = lfm.getdic('search')
+		dictionary = lfm.getdic()
 		if not dictionary:
-			self.updateLsiDic('search')
-			dictionary = lfm.getdic('search')
+			raise DataError(who='dictionary')
+		tfidf = lfm.gettfidf()
+		if not tfidf:
+			raise DataError(who='tfidf')
 
 		# collect text and cordnate item id(used for recommend)
 		texts_origin = []
-		itemIds = []
+		itemIds = None
 		APPENDMODE = False
 		try:
-			itemIds = lfm.getid('search')
+			itemIds = lfm.getids()
 		except Exception, e:
-			print e
+			pass
 		if itemIds:
-			items = db.item.find({'_id':{'$gt':itemIds[-1]}}).limit(3000)
+			items = db.item.find({'_id':{'$gt':itemIds[-1]}}).limit(batch_size)
 			APPENDMODE = True
 		else:
-			items = db.item.find().limit(3000)
+			items = db.item.find().limit(batch_size)
+			itemIds = []
 		for i in items:
 			itemIds.append(i['_id'])
 			segs = filter(lambda s:s not in stopwords, jieba.cut(i.pop('title'), cut_all=False))
-			segs *= 2
 			segs += filter(lambda s:s not in stopwords, jieba.cut(i.pop('des'), cut_all=False))
 			texts_origin.append(segs)
 		if len(texts_origin) == 0:
-			ex = DataError()
-			ex.who = 'texts_origin'
-			raise ex
+			raise DataError(who='texts_origin')
 
 		# calculate text tfidf
-		all_tokens = sum(texts_origin, [])
-		token_once = set(word for word in set(all_tokens) if all_tokens.count(word) == 1)
-		texts = [[word for word in text if word not in token_once] for text in texts_origin]
-		corpus = [dictionary.doc2bow(text) for text in texts]
-		tfidf = models.TfidfModel(corpus)
+		corpus = [dictionary.doc2bow(text) for text in texts_origin]
 		corpus_tfidf = tfidf[corpus]
 
 		#train lsi model and save lsi and index data
 		if not APPENDMODE:
-			lsi = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=200)
-			index = similarities.Similarity('/home/jkiris/dav/tmp/', lsi[corpus], num_features=200)
+			model = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=num_topics)
+			sim = similarities.Similarity(os.path.join(lfm.LSI_DIR, 'tmp/'), model[corpus], num_features=num_topics)
 		else:
-			lsi = lfm.getlsi('search')
-			lsi.add_documents(corpus_tfidf)
-			index = lfm.getindex('search')
-			index.add_documents(lsi[corpus])
-		lfm.setlsi('search', lsi)
-		lfm.setindex('search', index)
-		lfm.setid('search', itemIds)	
-		res = Result()
-		res.success = True
-		return res
+			model = lfm.getmodel()
+			model.add_documents(corpus_tfidf)
+			sim = lfm.getsim()
+			sim.add_documents(model[corpus])
+		lfm.setmodel(model)
+		lfm.setsim(sim)
+		lfm.setids(itemIds)	
+
+		return Result(success=True)
 
 	def lsiSearch(self, query, start=0, length=15):
 		if not isinstance(query, unicode):
 			query = query.decode('utf-8')
-		lsi = lfm.getlsi('search')
-		dic = lfm.getdic('search')
-		index = lfm.getindex('search')
-		itemIds = lfm.getid('search')
+		model = lfm.getmodel()
+		dictionary = lfm.getdic()
+		sim = lfm.getsim()
+		itemIds = lfm.getids()
 		if len(itemIds) < start:
 			ex = DataError()
 			ex.who = 'start'
 			raise ex
 				
 		segs = filter(lambda s:s not in stopwords, jieba.cut(query, cut_all=False))
-		test_bow = dic.doc2bow(segs)
-		test_lsi = lsi[test_bow]
-		score = index[test_lsi]
+		query_bow = dictionary.doc2bow(segs)
+		query_lsi = model[query_bow]
+		score = sim[query_lsi]
 		
 		searchresult =  sorted(zip(itemIds, score), key=lambda a:a[1], reverse=True)[start:start+length]
-		res = Result()
-		res.success = True
-		res.data = {}
+		res = Result(success=True, data={})
 		res.data["searchresult"] = str( map(lambda i:i[0], filter(lambda i: i[1]>=.05, searchresult)) )
 		if searchresult[-1][1] < 0.05:
 			res.data["hasmore"] = str(False)
@@ -504,9 +447,8 @@ class RecHandler:
 		# save upre data to database
 		db_primary = dbm.getprimary()
 		db_primary.upre.save(pre)
-		res = Result()
-		res.success = True
-		return res
+
+		return Result(success=True)
 
 def initRecommend():
 	db = dbm.getprimary()
@@ -517,13 +459,12 @@ def initRecommend():
 
 def test():
 	handler = RecHandler()
-	# handler.updateUPre('5459d5ee7c46d50ae022b901')
-	# handler.updateLsiDic('文化')
-	# handler.updateLsiIndex(u'文化')
-	# handler.updateRList('5459d5ee7c46d50ae022b901')
-	# handler.updateLsiSearchDic()
-	# handler.updateLsiSearchIndex()
+	# handler.updateDic(skip=3000*33)
+	# handler.updateTfIdf()
+	# handler.updateModel(batch_size=1000)
 	# print handler.lsiSearch('机器学习')
+	# handler.updateUPre('5459d5ee7c46d50ae022b901')
+	# print handler.updateRList('5459d5ee7c46d50ae022b901')
 
 def main():
 	logger.info("run recommend service")
@@ -539,5 +480,5 @@ def main():
 	server.serve()
 
 if __name__=='__main__':
-	main()
-	
+	# main()
+	test()

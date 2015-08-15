@@ -15,28 +15,20 @@ from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
- 
 
-transport = TSocket.TSocket('115.156.197.96', 9092)
-transport = TTransport.TBufferedTransport(transport)
-protocol = TBinaryProtocol.TBinaryProtocol(transport)
-# client = Cls.Client(protocol)
-client = Search.Client(protocol)
-transport.open()
+def test_rec(host='115.156.197.96', port=9090):
+	transport = TSocket.TSocket(host, port)
+	transport = TTransport.TBufferedTransport(transport)
+	protocol = TBinaryProtocol.TBinaryProtocol(transport)
+	client = Rec.Client(protocol)
+	transport.open()
 
-print 'start'
-# print client.updateRList('5459d5ee7c46d50ae022b901')
-# print client.updateUPre('5459d5ee7c46d50ae022b901')
-# print client.updateLsiIndex('文化')
-# print client.updateLsiDic('文化')
-# print client.trainClassify()
-# print client.classify('综合')
-# sid = ObjectId()
-# print sid
-# sresult = client.search(u"java", 0, 15)
-# searchresult = eval(sresult.data['searchresult'])
-# hasmore = eval(sresult.data['hasmore'])
-# print hasmore, searchresult
-print client.updateSearchIndex()
+	print 'start'
+	# print client.updateModel(1000, 100)
+	# print client.lsiSearch('微信', 0, 15)
+	# print client.updateRList('5459d5ee7c46d50ae022b901')
 
-transport.close()
+	transport.close()
+
+if __name__ == '__main__':
+	test_rec()

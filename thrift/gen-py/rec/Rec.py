@@ -25,17 +25,35 @@ class Iface:
     """
     pass
 
-  def updateLsiIndex(self, category):
+  def updateDic(self, batch_size, skip):
     """
     Parameters:
-     - category
+     - batch_size
+     - skip
     """
     pass
 
-  def updateLsiDic(self, category):
+  def updateTfIdf(self, batch_size):
     """
     Parameters:
-     - category
+     - batch_size
+    """
+    pass
+
+  def updateModel(self, batch_size, num_topics):
+    """
+    Parameters:
+     - batch_size
+     - num_topics
+    """
+    pass
+
+  def lsiSearch(self, query, start, length):
+    """
+    Parameters:
+     - query
+     - start
+     - length
     """
     pass
 
@@ -44,21 +62,6 @@ class Iface:
     Parameters:
      - uid
     """
-    pass
-
-  def lsiSearch(self, wd, start, length):
-    """
-    Parameters:
-     - wd
-     - start
-     - length
-    """
-    pass
-
-  def updateLsiSearchIndex(self):
-    pass
-
-  def updateLsiSearchDic(self):
     pass
 
 
@@ -102,23 +105,25 @@ class Client(Iface):
       raise result.de
     raise TApplicationException(TApplicationException.MISSING_RESULT, "updateRList failed: unknown result");
 
-  def updateLsiIndex(self, category):
+  def updateDic(self, batch_size, skip):
     """
     Parameters:
-     - category
+     - batch_size
+     - skip
     """
-    self.send_updateLsiIndex(category)
-    return self.recv_updateLsiIndex()
+    self.send_updateDic(batch_size, skip)
+    return self.recv_updateDic()
 
-  def send_updateLsiIndex(self, category):
-    self._oprot.writeMessageBegin('updateLsiIndex', TMessageType.CALL, self._seqid)
-    args = updateLsiIndex_args()
-    args.category = category
+  def send_updateDic(self, batch_size, skip):
+    self._oprot.writeMessageBegin('updateDic', TMessageType.CALL, self._seqid)
+    args = updateDic_args()
+    args.batch_size = batch_size
+    args.skip = skip
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_updateLsiIndex(self):
+  def recv_updateDic(self):
     iprot = self._iprot
     (fname, mtype, rseqid) = iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
@@ -126,7 +131,110 @@ class Client(Iface):
       x.read(iprot)
       iprot.readMessageEnd()
       raise x
-    result = updateLsiIndex_result()
+    result = updateDic_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "updateDic failed: unknown result");
+
+  def updateTfIdf(self, batch_size):
+    """
+    Parameters:
+     - batch_size
+    """
+    self.send_updateTfIdf(batch_size)
+    return self.recv_updateTfIdf()
+
+  def send_updateTfIdf(self, batch_size):
+    self._oprot.writeMessageBegin('updateTfIdf', TMessageType.CALL, self._seqid)
+    args = updateTfIdf_args()
+    args.batch_size = batch_size
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_updateTfIdf(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = updateTfIdf_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.de is not None:
+      raise result.de
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "updateTfIdf failed: unknown result");
+
+  def updateModel(self, batch_size, num_topics):
+    """
+    Parameters:
+     - batch_size
+     - num_topics
+    """
+    self.send_updateModel(batch_size, num_topics)
+    return self.recv_updateModel()
+
+  def send_updateModel(self, batch_size, num_topics):
+    self._oprot.writeMessageBegin('updateModel', TMessageType.CALL, self._seqid)
+    args = updateModel_args()
+    args.batch_size = batch_size
+    args.num_topics = num_topics
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_updateModel(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = updateModel_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.fe is not None:
+      raise result.fe
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "updateModel failed: unknown result");
+
+  def lsiSearch(self, query, start, length):
+    """
+    Parameters:
+     - query
+     - start
+     - length
+    """
+    self.send_lsiSearch(query, start, length)
+    return self.recv_lsiSearch()
+
+  def send_lsiSearch(self, query, start, length):
+    self._oprot.writeMessageBegin('lsiSearch', TMessageType.CALL, self._seqid)
+    args = lsiSearch_args()
+    args.query = query
+    args.start = start
+    args.length = length
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_lsiSearch(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = lsiSearch_result()
     result.read(iprot)
     iprot.readMessageEnd()
     if result.success is not None:
@@ -135,40 +243,7 @@ class Client(Iface):
       raise result.de
     if result.fe is not None:
       raise result.fe
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "updateLsiIndex failed: unknown result");
-
-  def updateLsiDic(self, category):
-    """
-    Parameters:
-     - category
-    """
-    self.send_updateLsiDic(category)
-    return self.recv_updateLsiDic()
-
-  def send_updateLsiDic(self, category):
-    self._oprot.writeMessageBegin('updateLsiDic', TMessageType.CALL, self._seqid)
-    args = updateLsiDic_args()
-    args.category = category
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_updateLsiDic(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = updateLsiDic_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.de is not None:
-      raise result.de
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "updateLsiDic failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "lsiSearch failed: unknown result");
 
   def updateUPre(self, uid):
     """
@@ -201,105 +276,17 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "updateUPre failed: unknown result");
 
-  def lsiSearch(self, wd, start, length):
-    """
-    Parameters:
-     - wd
-     - start
-     - length
-    """
-    self.send_lsiSearch(wd, start, length)
-    return self.recv_lsiSearch()
-
-  def send_lsiSearch(self, wd, start, length):
-    self._oprot.writeMessageBegin('lsiSearch', TMessageType.CALL, self._seqid)
-    args = lsiSearch_args()
-    args.wd = wd
-    args.start = start
-    args.length = length
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_lsiSearch(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = lsiSearch_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "lsiSearch failed: unknown result");
-
-  def updateLsiSearchIndex(self):
-    self.send_updateLsiSearchIndex()
-    return self.recv_updateLsiSearchIndex()
-
-  def send_updateLsiSearchIndex(self):
-    self._oprot.writeMessageBegin('updateLsiSearchIndex', TMessageType.CALL, self._seqid)
-    args = updateLsiSearchIndex_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_updateLsiSearchIndex(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = updateLsiSearchIndex_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "updateLsiSearchIndex failed: unknown result");
-
-  def updateLsiSearchDic(self):
-    self.send_updateLsiSearchDic()
-    return self.recv_updateLsiSearchDic()
-
-  def send_updateLsiSearchDic(self):
-    self._oprot.writeMessageBegin('updateLsiSearchDic', TMessageType.CALL, self._seqid)
-    args = updateLsiSearchDic_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_updateLsiSearchDic(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = updateLsiSearchDic_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "updateLsiSearchDic failed: unknown result");
-
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
     self._processMap["updateRList"] = Processor.process_updateRList
-    self._processMap["updateLsiIndex"] = Processor.process_updateLsiIndex
-    self._processMap["updateLsiDic"] = Processor.process_updateLsiDic
-    self._processMap["updateUPre"] = Processor.process_updateUPre
+    self._processMap["updateDic"] = Processor.process_updateDic
+    self._processMap["updateTfIdf"] = Processor.process_updateTfIdf
+    self._processMap["updateModel"] = Processor.process_updateModel
     self._processMap["lsiSearch"] = Processor.process_lsiSearch
-    self._processMap["updateLsiSearchIndex"] = Processor.process_updateLsiSearchIndex
-    self._processMap["updateLsiSearchDic"] = Processor.process_updateLsiSearchDic
+    self._processMap["updateUPre"] = Processor.process_updateUPre
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -330,32 +317,57 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_updateLsiIndex(self, seqid, iprot, oprot):
-    args = updateLsiIndex_args()
+  def process_updateDic(self, seqid, iprot, oprot):
+    args = updateDic_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = updateLsiIndex_result()
-    try:
-      result.success = self._handler.updateLsiIndex(args.category)
-    except common.ttypes.DataError, de:
-      result.de = de
-    except common.ttypes.FileError, fe:
-      result.fe = fe
-    oprot.writeMessageBegin("updateLsiIndex", TMessageType.REPLY, seqid)
+    result = updateDic_result()
+    result.success = self._handler.updateDic(args.batch_size, args.skip)
+    oprot.writeMessageBegin("updateDic", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_updateLsiDic(self, seqid, iprot, oprot):
-    args = updateLsiDic_args()
+  def process_updateTfIdf(self, seqid, iprot, oprot):
+    args = updateTfIdf_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = updateLsiDic_result()
+    result = updateTfIdf_result()
     try:
-      result.success = self._handler.updateLsiDic(args.category)
+      result.success = self._handler.updateTfIdf(args.batch_size)
     except common.ttypes.DataError, de:
       result.de = de
-    oprot.writeMessageBegin("updateLsiDic", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("updateTfIdf", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_updateModel(self, seqid, iprot, oprot):
+    args = updateModel_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = updateModel_result()
+    try:
+      result.success = self._handler.updateModel(args.batch_size, args.num_topics)
+    except common.ttypes.FileError, fe:
+      result.fe = fe
+    oprot.writeMessageBegin("updateModel", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_lsiSearch(self, seqid, iprot, oprot):
+    args = lsiSearch_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = lsiSearch_result()
+    try:
+      result.success = self._handler.lsiSearch(args.query, args.start, args.length)
+    except common.ttypes.DataError, de:
+      result.de = de
+    except common.ttypes.FileError, fe:
+      result.fe = fe
+    oprot.writeMessageBegin("lsiSearch", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -367,39 +379,6 @@ class Processor(Iface, TProcessor):
     result = updateUPre_result()
     result.success = self._handler.updateUPre(args.uid)
     oprot.writeMessageBegin("updateUPre", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_lsiSearch(self, seqid, iprot, oprot):
-    args = lsiSearch_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = lsiSearch_result()
-    result.success = self._handler.lsiSearch(args.wd, args.start, args.length)
-    oprot.writeMessageBegin("lsiSearch", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_updateLsiSearchIndex(self, seqid, iprot, oprot):
-    args = updateLsiSearchIndex_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = updateLsiSearchIndex_result()
-    result.success = self._handler.updateLsiSearchIndex()
-    oprot.writeMessageBegin("updateLsiSearchIndex", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_updateLsiSearchDic(self, seqid, iprot, oprot):
-    args = updateLsiSearchDic_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = updateLsiSearchDic_result()
-    result.success = self._handler.updateLsiSearchDic()
-    oprot.writeMessageBegin("updateLsiSearchDic", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -551,19 +530,22 @@ class updateRList_result:
   def __ne__(self, other):
     return not (self == other)
 
-class updateLsiIndex_args:
+class updateDic_args:
   """
   Attributes:
-   - category
+   - batch_size
+   - skip
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'category', None, None, ), # 1
+    (1, TType.I32, 'batch_size', None, None, ), # 1
+    (2, TType.I32, 'skip', None, None, ), # 2
   )
 
-  def __init__(self, category=None,):
-    self.category = category
+  def __init__(self, batch_size=None, skip=None,):
+    self.batch_size = batch_size
+    self.skip = skip
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -575,8 +557,13 @@ class updateLsiIndex_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.STRING:
-          self.category = iprot.readString();
+        if ftype == TType.I32:
+          self.batch_size = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.skip = iprot.readI32();
         else:
           iprot.skip(ftype)
       else:
@@ -588,10 +575,14 @@ class updateLsiIndex_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('updateLsiIndex_args')
-    if self.category is not None:
-      oprot.writeFieldBegin('category', TType.STRING, 1)
-      oprot.writeString(self.category)
+    oprot.writeStructBegin('updateDic_args')
+    if self.batch_size is not None:
+      oprot.writeFieldBegin('batch_size', TType.I32, 1)
+      oprot.writeI32(self.batch_size)
+      oprot.writeFieldEnd()
+    if self.skip is not None:
+      oprot.writeFieldBegin('skip', TType.I32, 2)
+      oprot.writeI32(self.skip)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -602,7 +593,8 @@ class updateLsiIndex_args:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.category)
+    value = (value * 31) ^ hash(self.batch_size)
+    value = (value * 31) ^ hash(self.skip)
     return value
 
   def __repr__(self):
@@ -616,7 +608,464 @@ class updateLsiIndex_args:
   def __ne__(self, other):
     return not (self == other)
 
-class updateLsiIndex_result:
+class updateDic_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('updateDic_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class updateTfIdf_args:
+  """
+  Attributes:
+   - batch_size
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'batch_size', None, None, ), # 1
+  )
+
+  def __init__(self, batch_size=None,):
+    self.batch_size = batch_size
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.batch_size = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('updateTfIdf_args')
+    if self.batch_size is not None:
+      oprot.writeFieldBegin('batch_size', TType.I32, 1)
+      oprot.writeI32(self.batch_size)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.batch_size)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class updateTfIdf_result:
+  """
+  Attributes:
+   - success
+   - de
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'de', (common.ttypes.DataError, common.ttypes.DataError.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, de=None,):
+    self.success = success
+    self.de = de
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.de = common.ttypes.DataError()
+          self.de.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('updateTfIdf_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.de is not None:
+      oprot.writeFieldBegin('de', TType.STRUCT, 1)
+      self.de.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.de)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class updateModel_args:
+  """
+  Attributes:
+   - batch_size
+   - num_topics
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'batch_size', None, None, ), # 1
+    (2, TType.I32, 'num_topics', None, None, ), # 2
+  )
+
+  def __init__(self, batch_size=None, num_topics=None,):
+    self.batch_size = batch_size
+    self.num_topics = num_topics
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.batch_size = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.num_topics = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('updateModel_args')
+    if self.batch_size is not None:
+      oprot.writeFieldBegin('batch_size', TType.I32, 1)
+      oprot.writeI32(self.batch_size)
+      oprot.writeFieldEnd()
+    if self.num_topics is not None:
+      oprot.writeFieldBegin('num_topics', TType.I32, 2)
+      oprot.writeI32(self.num_topics)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.batch_size)
+    value = (value * 31) ^ hash(self.num_topics)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class updateModel_result:
+  """
+  Attributes:
+   - success
+   - fe
+  """
+
+  thrift_spec = (
+    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'fe', (common.ttypes.FileError, common.ttypes.FileError.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, fe=None,):
+    self.success = success
+    self.fe = fe
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = common.ttypes.Result()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.fe = common.ttypes.FileError()
+          self.fe.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('updateModel_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.fe is not None:
+      oprot.writeFieldBegin('fe', TType.STRUCT, 1)
+      self.fe.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.fe)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class lsiSearch_args:
+  """
+  Attributes:
+   - query
+   - start
+   - length
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'query', None, None, ), # 1
+    (2, TType.I32, 'start', None, None, ), # 2
+    (3, TType.I32, 'length', None, None, ), # 3
+  )
+
+  def __init__(self, query=None, start=None, length=None,):
+    self.query = query
+    self.start = start
+    self.length = length
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.query = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.start = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.length = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('lsiSearch_args')
+    if self.query is not None:
+      oprot.writeFieldBegin('query', TType.STRING, 1)
+      oprot.writeString(self.query)
+      oprot.writeFieldEnd()
+    if self.start is not None:
+      oprot.writeFieldBegin('start', TType.I32, 2)
+      oprot.writeI32(self.start)
+      oprot.writeFieldEnd()
+    if self.length is not None:
+      oprot.writeFieldBegin('length', TType.I32, 3)
+      oprot.writeI32(self.length)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.query)
+    value = (value * 31) ^ hash(self.start)
+    value = (value * 31) ^ hash(self.length)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class lsiSearch_result:
   """
   Attributes:
    - success
@@ -671,7 +1120,7 @@ class updateLsiIndex_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('updateLsiIndex_result')
+    oprot.writeStructBegin('lsiSearch_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
@@ -696,150 +1145,6 @@ class updateLsiIndex_result:
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.de)
     value = (value * 31) ^ hash(self.fe)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class updateLsiDic_args:
-  """
-  Attributes:
-   - category
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'category', None, None, ), # 1
-  )
-
-  def __init__(self, category=None,):
-    self.category = category
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.category = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('updateLsiDic_args')
-    if self.category is not None:
-      oprot.writeFieldBegin('category', TType.STRING, 1)
-      oprot.writeString(self.category)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.category)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class updateLsiDic_result:
-  """
-  Attributes:
-   - success
-   - de
-  """
-
-  thrift_spec = (
-    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
-    (1, TType.STRUCT, 'de', (common.ttypes.DataError, common.ttypes.DataError.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, success=None, de=None,):
-    self.success = success
-    self.de = de
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRUCT:
-          self.success = common.ttypes.Result()
-          self.success.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.de = common.ttypes.DataError()
-          self.de.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('updateLsiDic_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRUCT, 0)
-      self.success.write(oprot)
-      oprot.writeFieldEnd()
-    if self.de is not None:
-      oprot.writeFieldBegin('de', TType.STRUCT, 1)
-      self.de.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.success)
-    value = (value * 31) ^ hash(self.de)
     return value
 
   def __repr__(self):
@@ -956,384 +1261,6 @@ class updateUPre_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('updateUPre_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRUCT, 0)
-      self.success.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.success)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class lsiSearch_args:
-  """
-  Attributes:
-   - wd
-   - start
-   - length
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'wd', None, None, ), # 1
-    (2, TType.I32, 'start', None, None, ), # 2
-    (3, TType.I32, 'length', None, None, ), # 3
-  )
-
-  def __init__(self, wd=None, start=None, length=None,):
-    self.wd = wd
-    self.start = start
-    self.length = length
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.wd = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I32:
-          self.start = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.I32:
-          self.length = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('lsiSearch_args')
-    if self.wd is not None:
-      oprot.writeFieldBegin('wd', TType.STRING, 1)
-      oprot.writeString(self.wd)
-      oprot.writeFieldEnd()
-    if self.start is not None:
-      oprot.writeFieldBegin('start', TType.I32, 2)
-      oprot.writeI32(self.start)
-      oprot.writeFieldEnd()
-    if self.length is not None:
-      oprot.writeFieldBegin('length', TType.I32, 3)
-      oprot.writeI32(self.length)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.wd)
-    value = (value * 31) ^ hash(self.start)
-    value = (value * 31) ^ hash(self.length)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class lsiSearch_result:
-  """
-  Attributes:
-   - success
-  """
-
-  thrift_spec = (
-    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
-  )
-
-  def __init__(self, success=None,):
-    self.success = success
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRUCT:
-          self.success = common.ttypes.Result()
-          self.success.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('lsiSearch_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRUCT, 0)
-      self.success.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.success)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class updateLsiSearchIndex_args:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('updateLsiSearchIndex_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class updateLsiSearchIndex_result:
-  """
-  Attributes:
-   - success
-  """
-
-  thrift_spec = (
-    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
-  )
-
-  def __init__(self, success=None,):
-    self.success = success
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRUCT:
-          self.success = common.ttypes.Result()
-          self.success.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('updateLsiSearchIndex_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRUCT, 0)
-      self.success.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.success)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class updateLsiSearchDic_args:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('updateLsiSearchDic_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class updateLsiSearchDic_result:
-  """
-  Attributes:
-   - success
-  """
-
-  thrift_spec = (
-    (0, TType.STRUCT, 'success', (common.ttypes.Result, common.ttypes.Result.thrift_spec), None, ), # 0
-  )
-
-  def __init__(self, success=None,):
-    self.success = success
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRUCT:
-          self.success = common.ttypes.Result()
-          self.success.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('updateLsiSearchDic_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)

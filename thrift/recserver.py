@@ -269,9 +269,7 @@ class RecHandler:
 		dictionary = lfm.getdic()
 
 		if not dictionary:
-			ex = DataError()
-			ex.who = 'dictionary'
-			raise ex
+			raise FileError(who='dictionary')
 
 		texts_origin = []
 		for i in db.item.find().sort('pubdate', pymongo.DESCENDING).limit(batch_size):
@@ -288,17 +286,16 @@ class RecHandler:
 
 		return Result(success=True)
 
-
 	def updateModel(self, batch_size=2000, num_topics=100):
 		db = dbm.getlocal()
 
 		# load dictionary
 		dictionary = lfm.getdic()
 		if not dictionary:
-			raise DataError(who='dictionary')
+			raise FileError(who='dictionary')
 		tfidf = lfm.gettfidf()
 		if not tfidf:
-			raise DataError(who='tfidf')
+			raise FileError(who='tfidf')
 
 		# collect text and cordnate item id(used for recommend)
 		texts_origin = []
@@ -344,14 +341,22 @@ class RecHandler:
 	def lsiSearch(self, query, start=0, length=15):
 		if not isinstance(query, unicode):
 			query = query.decode('utf-8')
+
 		model = lfm.getmodel()
 		dictionary = lfm.getdic()
 		sim = lfm.getsim()
 		itemIds = lfm.getids()
+		if not model:
+			raise FileError(who='model')
+		if not dictionary:
+			raise FileError(who='dictionary')
+		if not sim:
+			raise FileError(who='sim')
+		if not itemIds:
+			raise FileError(who='itemIds')
+
 		if len(itemIds) < start:
-			ex = DataError()
-			ex.who = 'start'
-			raise ex
+			raise DataError(who='start')
 				
 		segs = filter(lambda s:s not in stopwords, jieba.cut(query, cut_all=False))
 		query_bow = dictionary.doc2bow(segs)
@@ -450,13 +455,6 @@ class RecHandler:
 
 		return Result(success=True)
 
-def initRecommend():
-	db = dbm.getprimary()
-	handler = RecHandler()
-	for c in db.category.find():
-		handler.updateLsiDic(c['name'])
-		handler.updateLsiIndex(c['name'])
-
 def test():
 	handler = RecHandler()
 	# handler.updateDic(skip=3000*33)
@@ -480,5 +478,4 @@ def main():
 	server.serve()
 
 if __name__=='__main__':
-	# main()
-	test()
+	main()

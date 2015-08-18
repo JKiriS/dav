@@ -1,4 +1,4 @@
-
+﻿
 $(document).ready(function(){
 	$("#gotoreg").on("click", function(){
 		window.location.href = "/account/register";
@@ -196,7 +196,7 @@ $(document).ready(function(){
     $("body").on("mousemove", ".robot-checker", function(event){
     	var offset = $(this).offset();
     	_mousexy.push("("+(event.pageX-offset.left).toString()+","
-    		+(event.pageY-offset.top).toString()+")");
+    		+(event.pageY-offset.top).toString()+","+new Date().getTime()+")");
     });
     $("body").on("click", ".robot-checker", function(){
     	_mousexy.push("click");
